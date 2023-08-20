@@ -6,7 +6,19 @@ export interface RequestLoginParams {
   password?: string
   invite_code?: string
 }
-
+export interface Login {
+    password: string,
+    userId: string
+}
+export interface Register{
+  name: string,
+  password: string,
+  email: string,
+  code: string,
+  telephone: string,
+  is_staff?: false,
+  is_delete?: false
+}
 export interface UserInfo {
   id: string
   account: string

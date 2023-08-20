@@ -18,6 +18,7 @@ const getBaseUrl = (url: string) => {
   const baseURL = import.meta.env.VITE_APP_REQUEST_HOST
   if (/^http(s?):\/\//i.test(url)) return url
   return baseURL + url
+  return url
 }
 
 // 对Headers 进行一个变形

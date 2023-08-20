@@ -16,7 +16,9 @@ import {
   SubscriptionInfo,
   TurnoverInfo,
   UserInfo,
-  WithdrawalRecordInfo
+  Register,
+  WithdrawalRecordInfo,
+  Login
 } from '@/types'
 import request from '.'
 import { formatTime } from '@/utils'
@@ -27,9 +29,13 @@ export function getCode(params: { source: string }) {
   return request.get('/api/send_sms', params)
 }
 
-// 登录
-export function postLogin(params: RequestLoginParams) {
-  return request.post<ResponseLoginData>('/api/login', params)
+// 登陆
+export function postLogin(params: Login) {
+  return request.post('/user/verify', params)
+}
+// 注册
+export function postRegister(params: Register) {
+  return request.post('/user/register', params)
 }
 
 // 获取用户信息

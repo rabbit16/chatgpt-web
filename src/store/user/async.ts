@@ -1,11 +1,20 @@
-import { RequestLoginParams, WithdrawalRecordInfo } from '@/types'
+import { RequestLoginParams, WithdrawalRecordInfo, Register,Login } from '@/types'
 import userStore from '../user/slice'
 import chatStore from '../chat/slice'
-import { getUserInfo, getUserRecords, postLogin, postUserWithdrawal, putUserPassword } from '@/request/api'
+import { getUserInfo, getUserRecords, postLogin, postUserWithdrawal, putUserPassword,postRegister } from '@/request/api'
 
 // 登录
-export async function fetchLogin(params: RequestLoginParams) {
-  const response = await postLogin(params)
+export async function fetchLogin(params: Login) {
+  const response:any = await postLogin(params)
+  if (!response.code) {
+    userStore.getState().login({ ...response.data })
+  }
+  return response
+}
+// 注册
+export async function fetchRegister(params: Register) {
+  console.log(params,'<><>')
+  const response:any = await postRegister(params)
   if (!response.code) {
     userStore.getState().login({ ...response.data })
   }
@@ -58,5 +67,6 @@ export async function fetchUserWithdrawal(params: WithdrawalRecordInfo) {
 export default {
   fetchUserInfo,
   fetchLogin,
-  fetchUserPassword
+  fetchUserPassword,
+  fetchRegister
 }

@@ -8,9 +8,9 @@ function App() {
 
   const routers: Array<any> = useMemo(() => {
     let routerList = [...webRouter]
-    if (user_info?.role === 'administrator') {
-      routerList = [...routerList, ...adminRouter]
-    }
+    // if (user_info?.role === 'administrator') {
+    //   routerList = [...routerList, ...adminRouter]
+    // }
     return routerList
   }, [user_info])
 

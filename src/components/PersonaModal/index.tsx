@@ -54,7 +54,7 @@ function PersonaModal(props: Props) {
   })
 
   useEffect(() => {
-    personaAsync.fetchPersonas()
+    // personaAsync.fetchPersonas()
   }, [])
 
   const countPersonas = useMemo(() => {

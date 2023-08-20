@@ -63,13 +63,14 @@ function Global(props: Props) {
       const id = chats[0].id
       changeSelectChatId(id)
     }
-	configAsync.fetchConfig()
+	// configAsync.fetchConfig()
   }, [])
 
   useLayoutEffect(()=>{
 	onOpenNotifications();
   },[notification])
-
+  console.log(loginModal);
+  
   return (
     <>
       {props.children}

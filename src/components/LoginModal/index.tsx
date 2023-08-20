@@ -10,52 +10,54 @@ import {
   TwitterCircleFilled
 } from '@ant-design/icons'
 import { LoginForm, ProFormCaptcha, ProFormText } from '@ant-design/pro-form'
-import { Button, Form, FormInstance, Modal, Space, Tabs } from 'antd'
+import { Button, Form, FormInstance, Modal, Space, Tabs, message } from 'antd'
 import { useState } from 'react'
 import { useNavigation, useLocation } from 'react-router-dom'
-
+import md5 from 'md5'
 type Props = {
   open: boolean
   onCancel: () => void
 }
 
-type LoginType = 'code' | 'password' | 'register' | string;
+type LoginType = 'code' | 'password' | 'register' | string
 
 export function LoginCard(props: {
   form: FormInstance<RequestLoginParams>
-  onSuccess: () => void,
+  onSuccess: () => void
   type?: LoginType
 }) {
-
-  const location = useLocation();
+  const location = useLocation()
 
   function getQueryParam(key: string) {
-    const queryString = location.search || window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    return urlParams.get(key) || '';
+    const queryString = location.search || window.location.search
+    const urlParams = new URLSearchParams(queryString)
+    return urlParams.get(key) || ''
   }
 
-  const { type = 'password' } = props;
+  const { type = 'password' } = props
 
-  const [loginTabsValue, setLoginTabsValue] = useState<LoginType>('login');
-  const [loginType, setLoginType] = useState<LoginType>(type);
-
+  const [loginTabsValue, setLoginTabsValue] = useState<LoginType>('login') // 登陆注册tab标志
+  const [loginType, setLoginType] = useState<LoginType>(type) // 登陆注册标志验证码
+  console.log(loginTabsValue)
   return (
     <LoginForm<RequestLoginParams>
       form={props.form}
-      logo="https://u1.dl0.cn/icon/openailogo.svg"
+      // logo="https://u1.dl0.cn/icon/openailogo.svg"
       title=""
       subTitle="基于大语言模型的AI对话产品"
-      actions={(
+      actions={
         <div
           style={{
             textAlign: 'center',
             fontSize: 14
           }}
         >
-          <p>登录即代表你同意 <a href="https://www.baidu.com/">《平台协议》</a>和<a href="https://www.baidu.com/">《隐私政策》</a> </p>
+          <p>
+            登录即代表你同意 <a href="https://www.baidu.com/">《平台协议》</a>和
+            <a href="https://www.baidu.com/">《隐私政策》</a>{' '}
+          </p>
         </div>
-      )}
+      }
       contentStyle={{
         width: '100%',
         maxWidth: '340px',
@@ -63,25 +65,49 @@ export function LoginCard(props: {
       }}
       submitter={{
         searchConfig: {
-          submitText: loginType === 'register' ? '注册&登录' : '登录',
+          submitText: loginType === 'register' ? '注册' : '登录'
         }
       }}
-      onFinish={async (e) => {
-        return new Promise((resolve, reject) => {
+      onFinish={async (e:any) => {
+        console.log(loginTabsValue)
+        if (loginType === 'register') {
+          if(e.password!==e.passwordSecond){
+            message.error('两次输入密码不同')
+            return
+          }
+          e.password = md5(e.password)
+          delete e.passwordSecond
           userAsync
-            .fetchLogin({ ...e, invite_code: getQueryParam('invite_code') })
-            .then((res) => {
-              if (res.code) {
-                reject(false)
-                return
+            .fetchRegister({...e})
+            .then((res: any) => {
+              console.log(res);
+              
+              if(res && res.data.statusCode===0){
+                message.success(res.data.statusInfo)
+              }else{
+                message.error(res.data.codeMsg)
               }
-              props.onSuccess?.()
-              resolve(true)
+            }).catch((res)=>{
+              message.error('出现小问题请重试！')
             })
-            .catch(() => {
-              reject(false)
-            })
-        })
+        } else {
+          return new Promise((resolve, reject) => {
+            e.password = md5(e.password)
+            userAsync
+              .fetchLogin({...e} as any)
+              .then((res) => {
+                if (res.code) {
+                  reject(false)
+                  return
+                }
+                props.onSuccess?.()
+                resolve(true)
+              })
+              .catch(() => {
+                reject(false)
+              })
+          })
+        }
       }}
     >
       <Tabs
@@ -96,69 +122,35 @@ export function LoginCard(props: {
         items={[
           {
             key: 'login',
-            label: '账户登录',
+            label: '账户登录'
           },
           {
             key: 'register',
-            label: '注册账户',
-          },
-        ]}
-      />
-      <ProFormText
-        fieldProps={{
-          size: 'large',
-          prefix: <UserOutlined />
-        }}
-        name="account"
-        placeholder="电子邮箱/手机号码"
-        rules={[
-          {
-            required: true,
+            label: '注册账户'
           }
         ]}
       />
-      {
-        loginType !== 'password' && (
-          <ProFormCaptcha
+
+      {loginTabsValue === 'login' && (
+        <div>
+          <ProFormText
             fieldProps={{
               size: 'large',
-              prefix: <LockOutlined />
+              prefix: <UserOutlined />
             }}
-            captchaProps={{
-              size: 'large'
-            }}
-            placeholder="验证码"
-            captchaTextRender={(timing, count) => {
-              if (timing) {
-                return `${count} ${'获取验证码'}`
-              }
-              return '获取验证码'
-            }}
-            name="code"
+            name="userId"
+            placeholder="电子邮箱/手机号码"
             rules={[
               {
-                required: true,
-                message: '请输入验证码！'
+                required: true
               }
             ]}
-            onGetCaptcha={async () => {
-              const account = props.form.getFieldValue('account')
-              return new Promise((resolve, reject) =>
-                getCode({ source: account })
-                  .then(() => resolve())
-                  .catch(reject)
-              )
-            }}
           />
-        )
-      }
-      {
-        loginType !== 'code' && (
           <ProFormText.Password
             name="password"
             fieldProps={{
               size: 'large',
-              prefix: <LockOutlined className={'prefixIcon'} />,
+              prefix: <LockOutlined className={'prefixIcon'} />
             }}
             placeholder="请输入密码"
             rules={[
@@ -166,35 +158,99 @@ export function LoginCard(props: {
                 required: true,
                 message: '8位及以上字母数字',
                 pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
-              },
+              }
             ]}
           />
-        )
-      }
-      <div style={{ textAlign: 'right' }}>
-        {
-          (loginTabsValue === 'login' && loginType === 'code') && (
-            <Button type="link" onClick={() => {
-              props.form.resetFields()
-              setLoginType('password')
+        </div>
+      )}
+      {loginTabsValue !== 'login' ? (
+        <div>
+          <ProFormText
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined />
             }}
-            >
-              密码登录
-            </Button>
-          )
-        }
-        {
-          (loginTabsValue === 'login' && loginType === 'password') && (
-            <Button type="link" onClick={() => {
-              props.form.resetFields()
-              setLoginType('code')
+            name="code"
+            placeholder="网名"
+            rules={[
+              {
+                required: false
+              }
+            ]}
+          />
+          <ProFormText.Password
+            name="password"
+            fieldProps={{
+              size: 'large',
+              prefix: <LockOutlined className={'prefixIcon'} />
             }}
-            >
-              验证码登录
-            </Button>
-          )
-        }
-      </div>
+            placeholder="请输入密码"
+            rules={[
+              {
+                required: true,
+                message: '8位及以上字母数字',
+                pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
+              }
+            ]}
+          />
+          <ProFormText.Password
+            name="passwordSecond"
+            fieldProps={{
+              size: 'large',
+              prefix: <LockOutlined className={'prefixIcon'} />
+            }}
+            placeholder="请在次输入密码"
+            rules={[
+              {
+                required: true,
+                message: '8位及以上字母数字',
+                pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
+              }
+            ]}
+          />
+          <ProFormText
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined />
+            }}
+            name="telephone"
+            placeholder="电话号码"
+            rules={[
+              {
+                required: true
+              }
+            ]}
+          />
+          <ProFormText
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined />
+            }}
+            name="email"
+            placeholder="电子邮箱"
+            rules={[
+              {
+                required: true
+              }
+            ]}
+          />
+          <ProFormText
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined />
+            }}
+            name="name"
+            placeholder="姓名"
+            rules={[
+              {
+                required: false
+              }
+            ]}
+          />
+        </div>
+      ) : (
+        ''
+      )}
       <div
         style={{
           marginBlockEnd: 24
