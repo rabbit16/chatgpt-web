@@ -160,13 +160,29 @@ const request = <T>(
   const fetchPromise: Promise<ResponseData<T>> = new Promise((resolve, reject) => {
     fetch(url, options)
       .then(async (res) => {
-        const response = await interceptorsResponse<T>(
-          {
-            url,
-            options
-          },
-          res
-        )
+        console.log('>>>>>>>>>');
+        
+        console.log(res);
+        
+        let token:string = ''
+        console.log(res.headers);
+        console.log(res.headers.get('Set_cookie'),res.headers.keys(),res.headers.entries());
+        for (const [key, value] of res.headers.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+        
+        if(res.headers.get('Set_cookie')){
+          console.log(res.headers.get('Set_cookie'));
+          token = res.headers.get('Set_cookie')||''
+        }
+        // let response:any = await interceptorsResponse<T>(
+        //   {
+        //     url,
+        //     options
+        //   },
+        //   res
+        // )
+        response.data.token = token
         await resolve(response)
       })
       .catch(async (error) => {
