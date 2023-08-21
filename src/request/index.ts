@@ -162,7 +162,7 @@ const request = <T>(
     fetch(url, options)
       .then(async (res) => {
         
-        let token:string = ''
+        let token:string = '2rHCViusCgrFZqQmkqCjubS0'
         // console.log(res.headers);
         console.log(res.headers.get('set-cookie'),[...res.headers.keys()],[...res.headers.entries()]);
         // for (const [key, value] of res.headers.entries()) {
@@ -180,7 +180,10 @@ const request = <T>(
           },
           res
         )
-        // response.data.token = token
+        if(url.includes('verify')){
+          response.data.token = token
+        }
+        
         await resolve(response)
       })
       .catch(async (error) => {

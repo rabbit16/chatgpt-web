@@ -66,7 +66,7 @@ function AllInput(props: Props) {
           <CloudDownloadOutlined />
         </div>
       )}
-      <div
+      {/* <div
         className={styles.allInput_icon}
         onClick={() => {
           if (!props.disabled) {
@@ -77,7 +77,7 @@ function AllInput(props: Props) {
         }}
       >
         <ClearOutlined />
-      </div>
+      </div> */}
       <AutoComplete
         value={prompt}
         options={searchOptions}
@@ -147,7 +147,7 @@ function AllInput(props: Props) {
         </Button>
       )}
 
-      <Modal
+      {/* <Modal
         title="保存当前对话记录"
         open={downloadModal.open}
         onOk={() => {
@@ -159,7 +159,7 @@ function AllInput(props: Props) {
         }}
       >
         <p>是否将当前对话记录保存为图片？</p>
-      </Modal>
+      </Modal> */}
     </div>
   )
 }

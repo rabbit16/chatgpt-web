@@ -97,12 +97,12 @@ function ChatPage() {
           marginRight: 0
         }}
         onClick={() => {
-          // if (!token) {
-          //   setLoginOptions({
-          //     open: true
-          //   })
-          //   return
-          // }
+          if (!token) {
+            setLoginOptions({
+              open: true
+            })
+            return
+          }
           addChat()
         }}
       >
@@ -308,7 +308,7 @@ function ChatPage() {
                   })
                 }}
               />
-              <Space className={styles.space}>
+              {/* <Space className={styles.space}>
                 <Button
                   block
                   onClick={() => {
@@ -353,7 +353,7 @@ function ChatPage() {
                 }}
               >
                 会话配置
-              </Button>
+              </Button> */}
               <Popconfirm
                 title="删除全部对话"
                 description="您确定删除全部会话对吗? "
