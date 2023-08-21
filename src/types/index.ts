@@ -20,26 +20,11 @@ export interface Register{
   is_delete?: false
 }
 export interface UserInfo {
-  id: string
-  account: string
-  nickname: string
-  avatar: string
-  role: string
-  integral: number
-  vip_expire_time: string
-  svip_expire_time: string
-  ip: string
-  status: number
-  invite_code: string
-  superior_id?: string
-  user_agent?: string
-  today_invite_count?: number
-  current_amount?: number
-  subordinate_today_pay_amount?: number
-  all_commission_amount?: number
-  create_time: string
-  update_time: string
-  is_signin: number
+  email:string,
+  telephone:string,
+  userCode:string,
+  userId:number,
+  userName:string
 }
 
 export interface ResponseLoginData {

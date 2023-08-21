@@ -87,30 +87,30 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               trigger={['click']}
               menu={{
                 items: [
-                  {
-                    key: 'yonghuzhongxin',
-                    icon: <UserOutlined />,
-                    label: '用户中心',
-                    onClick: () => {
-                      navigate('/user')
-                    }
-                  },
-                  {
-                    key: 'wodeyue',
-                    icon: <PayCircleOutlined />,
-                    label: '我的余额',
-                    onClick: () => {
-                      navigate('/shop')
-                    }
-                  },
-                  {
-                    key: 'xiaofeijilu',
-                    icon: <ReconciliationOutlined />,
-                    label: '消费记录',
-                    onClick: () => {
-                      navigate('/shop')
-                    }
-                  },
+                  // {
+                  //   key: 'yonghuzhongxin',
+                  //   icon: <UserOutlined />,
+                  //   label: '用户中心',
+                  //   onClick: () => {
+                  //     navigate('/user')
+                  //   }
+                  // },
+                  // {
+                  //   key: 'wodeyue',
+                  //   icon: <PayCircleOutlined />,
+                  //   label: '我的余额',
+                  //   onClick: () => {
+                  //     navigate('/shop')
+                  //   }
+                  // },
+                  // {
+                  //   key: 'xiaofeijilu',
+                  //   icon: <ReconciliationOutlined />,
+                  //   label: '消费记录',
+                  //   onClick: () => {
+                  //     navigate('/shop')
+                  //   }
+                  // },
                   {
                     key: 'tuichudenglu',
                     icon: <LogoutOutlined />,
@@ -145,14 +145,14 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                 )}
               </div>
             </Dropdown>
-            <div
+            {/* <div
               className={styles.header__balance}
               onClick={() => {
                 onRefreshBalance()
               }}
             >
               <p>余额：{balance.number}</p> <SyncOutlined spin={balance.loading} />
-            </div>
+            </div> */}
           </div>
         ) : (
           <Button

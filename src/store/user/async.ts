@@ -5,17 +5,15 @@ import { getUserInfo, getUserRecords, postLogin, postUserWithdrawal, putUserPass
 
 // 登录
 export async function fetchLogin(params: Login) {
-  const response:any = await postLogin(params)
-  console.log(response);
-  
+  const response:any = await postLogin(params);
   if (!response.code) {
-    userStore.getState().login({ ...response.data })
+    userStore.getState().login({ token:'',user_info:response })
+    // window.localStorage.setItem(token,)
   }
   return response
 }
 // 注册
 export async function fetchRegister(params: Register) {
-  console.log(params,'<><>')
   const response:any = await postRegister(params)
   if (!response.code) {
     userStore.getState().login({ ...response.data })
