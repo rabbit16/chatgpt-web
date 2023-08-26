@@ -45,7 +45,7 @@ export function LoginCard(props: {
       // logo="https://u1.dl0.cn/icon/openailogo.svg"
       title=""
       subTitle="基于大语言模型的AI对话产品"
-      actions={
+      actions={(
         <div
           style={{
             textAlign: 'center',
@@ -57,7 +57,7 @@ export function LoginCard(props: {
             <a href="https://www.baidu.com/">《隐私政策》</a>{' '}
           </p>
         </div>
-      }
+      )}
       contentStyle={{
         width: '100%',
         maxWidth: '340px',

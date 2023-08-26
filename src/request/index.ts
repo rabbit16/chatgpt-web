@@ -162,7 +162,7 @@ const request = <T>(
     fetch(url, options)
       .then(async (res) => {
         
-        let token:string = '2rHCViusCgrFZqQmkqCjubS0'
+        const token = '2rHCViusCgrFZqQmkqCjubS0'
         // console.log(res.headers);
         console.log(res.headers.get('set-cookie'),[...res.headers.keys()],[...res.headers.entries()]);
         // for (const [key, value] of res.headers.entries()) {
@@ -173,7 +173,7 @@ const request = <T>(
         //   console.log(res.headers.get('Set_cookie'));
         //   token = res.headers.get('Set_cookie')||''
         // }
-        let response:any = await interceptorsResponse<T>(
+        const response:any = await interceptorsResponse<T>(
           {
             url,
             options

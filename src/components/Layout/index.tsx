@@ -30,6 +30,7 @@ function Layout(props: Props) {
 
   const { website_logo, website_title, website_footer, website_description, website_keywords } =
     configStore()
+console.log(website_logo, website_title, website_footer, website_description, website_keywords);
 
   function createMetaElement(key: string, value: string) {
     const isMeta = document.querySelector(`meta[name="${key}"]`)
@@ -46,7 +47,7 @@ function Layout(props: Props) {
     createMetaElement('description', website_description)
     createMetaElement('keywords', website_keywords)
   }, [])
-
+  console.log(props.route,'>>>>')
   return (
     <ProLayout
       title={website_title}
@@ -81,6 +82,8 @@ function Layout(props: Props) {
         render: (p, dom) => <>{dom}</>
       }}
       menuFooterRender={(p) => {
+        console.log(p,'p');
+        
         return (
           <div>
             {props.menuFooterRender?.(p)}

@@ -49,19 +49,6 @@ function ChatPage() {
 
   const isMobile = useMobile()
 
-  // 提示指令预设
-  const [roleConfigModal, setRoleConfigModal] = useState({
-    open: false
-  })
-
-  // ai角色
-  const [personaModal, setPersonaModal] = useState({
-    open: false
-  })
-
-  const [pluginModal, setPluginModal] = useState({
-    open: false
-  })
 
   useLayoutEffect(() => {
     if (scrollRef) {
@@ -98,9 +85,9 @@ function ChatPage() {
         }}
         onClick={() => {
           if (!token) {
-            setLoginOptions({
-              open: true
-            })
+            setLoginModal(
+               true
+            )
             return
           }
           addChat()
@@ -269,7 +256,8 @@ function ChatPage() {
       assistantMessageId
     })
   }
-
+  console.log(chats,'chats','chatMessages',chatMessages);
+  
   return (
     <div className={styles.chatPage}>
       <Layout
@@ -279,9 +267,13 @@ function ChatPage() {
           routes: chats
         }}
         menuDataRender={(item) => {
+          console.log(item,'item');
+          
           return item
         }}
-        menuItemRender={(item, dom) => (
+        menuItemRender={(item, dom) => {
+          console.log(item,dom)
+          return (
           <MessageItem
             isSelect={item.id === selectChatId}
             isPersona={!!item.persona_id}
@@ -290,7 +282,7 @@ function ChatPage() {
               chatAsync.fetchDelUserMessages({ id: item.id, type: 'del' })
             }}
           />
-        )}
+        )}}
         menuFooterRender={(props) => {
           //   if (props?.collapsed) return undefined;
           return (
@@ -308,52 +300,6 @@ function ChatPage() {
                   })
                 }}
               />
-              {/* <Space className={styles.space}>
-                <Button
-                  block
-                  onClick={() => {
-                    setRoleConfigModal({ open: true })
-                  }}
-                >
-                  AI提示指令
-                </Button>
-                <Button
-                  block
-                  onClick={() => {
-                    setPersonaModal({
-                      open: true
-                    })
-                  }}
-                >
-                  AI角色
-                </Button>
-              </Space>
-              <Button
-                block
-                onClick={() => {
-                  if (token) {
-                    setPluginModal({
-                      open: true
-                    })
-                  } else {
-                    setLoginModal(true)
-                  }
-                }}
-              >
-                智能插件
-              </Button>
-              <Button
-                block
-                onClick={() => {
-                  setConfigModal(true)
-                  // chatGptConfigform.setFieldsValue({
-                  //   ...config
-                  // })
-                  // setChatConfigModal({ open: true })
-                }}
-              >
-                会话配置
-              </Button> */}
               <Popconfirm
                 title="删除全部对话"
                 description="您确定删除全部会话对吗? "
@@ -387,9 +333,9 @@ function ChatPage() {
         }}
       >
         <div className={styles.chatPage_container}>
-          {/* {
+          {
             chatMessages[0]?.persona_id && <div className={styles.chatPage_container_persona}>当前为预置角色对话</div>
-          } */}
+          }
           <div ref={scrollRef} className={styles.chatPage_container_one}>
             <div id="image-wrapper">
               {chatMessages.map((item) => {
@@ -447,62 +393,6 @@ function ChatPage() {
           </div>
         </div>
       </Layout>
-
-      {/* AI提示指令预设 */}
-      <Modal
-        title="AI提示指令预设"
-        open={roleConfigModal.open}
-        footer={null}
-        destroyOnClose
-        onCancel={() => setRoleConfigModal({ open: false })}
-        width={800}
-        style={{
-          top: 50
-        }}
-      >
-        <Tabs
-          tabPosition={bodyResize.width <= 600 ? 'top' : 'left'}
-          items={[
-            {
-              key: 'roleLocal',
-              label: '本地数据',
-              children: <RoleLocal />
-            },
-            {
-              key: 'roleNetwork',
-              label: '网络数据',
-              children: <RoleNetwork />
-            }
-          ]}
-        />
-      </Modal>
-
-      <PersonaModal
-        {...personaModal}
-        onCreateChat={(info) => {
-          addChat({
-            persona_id: info.id,
-            name: info.title
-          })
-          setPersonaModal({
-            open: false
-          })
-        }}
-        onCancel={() => {
-          setPersonaModal({
-            open: false
-          })
-        }}
-      />
-
-      <PluginModal
-        {...pluginModal}
-        onCancel={() => {
-          setPluginModal({
-            open: false
-          })
-        }}
-      />
     </div>
   )
 }

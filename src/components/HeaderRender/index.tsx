@@ -117,7 +117,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                     label: '退出登录',
                     onClick: () => {
                       logout()
-					  clearChats()
+                      clearChats()
                       navigate('/login')
                     }
                   }

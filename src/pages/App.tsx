@@ -7,7 +7,7 @@ function App() {
   const { user_info } = userStore()
 
   const routers: Array<any> = useMemo(() => {
-    let routerList = [...webRouter]
+    const routerList = [...webRouter]
     // if (user_info?.role === 'administrator') {
     //   routerList = [...routerList, ...adminRouter]
     // }
