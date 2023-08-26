@@ -87,5 +87,5 @@ const userStore = create<userState>()(
     }
   )
 )
-
+export const tokenUser= userStore
 export default userStore

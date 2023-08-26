@@ -11,6 +11,6 @@ export function generateChatInfo (value?: {
         id: uuid,
         name: value?.name ? value?.name : '新的对话',
 		persona_id: value?.persona_id,
-        data: []
+        data: [],
     }
 }

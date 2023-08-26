@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { ChatGpt, ChatsInfo } from '@/types'
 import { formatTime, generateChatInfo } from '@/utils'
-
+import { addUserMessages } from '../../request/api'
+import userStore from '../user/slice'
 export interface ChatState {
   // 聊天对话
   chats: Array<ChatsInfo>
@@ -37,134 +38,143 @@ export interface ChatState {
 }
 
 const chatStore = create<ChatState>()(
-  persist(
-    (set, get) => ({
-      chats: [],
-      selectChatId: '',
-      addChat: (value) =>
-        set((state: ChatState) => {
-          const info = generateChatInfo(value)
-          const newChats = [...state.chats]
-          newChats.unshift({ ...info })
-          return {
-            chats: [...newChats],
-            selectChatId: info.id
-          }
-        }),
-      delChat: (id) =>
-        set((state: ChatState) => {
-          const newChats = state.chats.filter((c) => c.id !== id)
-          if (state.chats.length <= 1) {
-            const info = generateChatInfo()
-            return {
-              chats: [{ ...info }],
-              selectChatId: info.id
-            }
-          }
-          return {
-            selectChatId: state.chats[1].id,
-            chats: [...newChats]
-          }
-        }),
-      clearChats: () =>
-        set(() => {
+  // persist(
+  (set) => ({
+    chats: [],
+    selectChatId: '',
+    // 获取全部的gpt列表
+    getAllChatList: async () => {
+      let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
+    },
+    addChat: async (value) => {
+      let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
+      let id = res?.data?.newChatId;
+      set((state: ChatState) => {
+        let info = generateChatInfo(value)
+        info.id= String(id)
+        const newChats = [...state.chats]
+        newChats.unshift({ ...info })
+        return {
+          chats: [...newChats],
+          selectChatId: info.id
+        }
+      })
+    }
+    ,
+    delChat: (id) =>
+      set((state: ChatState) => {
+        const newChats = state.chats.filter((c) => c.id !== id)
+        if (state.chats.length <= 1) {
           const info = generateChatInfo()
           return {
             chats: [{ ...info }],
             selectChatId: info.id
           }
-        }),
-      changeSelectChatId: (id) =>
-        set(() => ({
-          selectChatId: id
-        })),
-      changeChatMessage: (data) => set({ chats: data }),
-      delChatMessage: (id, messageId) =>
-        set((state: ChatState) => {
-          const newChats = state.chats.map((c) => {
-            if (c.id === id) {
-              const newData = c.data.filter((d) => d.id !== messageId)
-              return {
-                ...c,
-                data: newData
-              }
+        }
+        return {
+          selectChatId: state.chats[1].id,
+          chats: [...newChats]
+        }
+      }),
+    clearChats: () =>
+      set(() => {
+        const info = generateChatInfo()
+        return {
+          chats: [{ ...info }],
+          selectChatId: info.id
+        }
+      }),
+    changeSelectChatId: (id) =>
+      set(() => ({
+        selectChatId: id
+      })),
+    changeChatMessage: (data) => set({ chats: data }),
+    delChatMessage: (id, messageId) =>
+      set((state: ChatState) => {
+        const newChats = state.chats.map((c) => {
+          if (c.id === id) {
+            const newData = c.data.filter((d) => d.id !== messageId)
+            return {
+              ...c,
+              data: newData
             }
-            return c
-          })
-          return {
-            chats: newChats
           }
-        }),
-      clearChatMessage: (id) =>
-        set((state: ChatState) => {
-          const newChats = state.chats.map((c) => {
-            if (c.id === id) {
-              return {
-                ...c,
-                parentMessageId: '',
-                data: [],
-                text: '',
-                dateTime: formatTime()
-              }
-            }
-            return c
-          })
-          return {
-            chats: newChats
-          }
-        }),
-      setChatInfo: (id, data, info) =>
-        set((state: ChatState) => {
-          const newChats = state.chats.map((item) => {
-            if (item.id === id) {
-              const name = item.data.length <= 0 && data?.text ? data.text : item.name
-              return {
-                ...item,
-                name,
-                ...info,
-                data: data ? item.data.concat({ ...data }) : item.data
-              }
-            }
-            return item
-          })
-          return {
-            chats: newChats
-          }
-        }),
-      setChatDataInfo: (id, messageId, info) =>
-        set((state: ChatState) => {
-          const newChats = state.chats.map((item) => {
-            if (item.id === id) {
-              const newData = item.data.map((m) => {
-                if (m.id === messageId) {
-                  return {
-                    ...m,
-                    ...info
-                  }
-                }
-                return m
-              })
-
-              const dataFilter = newData.filter((d) => d.id === messageId)
-              const chatData = { id: messageId, ...info } as ChatGpt
-              return {
-                ...item,
-                data: dataFilter.length <= 0 ? [...newData, { ...chatData }] : [...newData]
-              }
-            }
-            return item
-          })
-
-          return {
-            chats: newChats
-          }
+          return c
         })
-    }),
-    {
-      name: 'chat_storage', // name of item in the storage (must be unique)
-      storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
-    }
-  )
+        return {
+          chats: newChats
+        }
+      }),
+    clearChatMessage: (id) =>
+      set((state: ChatState) => {
+        const newChats = state.chats.map((c) => {
+          if (c.id === id) {
+            return {
+              ...c,
+              parentMessageId: '',
+              data: [],
+              text: '',
+              dateTime: formatTime()
+            }
+          }
+          return c
+        })
+        return {
+          chats: newChats
+        }
+      }),
+    setChatInfo: (id, data, info) =>
+      set((state: ChatState) => {
+        const newChats = state.chats.map((item) => {
+          if (item.id === id) {
+            const name = item.data.length <= 0 && data?.text ? data.text : item.name
+            return {
+              ...item,
+              name,
+              ...info,
+              data: data ? item.data.concat({ ...data }) : item.data
+            }
+          }
+          return item
+        })
+        return {
+          chats: newChats
+        }
+      }),
+    setChatDataInfo: (id, messageId, info) =>
+      set((state: ChatState) => {
+        const newChats = state.chats.map((item) => {
+          if (item.id === id) {
+            const newData = item.data.map((m) => {
+              if (m.id === messageId) {
+                return {
+                  ...m,
+                  ...info
+                }
+              }
+              return m
+            })
+
+            const dataFilter = newData.filter((d) => d.id === messageId)
+            const chatData = { id: messageId, ...info } as ChatGpt
+            return {
+              ...item,
+              data: dataFilter.length <= 0 ? [...newData, { ...chatData }] : [...newData]
+            }
+          }
+          return item
+        })
+
+        return {
+          chats: newChats
+        }
+      })
+  }),
+  // {
+  //   name: 'chat_storage', // name of item in the storage (must be unique)
+  //   storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
+  // }
+  // )
 )
 
 export default chatStore

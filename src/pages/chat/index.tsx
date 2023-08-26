@@ -110,91 +110,105 @@ function ChatPage() {
     requestOptions: RequestChatOptions
     assistantMessageId: string
   }) {
-    const response = await postChatCompletions(requestOptions, {
+    // console.log(requestOptions);
+    // "contextId": "string",
+    // "withoutContext": true,
+    // "prompt": "string",
+    // "userId": 0
+    const response = await postChatCompletions(
+      {
+        contextId:chatStore.getState().selectChatId,
+        withoutContext:true,
+        prompt:requestOptions.prompt,
+        userId:userStore.getState().user_info?.data?.bodyMessage?.userId 
+      }, {
       options: {
         signal
       }
     })
-      .then((res) => {
-        return res
-      })
-      .catch((error) => {
-        // 终止： AbortError
-        console.log(error.name)
-      })
+    console.log(response,'response');
+    
+      // .then((res) => {
+      //   return res
+      // })
+      // .catch((error) => {
+      //   // 终止： AbortError
+      //   console.log(error.name)
+      // })
 
     if (!(response instanceof Response)) {
       // 这里返回是错误 ...
-      if (userMessageId) {
-        setChatDataInfo(selectChatId, userMessageId, {
-          status: 'error'
-        })
-      }
-
+      // if (userMessageId) {
+      //   setChatDataInfo(selectChatId, userMessageId, {
+      //     status: 'error'
+      //   })
+      // }
+      console.log(response,response?.data?.gptResult[0]?.gpt);
+      
       setChatDataInfo(selectChatId, assistantMessageId, {
-        status: 'error',
-        text: `${response?.message || '❌ 请求异常，请稍后在尝试。'} \n \`\`\` ${JSON.stringify(response, null, 2)}   `
+        status: 'pass',
+        text: `${response?.data?.gptResult[0]?.gpt}`
       })
       fetchController?.abort()
       setFetchController(null)
-      message.error('请求失败')
+      // message.error('请求失败')
       return
     }
-    const reader = response.body?.getReader?.()
-    let allContent = ''
-    while (true) {
-      const { done, value } = (await reader?.read()) || {}
-      if (done) {
-        fetchController?.abort()
-        setFetchController(null)
-        break
-      }
-      // 将获取到的数据片段显示在屏幕上
-      const text = new TextDecoder('utf-8').decode(value)
-      const texts = handleChatData(text)
-      for (let i = 0; i < texts.length; i++) {
-        const { dateTime, role, content, segment, pluginInfo } = texts[i]
-        allContent += content ? content : ''
-        if (segment === 'stop') {
-          setFetchController(null)
-          if (userMessageId) {
-            setChatDataInfo(selectChatId, userMessageId, {
-              status: 'pass'
-            })
-          }
-          setChatDataInfo(selectChatId, assistantMessageId, {
-            text: allContent,
-            dateTime,
-            status: 'pass'
-          })
-          break
-        }
+    // const reader = response.body?.getReader?.()
+    // let allContent = ''
+    // while (true) {
+    //   const { done, value } = (await reader?.read()) || {}
+    //   if (done) {
+    //     fetchController?.abort()
+    //     setFetchController(null)
+    //     break
+    //   }
+    //   // 将获取到的数据片段显示在屏幕上
+    //   const text = new TextDecoder('utf-8').decode(value)
+    //   const texts = handleChatData(text)
+    //   for (let i = 0; i < texts.length; i++) {
+    //     const { dateTime, role, content, segment, pluginInfo } = texts[i]
+    //     allContent += content ? content : ''
+    //     if (segment === 'stop') {
+    //       setFetchController(null)
+    //       if (userMessageId) {
+    //         setChatDataInfo(selectChatId, userMessageId, {
+    //           status: 'pass'
+    //         })
+    //       }
+    //       setChatDataInfo(selectChatId, assistantMessageId, {
+    //         text: allContent,
+    //         dateTime,
+    //         status: 'pass'
+    //       })
+    //       break
+    //     }
 
-        if (segment === 'start') {
-          if (userMessageId) {
-            setChatDataInfo(selectChatId, userMessageId, {
-              status: 'pass'
-            })
-          }
-          setChatDataInfo(selectChatId, assistantMessageId, {
-            text: allContent,
-            dateTime,
-            status: 'loading',
-            role,
-            requestOptions,
-            plugin_info: pluginInfo || undefined
-          })
-        }
-        if (segment === 'text') {
-          setChatDataInfo(selectChatId, assistantMessageId, {
-            text: allContent,
-            dateTime,
-            status: 'pass'
-          })
-        }
-      }
-      scrollToBottomIfAtBottom()
-    }
+    //     if (segment === 'start') {
+    //       if (userMessageId) {
+    //         setChatDataInfo(selectChatId, userMessageId, {
+    //           status: 'pass'
+    //         })
+    //       }
+    //       setChatDataInfo(selectChatId, assistantMessageId, {
+    //         text: allContent,
+    //         dateTime,
+    //         status: 'loading',
+    //         role,
+    //         requestOptions,
+    //         plugin_info: pluginInfo || undefined
+    //       })
+    //     }
+    //     if (segment === 'text') {
+    //       setChatDataInfo(selectChatId, assistantMessageId, {
+    //         text: allContent,
+    //         dateTime,
+    //         status: 'pass'
+    //       })
+    //     }
+    //   }
+    //   scrollToBottomIfAtBottom()
+    // }
   }
 
   const [fetchController, setFetchController] = useState<AbortController | null>(null)
@@ -205,7 +219,11 @@ function ChatPage() {
       setLoginModal(true)
       return
     }
+    console.log(chats);
+    
     const selectChat = chats.filter((c) => c.id === selectChatId)[0]
+    console.log(selectChat,selectChatId);
+    
     const parentMessageId = refurbishOptions?.requestOptions.parentMessageId || selectChat.id
     let userMessageId = generateUUID()
     const requestOptions = {

@@ -45,13 +45,10 @@ export function getUserInfo() {
 
 // 请求对话
 export function postChatCompletions(
-  params: RequestChatOptions,
-  config?: {
-    headers?: { [key: string]: any }
-    options?: { [key: string]: any }
-  }
+  params: any,
 ) {
-  return request.postStreams<Response>('/api/chat/completions', params, config)
+  return request.post('/user/gpt/ask',params)
+  // return request.postStreams<Response>('/api/chat/completions', params, config)
 }
 
 export function postChatCompletion(
@@ -168,12 +165,22 @@ export function getUserMessages(){
 export function delUserMessages(params: { parent_message_id?: string | number }){
 	return request.del('/api/user/messages', params)
 }
-
+// 添加用户对话 
+export function addUserMessages(params:{userId:string}){
+  return request.post('/user/createChat',params)
+}
+// 获取去全部的列表项
+export function getMessageList(params:{userId:string}){
+  return request.post('/user/getContextList',params)
+}
 // 获取插件数据
 export function getPlugin(){
 	return request.get<Array<PluginInfo>>('/api/plugin')
 }
-
+// 问gpt
+export function gptAsk(params:any){
+  return request.post('/user/gpt/ask',params)
+}
 // 安装插件
 export function putInstalledPlugin(id: string | number){
 	return request.put(`/api/plugin/installed/${id}`)

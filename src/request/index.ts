@@ -162,17 +162,16 @@ const request = <T>(
     fetch(url, options)
       .then(async (res) => {
         
-        const token = '2rHCViusCgrFZqQmkqCjubS0'
+        let token:string = ''
         // console.log(res.headers);
-        console.log(res.headers.get('set-cookie'),[...res.headers.keys()],[...res.headers.entries()]);
+        // console.log(,[...res.headers.keys()],[...res.headers.entries()]);
         // for (const [key, value] of res.headers.entries()) {
         //   console.log(`${key}: ${value}`);
         // }
         
-        // if(res.headers.get('Set_cookie')){
-        //   console.log(res.headers.get('Set_cookie'));
-        //   token = res.headers.get('Set_cookie')||''
-        // }
+        if(res.headers.get('x-set-cookie')&&url.includes('verify')){
+          token = res.headers.get('x-set-cookie')||''
+        }
         const response:any = await interceptorsResponse<T>(
           {
             url,
@@ -181,7 +180,7 @@ const request = <T>(
           res
         )
         if(url.includes('verify')){
-          response.data.token = token
+          response.data.token = token.replace('token=','')
         }
         
         await resolve(response)

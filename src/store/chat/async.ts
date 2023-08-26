@@ -1,4 +1,4 @@
-import { delUserMessages, getUserMessages } from '@/request/api'
+import { delUserMessages, getUserMessages,addUserMessages } from '@/request/api'
 import chatStore from './slice'
 
 async function fetchChatMessages() {
@@ -23,6 +23,9 @@ async function fetchDelUserMessages(params: { id?: string | number; type: string
   }
   return res
 }
+// async function addChat (params:{userId:string}){
+//  let res = await addUserMessages(params);
+// }
 
 export default {
   fetchChatMessages,
