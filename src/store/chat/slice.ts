@@ -35,6 +35,8 @@ export interface ChatState {
   delChatMessage: (id: string | number, messageId: string | number) => void
   // 重置
   changeChatMessage: (data: Array<ChatsInfo>) => void
+  // 初始化列表
+  getAllChatList: (data: any,id:any) => void
 }
 
 const chatStore = create<ChatState>()(
@@ -43,8 +45,16 @@ const chatStore = create<ChatState>()(
     chats: [],
     selectChatId: '',
     // 获取全部的gpt列表
-    getAllChatList: async () => {
-      let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
+    getAllChatList: async (value:any,id:any) => {
+      // let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
+      // console.log(res);
+      set((state)=>{
+        return {
+          chats:[...value],
+          selectChatId: id
+        }
+      })
+
     },
     addChat: async (value) => {
       let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
@@ -59,8 +69,7 @@ const chatStore = create<ChatState>()(
           selectChatId: info.id
         }
       })
-    }
-    ,
+    },
     delChat: (id) =>
       set((state: ChatState) => {
         const newChats = state.chats.filter((c) => c.id !== id)

@@ -290,7 +290,7 @@ function ChatPage() {
           return item
         }}
         menuItemRender={(item, dom) => {
-          console.log(item,dom)
+          // console.log(item,dom)
           return (
           <MessageItem
             isSelect={item.id === selectChatId}

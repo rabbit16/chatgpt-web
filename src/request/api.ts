@@ -28,7 +28,14 @@ import { TableData } from '@/types/admin'
 export function getCode(params: { source: string }) {
   return request.get('/api/send_sms', params)
 }
-
+// 获取记录chat列表
+export function getGPTListMessage(params:{userId:number}){
+  return request.post('/user/getContextList',params)
+}
+// 删除gpt列表的某一项
+export function delGPTListMessage(params:{userId:number,chat_id:string}){
+  return request.post('/user/deleteChat',params)
+}
 // 登陆
 export function postLogin(params: Login) {
   return request.post('/user/verify', params)

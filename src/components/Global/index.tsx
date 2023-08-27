@@ -6,7 +6,7 @@ import ConfigModal from '../ConfigModal'
 import { userStore } from '@/store'
 import { notification } from 'antd'
 import React from 'react'
-
+import {getGPTListMessage} from '../../request/api'
 type Props = {
   children: React.ReactElement
 }
@@ -56,15 +56,32 @@ function Global(props: Props) {
     }
   }
 
-  useEffect(() => {
-    if (chats.length <= 0) {
-      addChat()
-    } else {
-      const id = chats[0].id
-      changeSelectChatId(id)
+  useEffect( () => {
+   async function init(){
+
+  // await chatStore.getState().getAllChatList({userId:userStore.getState().user_info?.data?.bodyMessage?.userId })
+   let data = await getGPTListMessage({userId:userStore.getState().user_info?.data?.bodyMessage?.userId })
+  // console.log(data);
+  // if(data.code ===0 && data?.data.code==='0' && data?.data?.context_dict.length>0){
+  //   chatStore.getState().getAllChatList({data:data?.data?.context_dict,id:data?.data?.context_dict[0].id})
+  // }
+  //  if (data?.data?.context_dict.length <= 0 ) {
+  //       addChat()
+  // } 
+  if(token){
+    addChat()
+  }else {
+        // await 
+        const id = chats[0].id
+        changeSelectChatId(id)
+      }
+    }
+    
+    if(token){
+      init()
     }
 	// configAsync.fetchConfig()
-  }, [])
+  }, [token])
 
   useLayoutEffect(()=>{
 	onOpenNotifications();
