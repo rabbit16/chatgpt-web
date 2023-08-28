@@ -115,18 +115,32 @@ function ChatPage() {
     // "withoutContext": true,
     // "prompt": "string",
     // "userId": 0
-    const response = await postChatCompletions(
-      {
-        contextId:chatStore.getState().selectChatId,
-        withoutContext:true,
-        prompt:requestOptions.prompt,
-        userId:userStore.getState().user_info?.data?.bodyMessage?.userId 
-      }, {
-      options: {
-        signal
-      }
-    })
-    console.log(response,'response');
+    try{
+      const response = await postChatCompletions(
+        {
+          contextId:chatStore.getState().selectChatId,
+          withoutContext:false,
+          prompt:requestOptions.prompt,
+          userId:userStore.getState().user_info?.data?.bodyMessage?.userId 
+        }, {
+        options: {
+          signal
+        }
+      })
+      console.log(response,'response');
+      setChatDataInfo(selectChatId, assistantMessageId, {
+        status: 'pass',
+        text: `${response?.data?.gptResult[0]?.gpt}`
+      })
+    }catch(e){
+      console.log(e,'eee');
+      setChatDataInfo(selectChatId, assistantMessageId, {
+        status: 'pass',
+        text: `请求超时请重试`
+      })
+      
+    }
+
     
       // .then((res) => {
       //   return res
@@ -136,24 +150,21 @@ function ChatPage() {
       //   console.log(error.name)
       // })
 
-    if (!(response instanceof Response)) {
+    // if (!(response instanceof Response)) {
       // 这里返回是错误 ...
       // if (userMessageId) {
       //   setChatDataInfo(selectChatId, userMessageId, {
       //     status: 'error'
       //   })
       // }
-      console.log(response,response?.data?.gptResult[0]?.gpt);
+      // console.log(response,response?.data?.gptResult[0]?.gpt);
       
-      setChatDataInfo(selectChatId, assistantMessageId, {
-        status: 'pass',
-        text: `${response?.data?.gptResult[0]?.gpt}`
-      })
+
       fetchController?.abort()
       setFetchController(null)
       // message.error('请求失败')
       return
-    }
+    // }
     // const reader = response.body?.getReader?.()
     // let allContent = ''
     // while (true) {
@@ -274,7 +285,7 @@ function ChatPage() {
       assistantMessageId
     })
   }
-  console.log(chats,'chats','chatMessages',chatMessages);
+  // console.log(chats,'chats','chatMessages',chatMessages);
   
   return (
     <div className={styles.chatPage}>
@@ -293,6 +304,7 @@ function ChatPage() {
           // console.log(item,dom)
           return (
           <MessageItem
+            id = {item.id}
             isSelect={item.id === selectChatId}
             isPersona={!!item.persona_id}
             name={item.name}
@@ -341,14 +353,16 @@ function ChatPage() {
             </Space>
           )
         }}
-        menuProps={{
-          onClick: (r) => {
-            const id = r.key.replace('/', '')
-            if (selectChatId !== id) {
-              changeSelectChatId(id)
-            }
-          }
-        }}
+        // menuProps={{
+        //   onClick: (r) => {
+        //     console.log(r,selectChatId,'selectChatId');
+            
+        //     const id = r.key.replace('/', '')
+        //     if (selectChatId !== id) {
+        //       changeSelectChatId(id)
+        //     }
+        //   }
+        // }}
       >
         <div className={styles.chatPage_container}>
           {

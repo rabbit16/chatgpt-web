@@ -120,7 +120,7 @@ export interface ChatGpt {
   status: 'pass' | 'loading' | 'error'
   role: 'assistant' | 'user' | string
   persona_id?: string | number
-  requestOptions: RequestChatOptions,
+  requestOptions?: RequestChatOptions,
   plugin_id?: string | number
   plugin_info?: PluginInfo
 }

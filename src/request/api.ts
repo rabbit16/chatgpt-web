@@ -52,9 +52,9 @@ export function getUserInfo() {
 
 // 请求对话
 export function postChatCompletions(
-  params: any,
+  params: any,option:any
 ) {
-  return request.post('/user/gpt/ask',params)
+  return request.post('/user/gpt/ask',params,[['a','b']],option)
   // return request.postStreams<Response>('/api/chat/completions', params, config)
 }
 
