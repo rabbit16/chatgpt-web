@@ -47,7 +47,7 @@ function AllInput(props: Props) {
     htmlToImage('image-wrapper')
       .then(() => {
 		message.success('下载聊天记录成功')
-        setDownloadModal((d) => ({ ...d, loading: false }))
+        setDownloadModal((d) => ({ ...d,  open: false,loading: false }))
       })
       .catch(() => {
         message.error('下载聊天记录失败')
@@ -147,7 +147,7 @@ function AllInput(props: Props) {
         </Button>
       )}
 
-      {/* <Modal
+      <Modal
         title="保存当前对话记录"
         open={downloadModal.open}
         onOk={() => {
@@ -159,7 +159,7 @@ function AllInput(props: Props) {
         }}
       >
         <p>是否将当前对话记录保存为图片？</p>
-      </Modal> */}
+      </Modal>
     </div>
   )
 }
