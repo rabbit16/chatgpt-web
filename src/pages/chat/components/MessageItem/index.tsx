@@ -2,8 +2,10 @@ import { CommentOutlined, DeleteOutlined, RedditCircleFilled } from '@ant-design
 import styles from './index.module.less';
 import { useMemo } from 'react';
 import { Popconfirm } from 'antd';
+import { chatStore } from '@/store';
 
 type Props = {
+    id?:any,
     isPersona: boolean,
     isSelect: boolean,
     name?: string,
@@ -12,6 +14,7 @@ type Props = {
 }
 
 function MessageItem(props: Props) {
+    const { chats, addChat, changeSelectChatId,getAllChatList } = chatStore()
     const className = useMemo(() => {
         const value = props.isSelect ?
             `${styles.menuItem} ${styles.menuItem_action}`
@@ -19,7 +22,7 @@ function MessageItem(props: Props) {
         return value
     }, [props.isSelect])
     return (
-        <div className={className}>
+        <div className={className} onClick={()=>changeSelectChatId(props.id)}>
             <span className={styles.menuItem_icon}>
                 {props.isPersona ? <RedditCircleFilled /> : <CommentOutlined />}
             </span>
