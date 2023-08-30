@@ -14,7 +14,7 @@ type Props = {
 function Global(props: Props) {
   const { models, config, configModal, changeConfig, setConfigModal, notifications } = configStore()
   const { chats, addChat, changeSelectChatId,getAllChatList } = chatStore()
-  const { token, loginModal, setLoginModal } = userStore()
+  const { token, loginModal, setLoginModal,upglobal } = userStore()
 
   const openNotification = ({
     key,
@@ -93,7 +93,7 @@ function Global(props: Props) {
       init()
     }
     // configAsync.fetchConfig()
-  }, [token])
+  }, [token,upglobal])
 
   useLayoutEffect(() => {
     onOpenNotifications()

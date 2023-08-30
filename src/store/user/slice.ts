@@ -24,6 +24,9 @@ export interface userState {
   withdrawal_records: TableData<InvitationRecordInfo>
   changeRecords: (data: TableData<any>, type: string | number) => void
   changeUserCurrentAmount: (amount?: number) => void
+  upglobal:number,
+  upDataGlobal:Function
+
 }
 
 const userStore = create<userState>()(
@@ -39,6 +42,8 @@ const userStore = create<userState>()(
         count: 0,
         rows: []
       },
+      upglobal:1,
+      upDataGlobal:()=>set(()=>({upglobal:Math.random()})),
       consume_records: {
         count: 0,
         rows: []

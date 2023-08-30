@@ -36,7 +36,11 @@ export function getGPTListMessage(params:{userId:number}){
 export function delGPTListMessage(params:{userId:number,chat_id:string}){
   return request.post('/user/deleteChat',params)
 }
-// 登陆
+// 删除gpt列表
+export function delGPTListAll(params:{userId:number}){
+  return request.post('/user/deleteAllChat',params)
+}
+// 登陆/apiAI
 export function postLogin(params: Login) {
   return request.post('/user/verify', params)
 }

@@ -309,7 +309,8 @@ function ChatPage() {
             isPersona={!!item.persona_id}
             name={item.name}
             onConfirm={() => {
-              chatAsync.fetchDelUserMessages({ id: item.id, type: 'del' })
+              // chatAsync.fetchDelUserMessages({ id: item.id, type: 'del' })
+              chatAsync.fetchDelUserMessagesList({id:item.id})
             }}
           />
         )}}
@@ -335,7 +336,9 @@ function ChatPage() {
                 description="您确定删除全部会话对吗? "
                 onConfirm={() => {
                   if (token) {
-                    chatAsync.fetchDelUserMessages({ type: 'delAll' })
+                    // chatAsync.fetchDelUserMessages({ type: 'delAll' })
+                    chatAsync.fetchDelUserMessagesListAll()
+                    chatStore.getState().changeChatMessage([])
                   } else {
                     clearChats()
                   }
