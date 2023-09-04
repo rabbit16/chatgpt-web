@@ -58,13 +58,13 @@ function Global(props: Props) {
 
   useEffect(() => {
     async function init() {
-      console.log(123)
+      // console.log(123)
 
       // await chatStore.getState().getAllChatList({userId:userStore.getState().user_info?.data?.bodyMessage?.userId })
       let data = await getGPTListMessage({
         userId: userStore.getState().user_info?.data?.bodyMessage?.userId
       })
-      console.log(data, 123)
+      // console.log(data, 123)
       // if(data.code ===0 && data?.data.code==='0' && data?.data?.context_dict.length>0){
       //   chatStore.getState().getAllChatList({data:data?.data?.context_dict,id:data?.data?.context_dict[0].id})
       // }
@@ -78,7 +78,6 @@ function Global(props: Props) {
         value.path = value.id
         value.name = numList
       })
-      console.log(list,111);
       
       if (list.length<=0) {
         addChat()
@@ -98,7 +97,6 @@ function Global(props: Props) {
   useLayoutEffect(() => {
     onOpenNotifications()
   }, [notification])
-  console.log(loginModal)
 
   return (
     <>

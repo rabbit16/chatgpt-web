@@ -77,19 +77,18 @@ export function LoginCard(props: {
           }
           e.password = md5(e.password)
           delete e.passwordSecond
-          userAsync
-            .fetchRegister({...e})
-            .then((res: any) => {
-              console.log(res);
-              
-              if(res && res.data.statusCode===0){
-                message.success(res.data.statusInfo)
-              }else{
-                message.error(res.data.codeMsg)
-              }
-            }).catch((res)=>{
-              message.error('出现小问题请重试！')
-            })
+          let res = await userAsync.fetchRegister({...e})
+          if(res && res.data.statusCode===0){
+            message.success(res.data.statusInfo)
+            let datalogin =  await userAsync.fetchLogin({password: e.password,userId: e.telephone} as any)
+            console.log(datalogin);
+            
+          }else{
+            message.error(res.data.codeMsg)
+          }
+          props.onSuccess?.()
+          return await false
+
         } else {
           return new Promise((resolve, reject) => {
             e.password = md5(e.password)
