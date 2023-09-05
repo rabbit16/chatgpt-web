@@ -13,15 +13,12 @@
     "react"
   ],
   "scripts": {
-    "tsc": "tsc -p tsconfig.node.json",
-    "dev": "ts-node-dev --project tsconfig.node.json server/index.ts",
     "dev:web": "vite",
     "start": "node build/index.js",
     "build": "tsc -p tsconfig.node.json && vite build",
     "preview": "vite preview",
     "eslint": "eslint \"src/**/*.{ts,tsx}\" \"server/**/*.{ts,tsx}\"",
-    "eslint:fix": "eslint \"src/**/*.{ts,tsx}\" \"server/**/*.{ts,tsx}\" --fix",
-    "prepare": "husky install"
+    "eslint:fix": "eslint \"src/**/*.{ts,tsx}\" \"server/**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",

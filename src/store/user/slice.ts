@@ -31,7 +31,7 @@ export interface userState {
 
 const userStore = create<userState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       loginModal: false,
       user_info: undefined,
       token: undefined,
@@ -88,7 +88,7 @@ const userStore = create<userState>()(
     }),
     {
       name: 'user_storage', // name of item in the storage (must be unique)
-      storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
+      storage: createJSONStorage(() => sessionStorage) // (optional) by default the 'localStorage' is used
     }
   )
 )

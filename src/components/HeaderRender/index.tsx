@@ -61,17 +61,17 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
 
   return (
     <div className={styles.header}>
-      {/* {props.isMobile && props.hasSiderMenu && (
+      {props.isMobile && props.hasSiderMenu && (
         <MenuUnfoldOutlined
           className={styles.header__menuIcon}
           onClick={() => props.onCollapse?.(!props.collapsed)}
         />
-      )} */}
+      )}
       <div className={styles.header__logo}>
         {renderLogo}
         {!props.isMobile && <h1>{props.title}</h1>}
       </div>
-      {/* {!props.isMobile && <MenuList />} */}
+      {!props.isMobile && <MenuList />}
       <div className={styles.header__actives}>
         {token ? (
           <div
@@ -134,28 +134,10 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                   justifyContent: 'center'
                 }}
               >
-                {/* <Avatar src={user_info?.avatar} /> */}
-                
-                { (
-                  <span
-                    style={{
-                      fontSize: '20px',
-                      color: '#999',
-                      marginLeft: 4,
-                      display:'inline-block',
-                      backgroundColor:'#F2F2F2',
-                      width:'50px',
-                      height:'50px',
-                      overflow:'hidden',
-                      borderRadius:'20px'
-                      
-                    }}
-                  >
-                    {userStore.getState().user_info.data.bodyMessage.userName}
-                    {/* {getEmailPre('12312312312@123.com')} */}
-                    
-                  </span>
-                )}
+                <div className={styles.header__nameLogo}>
+                  {user_info?.data?.bodyMessage?.userName.slice(0,1)
+}
+                </div>
               </div>
             </Dropdown>
           </div>
