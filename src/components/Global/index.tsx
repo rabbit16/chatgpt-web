@@ -58,19 +58,10 @@ function Global(props: Props) {
 
   useEffect(() => {
     async function init() {
-      // console.log(123)
 
-      // await chatStore.getState().getAllChatList({userId:userStore.getState().user_info?.data?.bodyMessage?.userId })
       let data = await getGPTListMessage({
         userId: userStore.getState().user_info?.data?.bodyMessage?.userId
       })
-      // console.log(data, 123)
-      // if(data.code ===0 && data?.data.code==='0' && data?.data?.context_dict.length>0){
-      //   chatStore.getState().getAllChatList({data:data?.data?.context_dict,id:data?.data?.context_dict[0].id})
-      // }
-      //  if (data?.data?.context_dict.length <= 0 ) {
-      //       addChat()
-      // }
       let list = data?.data?.context_dict || []
       list.forEach((value:any)=>{
         let numList = value.data.filter((value:any)=>value.role==='user')

@@ -3,12 +3,12 @@ import chatStore from './slice'
 import userStore from '../user/slice'
 
 async function fetchChatMessages() {
-  const res = await getUserMessages()
-  if (!res.code) {
-    chatStore.getState().changeChatMessage(res.data)
-    chatStore.getState().addChat()
-  }
-  return res
+  // const res = await getUserMessages()
+  // if (!res.code) {
+  //   chatStore.getState().changeChatMessage(res.data)
+  //   chatStore.getState().addChat()
+  // }
+  return null
 }
 
 async function fetchDelUserMessages(params: { id?: string | number; type: string }) {

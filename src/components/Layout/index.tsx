@@ -82,7 +82,6 @@ console.log(website_logo, website_title, website_footer, website_description, we
         render: (p, dom) => <>{dom}</>
       }}
       menuFooterRender={(p) => {
-        console.log(p,'p');
         
         return (
           <div>

@@ -25,14 +25,14 @@ export async function fetchRegister(params: Register) {
 
 // 获取用户信息
 export async function fetchUserInfo() {
-  const response = await getUserInfo()
-  if (!response.code) {
-    userStore.getState().login({
-      token: userStore.getState().token,
-      user_info: response.data
-    })
-  }
-  return response
+  // const response = await getUserInfo()
+  // if (!response.code) {
+  //   userStore.getState().login({
+  //     token: userStore.getState().token,
+  //     user_info: response.data
+  //   })
+  // }
+  return null
 }
 
 // 重置用户密码

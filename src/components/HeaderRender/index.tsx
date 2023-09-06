@@ -60,114 +60,115 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   }
 
   return (
-    <div className={styles.header}>
-      {props.isMobile && props.hasSiderMenu && (
-        <MenuUnfoldOutlined
-          className={styles.header__menuIcon}
-          onClick={() => props.onCollapse?.(!props.collapsed)}
-        />
-      )}
-      <div className={styles.header__logo}>
-        {renderLogo}
-        {!props.isMobile && <h1>{props.title}</h1>}
-      </div>
-      {!props.isMobile && <MenuList />}
-      <div className={styles.header__actives}>
-        {token ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Dropdown
-              arrow
-              placement="bottomRight"
-              trigger={['click']}
-              menu={{
-                items: [
-                  // {
-                  //   key: 'yonghuzhongxin',
-                  //   icon: <UserOutlined />,
-                  //   label: '用户中心',
-                  //   onClick: () => {
-                  //     navigate('/user')
-                  //   }
-                  // },
-                  // {
-                  //   key: 'wodeyue',
-                  //   icon: <PayCircleOutlined />,
-                  //   label: '我的余额',
-                  //   onClick: () => {
-                  //     navigate('/shop')
-                  //   }
-                  // },
-                  // {
-                  //   key: 'xiaofeijilu',
-                  //   icon: <ReconciliationOutlined />,
-                  //   label: '消费记录',
-                  //   onClick: () => {
-                  //     navigate('/shop')
-                  //   }
-                  // },
-                  {
-                    key: 'tuichudenglu',
-                    icon: <LogoutOutlined />,
-                    label: '退出登录',
-                    onClick: () => {
-                      window.localStorage.removeItem('user_storage')
-                      // localStorage.clear();
+//     <div className={styles.header}>
+//       {props.isMobile && props.hasSiderMenu && (
+//         <MenuUnfoldOutlined
+//           className={styles.header__menuIcon}
+//           onClick={() => props.onCollapse?.(!props.collapsed)}
+//         />
+//       )}
+//       <div className={styles.header__logo}>
+//         {renderLogo}
+//         {!props.isMobile && <h1>{props.title}</h1>}
+//       </div>
+//       {!props.isMobile && <MenuList />}
+//       <div className={styles.header__actives}>
+//         {token ? (
+//           <div
+//             style={{
+//               display: 'flex',
+//               alignItems: 'center',
+//               justifyContent: 'center'
+//             }}
+//           >
+//             <Dropdown
+//               arrow
+//               placement="bottomRight"
+//               trigger={['click']}
+//               menu={{
+//                 items: [
+//                   // {
+//                   //   key: 'yonghuzhongxin',
+//                   //   icon: <UserOutlined />,
+//                   //   label: '用户中心',
+//                   //   onClick: () => {
+//                   //     navigate('/user')
+//                   //   }
+//                   // },
+//                   // {
+//                   //   key: 'wodeyue',
+//                   //   icon: <PayCircleOutlined />,
+//                   //   label: '我的余额',
+//                   //   onClick: () => {
+//                   //     navigate('/shop')
+//                   //   }
+//                   // },
+//                   // {
+//                   //   key: 'xiaofeijilu',
+//                   //   icon: <ReconciliationOutlined />,
+//                   //   label: '消费记录',
+//                   //   onClick: () => {
+//                   //     navigate('/shop')
+//                   //   }
+//                   // },
+//                   {
+//                     key: 'tuichudenglu',
+//                     icon: <LogoutOutlined />,
+//                     label: '退出登录',
+//                     onClick: () => {
+//                       window.localStorage.removeItem('user_storage')
+//                       // localStorage.clear();
 
-                      logout()
-                      clearChats()
-                      navigate('/login')
-                    }
-                  }
-                ]
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <div className={styles.header__nameLogo}>
-                  {user_info?.data?.bodyMessage?.userName.slice(0,1)
-}
-                </div>
-              </div>
-            </Dropdown>
-          </div>
-        ) : (
-          <Button
-            type="primary"
-            onClick={() => {
-              setLoginModal(true)
-            }}
-          >
-            登录 / 注册
-          </Button>
-        )}
-        {props.isMobile && (
-          <Dropdown
-            arrow
-            placement="bottomRight"
-            destroyPopupOnHide
-            trigger={['click']}
-            dropdownRender={() => {
-              return <MenuList mode="inline" />
-            }}
-          >
-            <div className={styles.header__actives_menu}>
-              <AppstoreOutlined />
-            </div>
-          </Dropdown>
-        )}
-      </div>
-    </div>
+//                       logout()
+//                       clearChats()
+//                       navigate('/login')
+//                     }
+//                   }
+//                 ]
+//               }}
+//             >
+//               <div
+//                 style={{
+//                   display: 'flex',
+//                   alignItems: 'center',
+//                   justifyContent: 'center'
+//                 }}
+//               >
+//                 <div className={styles.header__nameLogo}>
+//                   {user_info?.data?.bodyMessage?.userName.slice(0,1)
+// }
+//                 </div>
+//               </div>
+//             </Dropdown>
+//           </div>
+//         ) : (
+//           <Button
+//             type="primary"
+//             onClick={() => {
+//               setLoginModal(true)
+//             }}
+//           >
+//             登录 / 注册
+//           </Button>
+//         )}
+//         {props.isMobile && (
+//           <Dropdown
+//             arrow
+//             placement="bottomRight"
+//             destroyPopupOnHide
+//             trigger={['click']}
+//             dropdownRender={() => {
+//               return <MenuList mode="inline" />
+//             }}
+//           >
+//             <div className={styles.header__actives_menu}>
+//               <AppstoreOutlined />
+//             </div>
+//           </Dropdown>
+//         )}
+//       </div>
+//     </div>
+13
   )
 }
 

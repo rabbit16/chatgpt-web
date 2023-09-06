@@ -56,12 +56,12 @@ function ChatPage() {
     }
   }, [scrollRef.current, selectChatId, chats])
 
-  useEffect(() => {
-    if (token) {
-      chatAsync.fetchChatMessages()
-      pluginAsync.fetchGetPlugin()
-    }
-  }, [token])
+  // useEffect(() => {
+  //   if (token) {
+  //     chatAsync.fetchChatMessages()
+  //     pluginAsync.fetchGetPlugin()
+  //   }
+  // }, [token])
 
   // 当前聊天记录
   const chatMessages = useMemo(() => {
