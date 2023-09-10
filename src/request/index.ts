@@ -155,8 +155,6 @@ const request = <T>(
       }, timeout)
     })
   }
-  console.log(options);
-  
   // 发送请求
   const fetchPromise: Promise<ResponseData<T>> = new Promise((resolve, reject) => {
     fetch(url, options)
@@ -331,10 +329,22 @@ const postStreams = async <T>(
   return response
 }
 
+const gptPost = async (url:any,params:any,options:any)=>{
+  return await fetch(getBaseUrl(url),{
+    method:'post',
+    headers:{
+      token: userStore.getState().token,
+      'Content-Type':'application/json',
+    } as any,
+    body:JSON.stringify(params),
+    signal:options
+  })
+}
 export default {
   get,
   post,
   put,
   del,
+  gptPost,
   postStreams
 }

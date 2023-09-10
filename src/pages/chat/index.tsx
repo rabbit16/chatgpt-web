@@ -32,6 +32,7 @@ function ChatPage() {
   const { scrollToBottomIfAtBottom, scrollToBottom } = useScroll(scrollRef.current)
   const { token, setLoginModal } = userStore()
   const { config, models, changeConfig, setConfigModal } = configStore()
+  const  clearLoading  = useRef(false)
   const {
     chats,
     addChat,
@@ -122,21 +123,22 @@ function ChatPage() {
           withoutContext:false,
           prompt:requestOptions.prompt,
           userId:userStore.getState().user_info?.data?.bodyMessage?.userId 
-        }, {
-        options: {
+        }, 
           signal
-        }
-      })
+      )
       console.log(response,'response');
+      let data = await response.json()
+      
       setChatDataInfo(selectChatId, assistantMessageId, {
         status: 'pass',
-        text: `${response?.data?.gptResult[0]?.gpt}`
+        text: `${data?.gptResult[0]?.gpt}`
       })
     }catch(e){
       console.log(e,'eee');
+      debugger
       setChatDataInfo(selectChatId, assistantMessageId, {
         status: 'pass',
-        text: `请求超时请重试`
+        text: clearLoading?"已取消":`请求超时请重试`
       })
       
     }
@@ -230,10 +232,8 @@ function ChatPage() {
       setLoginModal(true)
       return
     }
-    console.log(chats);
     
     const selectChat = chats.filter((c) => c.id === selectChatId)[0]
-    console.log(selectChat,selectChatId);
     
     const parentMessageId = refurbishOptions?.requestOptions.parentMessageId || selectChat.id
     let userMessageId = generateUUID()
@@ -274,7 +274,7 @@ function ChatPage() {
         requestOptions
       })
     }
-
+    clearLoading.current = false
     const controller = new AbortController()
     const signal = controller.signal
     setFetchController(controller)
@@ -285,7 +285,6 @@ function ChatPage() {
       assistantMessageId
     })
   }
-  // console.log(chats,'chats','chatMessages',chatMessages);
   
   return (
     <div className={styles.chatPage}>
@@ -296,12 +295,9 @@ function ChatPage() {
           routes: chats
         }}
         menuDataRender={(item) => {
-          console.log(item,'item');
-          
           return item
         }}
         menuItemRender={(item, dom) => {
-          // console.log(item,dom)
           return (
           <MessageItem
             id = {item.id}
@@ -309,13 +305,11 @@ function ChatPage() {
             isPersona={!!item.persona_id}
             name={item.name}
             onConfirm={() => {
-              // chatAsync.fetchDelUserMessages({ id: item.id, type: 'del' })
               chatAsync.fetchDelUserMessagesList({id:item.id})
             }}
           />
         )}}
         menuFooterRender={(props) => {
-          //   if (props?.collapsed) return undefined;
           return (
             <Space direction="vertical" style={{ width: '100%' }}>
               <Select
@@ -421,6 +415,7 @@ function ChatPage() {
                 // 结束
                 setFetchController((c) => {
                   c?.abort()
+                  clearLoading.current = true;
                   return null
                 })
               }}

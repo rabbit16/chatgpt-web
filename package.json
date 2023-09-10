@@ -13,8 +13,7 @@
     "react"
   ],
   "scripts": {
-    "dev:web": "vite",
-    "start": "node build/index.js",
+    "start": "vite",
     "build": "tsc -p tsconfig.node.json && vite build",
     "preview": "vite preview",
     "eslint": "eslint \"src/**/*.{ts,tsx}\" \"server/**/*.{ts,tsx}\"",

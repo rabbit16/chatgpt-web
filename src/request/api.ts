@@ -58,7 +58,7 @@ export function getUserInfo() {
 export function postChatCompletions(
   params: any,option:any
 ) {
-  return request.post('/user/gpt/ask',params,[['a','b']],option)
+  return request.gptPost('/user/gpt/ask',params,option)
   // return request.postStreams<Response>('/api/chat/completions', params, config)
 }
 
@@ -189,8 +189,8 @@ export function getPlugin(){
 	return request.get<Array<PluginInfo>>('/api/plugin')
 }
 // 问gpt
-export function gptAsk(params:any){
-  return request.post('/user/gpt/ask',params)
+export function gptAsk(params:any,option:any){
+  return request.gptPost('/user/gpt/ask',params,option)
 }
 // 安装插件
 export function putInstalledPlugin(id: string | number){
