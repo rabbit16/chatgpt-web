@@ -95,14 +95,14 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                   //     navigate('/user')
                   //   }
                   // },
-                  // {
-                  //   key: 'wodeyue',
-                  //   icon: <PayCircleOutlined />,
-                  //   label: '我的余额',
-                  //   onClick: () => {
-                  //     navigate('/shop')
-                  //   }
-                  // },
+                  {
+                    key: 'wodeyue',
+                    icon: <PayCircleOutlined />,
+                    label: '我的钱包',
+                    onClick: () => {
+                      navigate('/shop')
+                    }
+                  },
                   // {
                   //   key: 'xiaofeijilu',
                   //   icon: <ReconciliationOutlined />,

@@ -11,14 +11,11 @@ import { getUserTurnover, postPayPrecreate, postUseCarmi } from '@/request/api'
 import { ProductInfo, TurnoverInfo } from '@/types'
 import OpenAiLogo from '@/components/OpenAiLogo'
 import { Link } from 'react-router-dom'
+import {getAliPayPage}from '../../request/api'
 
 function GoodsPay() {
-  const { goodsList, payTypes } = shopStore()
-  const { token, user_info } = userStore()
-  const { shop_introduce } = configStore()
-
-  const [goods, setGoods] = useState<ProductInfo>()
-  const [payType, setPayType] = useState('')
+  const { token, user_info } = userStore();
+  const [payAmount,setPayAmount] = useState(10);
 
   const payInfo: {
     [key: string]: {
@@ -72,8 +69,8 @@ function GoodsPay() {
   })
 
   useEffect(() => {
-    shopAsync.fetchProduct()
-    onTurnoverLog(turnover.page, turnover.pageSize)
+    // shopAsync.fetchProduct()
+    // onTurnoverLog(turnover.page, turnover.pageSize)
   }, [])
 
   function onTurnoverLog(page: number, pageSize: number) {
@@ -105,33 +102,22 @@ function GoodsPay() {
     setPayModal((p) => ({ ...p, status: 'pay', ...payres.data }))
   }
 
-  function onPayResult() {
-    // 刷新记录
-    onTurnoverLog(1, turnover.pageSize)
-    // 刷新用户信息
-    // fetchUserInfo()
-    setPayModal((p) => ({ ...p, status: 'loading', open: false }))
-  }
 
   const [carmiLoading, setCarmiLoading] = useState(false)
-
-  function useCarmi(carmi: string) {
-    if (!carmi) {
-      message.warning('请输入卡密')
-      return
+  const getPostMoney=()=>{
+    const params = {
+      money:payAmount,
+      userId:user_info?.data?.bodyMessage?.userId,
+      function_code:'chatGpt'
     }
-    setCarmiLoading(true)
-    postUseCarmi({ carmi })
-      .then((res) => {
-        if (res.code) return
-        userAsync.fetchUserInfo()
-        message.success(res.message)
-        onTurnoverLog(1, turnover.pageSize)
-      })
-      .finally(() => {
-        setCarmiLoading(false)
-      })
+    getAliPayPage(params).then((res)=>{
+      const data = res.data?.payUrl;
+      console.log(res,data);
+      
+      window.open(data,'_self')
+    })
   }
+
 
   if (!token) {
     return (
@@ -161,78 +147,20 @@ function GoodsPay() {
               <h4>卡密充值</h4>
               <Input.Search
                 loading={carmiLoading}
-                placeholder="请输入充值卡密"
+                placeholder="请输入充值金额"
                 allowClear
                 enterButton="充值"
                 size="large"
                 bordered
-                onSearch={useCarmi}
+                onChange={(e:any)=>{
+                  console.log(e);
+                  
+                }}
+                value={payAmount}
+                onSearch={getPostMoney}
               />
             </div>
-            {shop_introduce && (
-              <div className={styles.goodsPay_card}>
-                <h4>商品说明</h4>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: shop_introduce
-                  }}
-                />
-              </div>
-            )}
-            {goodsList.length > 0 && (
-              <div className={styles.goodsPay_card}>
-                <h4>在线充值</h4>
-                <GoodsList
-                  list={goodsList}
-                  onChange={(item) => {
-                    setGoods(item)
-                  }}
-                />
-                <div className={styles.goodsPay_pay}>
-                  <Radio.Group
-                    onChange={(e) => {
-                      setPayType(e.target.value)
-                    }}
-                  >
-                    <Space size="middle" wrap>
-                      {payTypes.map((type) => {
-                        return (
-                          <div
-                            key={type.key}
-                            className={styles.goodsPay_pay_type}
-                            style={{
-                              borderColor: type.key === payType ? '#1677ff' : '#999'
-                            }}
-                          >
-                            <Radio value={type.key}>
-                              <img src={type.icon} alt={type.title} />
-                            </Radio>
-                          </div>
-                        )
-                      })}
-                    </Space>
-                  </Radio.Group>
-                  <Button
-                    size="large"
-                    style={{
-                      marginLeft: 'auto'
-                    }}
-                    type="primary"
-                    disabled={!(goods?.id && payType)}
-                    onClick={() => {
-                      if (goods && goods.id && payType) {
-                        onPay(goods, payType)
-                      } else {
-                        message.warning('请选择商品和支付方式')
-                      }
-                    }}
-                  >
-                    立即充值
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div className={styles.goodsPay_card}>
+            {/* <div className={styles.goodsPay_card}>
               <h4
                 onClick={() => {
                   onTurnoverLog(1, turnover.pageSize)
@@ -282,85 +210,8 @@ function GoodsPay() {
                   hideOnSinglePage
                 />
               </div>
-            </div>
+            </div> */}
           </Space>
-
-          <Modal
-            open={payModal.open}
-            onCancel={() => {
-              // 关闭
-              setPayModal({
-                open: false,
-                status: 'loading'
-              })
-            }}
-            footer={null}
-            width={320}
-          >
-            <div className={styles.payModal}>
-              {payModal.status === 'fail' && <CloseCircleFilled className={styles.payModal_icon} />}
-              {payModal.status === 'loading' && <OpenAiLogo rotate width="3em" height="3em" />}
-              {payModal.status === 'pay' && payType && (
-                <img
-                  className={styles.payModal_paylogo}
-                  src={payInfo[payType].icon}
-                  alt=""
-                  srcSet=""
-                />
-              )}
-
-              {payModal.status === 'pay' && payModal.pay_url && payType && (
-                <Link to={payModal.pay_url} target="_blank">
-                  <QRCode
-                    value={payModal.pay_url}
-                    color={payInfo[payType].color}
-                    style={{
-                      marginTop: 16
-                    }}
-                  />
-                </Link>
-              )}
-
-              {payType && (
-                <div className={styles.payModal_message}>
-                  {payModal.status === 'fail' ? (
-                    <p>创建订单失败，请重新尝试</p>
-                  ) : payModal.status === 'pay' && payInfo && goods ? (
-                    <p>
-                      <span>{(goods?.price / 100).toFixed(2)}元</span>
-                      <br />
-                      {payInfo[payType].message}
-                    </p>
-                  ) : (
-                    <p>正在创建订单中...</p>
-                  )}
-                </div>
-              )}
-
-              <div className={styles.payModal_button}>
-                {payModal.status === 'pay' && (
-                  <Space>
-                    <Button
-                      danger
-                      onClick={() => {
-                        onPayResult()
-                      }}
-                    >
-                      取消支付
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        onPayResult()
-                      }}
-                    >
-                      支付完成了
-                    </Button>
-                  </Space>
-                )}
-              </div>
-            </div>
-          </Modal>
         </div>
       </Layout>
     </div>

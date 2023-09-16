@@ -24,8 +24,8 @@ export interface userState {
   withdrawal_records: TableData<InvitationRecordInfo>
   changeRecords: (data: TableData<any>, type: string | number) => void
   changeUserCurrentAmount: (amount?: number) => void
-  upglobal:number,
-  upDataGlobal:Function
+  upglobal: number,
+  upDataGlobal: Function
 
 }
 
@@ -42,8 +42,8 @@ const userStore = create<userState>()(
         count: 0,
         rows: []
       },
-      upglobal:1,
-      upDataGlobal:()=>set(()=>({upglobal:Math.random()})),
+      upglobal: 1,
+      upDataGlobal: () => set(() => ({ upglobal: Math.random() })),
       consume_records: {
         count: 0,
         rows: []
@@ -88,9 +88,9 @@ const userStore = create<userState>()(
     }),
     {
       name: 'user_storage', // name of item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage) // (optional) by default the 'localStorage' is used
+      storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
     }
   )
 )
-export const tokenUser= userStore
+export const tokenUser = userStore
 export default userStore

@@ -36,7 +36,7 @@ function correctHeaders(
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
   }
   if ((method === 'POST' || method === 'PUT') && !headers['Content-Type']) {
-    headers['Content-Type'] = 'application/json'
+    headers['Content-Type'] = 'application/json; charset=UTF-8'
   }
   return headers
 }

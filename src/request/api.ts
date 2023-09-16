@@ -24,6 +24,10 @@ import request from '.'
 import { formatTime } from '@/utils'
 import { TableData } from '@/types/admin'
 
+// 获取支付链接页面:姜昊良
+export function getAliPayPage(params:{userId:string,money:number,function_code:string}){
+  return request.post('/user/pay',params)
+}
 // 获取验证码
 export function getCode(params: { source: string }) {
   return request.get('/api/send_sms', params)
