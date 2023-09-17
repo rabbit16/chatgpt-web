@@ -25,7 +25,7 @@ import { formatTime } from '@/utils'
 import { TableData } from '@/types/admin'
 // 用户基本信息
 export function userBillInfo(params:{userId:string}){
-  return request.post('/user/get_user_info',)
+  return request.post('/user/get_user_info',params)
 }
 // 获取支付账单:姜昊良
 export function userBillList(params:{userId:number,page:number,page_num:number}){
