@@ -36,8 +36,10 @@ function GoodsPay() {
   }
   useEffect(()=>{
     userBillInfo({userId:user_info?.data?.bodyMessage?.userId}).then((res)=>{
+      console.log(res);
       if(res.code===0){
-
+        console.log(res);
+        setAskNum(res.data.userMessage.token)
       }
     })
   },[])
@@ -49,6 +51,8 @@ function GoodsPay() {
         page_num:tableObj.pageSize
       }
       let res = await userBillList(params);
+      console.log(res);
+      
       if(res?.code === 0){
         setBillList(res.data.user_bill_list)
         setListTotal(res.data.totalNum)
@@ -81,7 +85,7 @@ function GoodsPay() {
         <div className={styles.goodsPay_container}>
           <Space direction="vertical" style={{ width: '100%' }}>
             {/* 用户信息 */}
-            <UserInfoCard info={user_info} data={{num:listTotal,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
+            <UserInfoCard info={user_info} data={{num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
               <h4>卡密充值</h4>
