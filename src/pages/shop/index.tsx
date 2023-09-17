@@ -92,7 +92,7 @@ function GoodsPay() {
               <Input.Search
                 loading={false}
                 placeholder="请输入充值金额"
-                allowClear
+                // allowClear
                 enterButton="充值"
                 size="large"
                 bordered
