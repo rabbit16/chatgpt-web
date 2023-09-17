@@ -29,13 +29,15 @@ async function fetchDelUserMessages(params: { id?: string | number; type: string
 // }
 async function fetchDelUserMessagesList(params:{id:string}) {
  let res:any = await delGPTListMessage({userId:userStore.getState().user_info?.data?.bodyMessage?.userId as number,chat_id:params.id})
-  if(res?.data?.code === 0){
+  
+ if(res?.data?.code === '0'){
     userStore.getState().upDataGlobal()
   }  
 }
 async function fetchDelUserMessagesListAll() {
   let res:any = await delGPTListAll({userId:userStore.getState().user_info?.data?.bodyMessage?.userId as number})
-   if(res?.data?.code === 0){
+  
+  if(res?.data?.code === '0'){
      userStore.getState().upDataGlobal()
    }  
  }
