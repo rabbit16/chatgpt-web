@@ -23,7 +23,21 @@ import {
 import request from '.'
 import { formatTime } from '@/utils'
 import { TableData } from '@/types/admin'
-
+// 用户基本信息
+export function userBillInfo(params:{userId:string}){
+  return request.post('/user/get_user_info',)
+}
+// 获取支付账单:姜昊良
+export function userBillList(params:{userId:number,page:number,page_num:number}){
+  return request.post('/user/user_bill_list',params)
+}
+// 获取gpt模型列表:姜昊良
+export function getFunctionList(){
+  return request.post('/user/function_list')
+}
+export function getModelList(){
+  return request.post('/user/mode_list')
+}
 // 获取支付链接页面:姜昊良
 export function getAliPayPage(params:{userId:string,money:number,function_code:string}){
   return request.post('/user/pay',params)
@@ -32,23 +46,23 @@ export function getAliPayPage(params:{userId:string,money:number,function_code:s
 export function getCode(params: { source: string }) {
   return request.get('/api/send_sms', params)
 }
-// 获取记录chat列表
+// 获取记录chat列表：姜昊良
 export function getGPTListMessage(params:{userId:number}){
   return request.post('/user/getContextList',params)
 }
-// 删除gpt列表的某一项
+// 删除gpt列表的某一项：姜昊良
 export function delGPTListMessage(params:{userId:number,chat_id:string}){
   return request.post('/user/deleteChat',params)
 }
-// 删除gpt列表
+// 删除gpt列表：姜昊良
 export function delGPTListAll(params:{userId:number}){
   return request.post('/user/deleteAllChat',params)
 }
-// 登陆/apiAI
+// 登陆/apiAI：姜昊良
 export function postLogin(params: Login) {
   return request.post('/user/verify', params)
 }
-// 注册
+// 注册：姜昊良
 export function postRegister(params: Register) {
   return request.post('/user/register', params)
 }
@@ -58,7 +72,7 @@ export function getUserInfo() {
   return request.get<UserInfo>('/api/user/info')
 }
 
-// 请求对话
+// 请求对话:姜昊良
 export function postChatCompletions(
   params: any,option:any
 ) {

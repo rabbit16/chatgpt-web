@@ -30,35 +30,6 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
     return <>{props.logo}</>
   }, [props.logo])
 
-  useEffect(() => {
-    onRefreshBalance()
-  }, [token])
-
-  const [balance, setBalance] = useState<{
-    number: string | number
-    loading: boolean
-  }>({
-    number: 0,
-    loading: false
-  })
-
-  function onRefreshBalance() {
-    setBalance((b) => ({ ...b, loading: true }))
-    if (token) {
-      // 获取用户信息
-      fetchUserInfo()
-        .then((res) => {
-          if (res.code) return
-          setBalance((b) => ({ ...b, number: res.data.integral, loading: false }))
-        })
-        .finally(() => {
-          setBalance((b) => ({ ...b, loading: false }))
-        })
-    } else {
-      setBalance((b) => ({ ...b, loading: false }))
-    }
-  }
-
   return (
     <div className={styles.header}>
       {props.isMobile && props.hasSiderMenu && (

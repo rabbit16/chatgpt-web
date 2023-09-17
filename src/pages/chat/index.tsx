@@ -122,11 +122,11 @@ function ChatPage() {
           contextId:chatStore.getState().selectChatId,
           withoutContext:false,
           prompt:requestOptions.prompt,
-          userId:userStore.getState().user_info?.data?.bodyMessage?.userId 
+          userId:userStore.getState().user_info?.data?.bodyMessage?.userId,
+          mode:configStore.getState().config.model
         }, 
           signal
       )
-      console.log(response,'response');
       let data = await response.json()
       
       setChatDataInfo(selectChatId, assistantMessageId, {
@@ -134,8 +134,6 @@ function ChatPage() {
         text: `${data?.gptResult[0]?.gpt}`
       })
     }catch(e){
-      console.log(e,'eee');
-      debugger
       setChatDataInfo(selectChatId, assistantMessageId, {
         status: 'pass',
         text: clearLoading?"已取消":`请求超时请重试`
@@ -310,6 +308,8 @@ function ChatPage() {
           />
         )}}
         menuFooterRender={(props) => {
+          console.log(config,models,props);
+          
           return (
             <Space direction="vertical" style={{ width: '100%' }}>
               <Select
@@ -350,16 +350,6 @@ function ChatPage() {
             </Space>
           )
         }}
-        // menuProps={{
-        //   onClick: (r) => {
-        //     console.log(r,selectChatId,'selectChatId');
-            
-        //     const id = r.key.replace('/', '')
-        //     if (selectChatId !== id) {
-        //       changeSelectChatId(id)
-        //     }
-        //   }
-        // }}
       >
         <div className={styles.chatPage_container}>
           {

@@ -7,7 +7,7 @@ import { Button, Input, Modal, Pagination, QRCode, Radio, Space, Table, message 
 import GoodsList from '@/components/GoodsList'
 import { CloseCircleFilled, SyncOutlined } from '@ant-design/icons'
 import { shopAsync, userAsync } from '@/store/async'
-import { getUserTurnover, postPayPrecreate, postUseCarmi } from '@/request/api'
+import { getUserTurnover, postPayPrecreate, postUseCarmi,userBillList,userBillInfo } from '@/request/api'
 import { ProductInfo, TurnoverInfo } from '@/types'
 import OpenAiLogo from '@/components/OpenAiLogo'
 import { Link } from 'react-router-dom'
@@ -16,94 +16,13 @@ import {getAliPayPage}from '../../request/api'
 function GoodsPay() {
   const { token, user_info } = userStore();
   const [payAmount,setPayAmount] = useState(10);
-
-  const payInfo: {
-    [key: string]: {
-      icon: string
-      message: string
-      color: string
-    }
-  } = {
-    wxpay: {
-      icon: 'https://u1.dl0.cn/icon/wxpay_icon.png',
-      message: '请使用微信扫码支付',
-      color: '#24aa39'
-    },
-    alipay: {
-      icon: 'https://u1.dl0.cn/icon/alipay_icon.png',
-      message: '请使用支付宝扫码支付',
-      color: '#1678ff'
-    },
-    qqpay: {
-      icon: 'https://u1.dl0.cn/icon/qqpay_icon.png',
-      message: '请使用QQ扫码支付',
-      color: '#10b8f6'
-    }
-  }
-
-  const [turnover, setTurnover] = useState<{
-    page: number
-    pageSize: number
-    loading: boolean
-    rows: Array<TurnoverInfo>
-    count: number
-  }>({
-    page: 1,
-    pageSize: 10,
-    loading: false,
-    rows: [],
-    count: 1
+  const [billList,setBillList] = useState([]);
+  const [tableObj,setTableObj] = useState({
+    current:1,
+    pageSize:5,
   })
-
-  const [payModal, setPayModal] = useState<{
-    open: boolean
-    status: 'loading' | 'fail' | 'pay'
-    order_id?: string
-    pay_url?: string
-    pay_key?: string
-  }>({
-    open: false,
-    status: 'pay',
-    order_id: '',
-    pay_url: 'sdsgsdgsdg'
-  })
-
-  useEffect(() => {
-    // shopAsync.fetchProduct()
-    // onTurnoverLog(turnover.page, turnover.pageSize)
-  }, [])
-
-  function onTurnoverLog(page: number, pageSize: number) {
-    setTurnover((l) => ({ ...l, page, pageSize, loading: true }))
-    getUserTurnover({
-      page: page,
-      page_size: pageSize
-    })
-      .then((res) => {
-        if (res.code) return
-        setTurnover((l) => ({ ...l, page, ...res.data, loading: false }))
-      })
-      .finally(() => {
-        setTurnover((l) => ({ ...l, page, loading: false }))
-      })
-  }
-
-  async function onPay(item: ProductInfo, pay_type: string) {
-    setPayModal((p) => ({ ...p, open: true }))
-    const payres = await postPayPrecreate({
-      pay_type,
-      product_id: item.id,
-      quantity: 1
-    })
-    if (payres.code) {
-      setPayModal((p) => ({ ...p, status: 'fail' }))
-      return
-    }
-    setPayModal((p) => ({ ...p, status: 'pay', ...payres.data }))
-  }
-
-
-  const [carmiLoading, setCarmiLoading] = useState(false)
+  const [askNum,setAskNum]=useState(0);
+  const [listTotal,setListTotal] = useState(0);
   const getPostMoney=()=>{
     const params = {
       money:payAmount,
@@ -112,11 +31,33 @@ function GoodsPay() {
     }
     getAliPayPage(params).then((res)=>{
       const data = res.data?.payUrl;
-      console.log(res,data);
-      
       window.open(data,'_self')
     })
   }
+  useEffect(()=>{
+    userBillInfo({userId:user_info?.data?.bodyMessage?.userId}).then((res)=>{
+      if(res.code===0){
+
+      }
+    })
+  },[])
+  useEffect(() => {
+    async function fetchUserBillList() {
+      const params = {
+        page:tableObj.current,
+        userId:Number(user_info?.data?.bodyMessage?.userId),
+        page_num:tableObj.pageSize
+      }
+      let res = await userBillList(params);
+      if(res?.code === 0){
+        setBillList(res.data.user_bill_list)
+        setListTotal(res.data.totalNum)
+      }
+    }
+    fetchUserBillList()
+  }, [tableObj])
+
+
 
 
   if (!token) {
@@ -134,83 +75,85 @@ function GoodsPay() {
       </div>
     )
   }
-
   return (
     <div className={styles.goodsPay}>
       <Layout>
         <div className={styles.goodsPay_container}>
           <Space direction="vertical" style={{ width: '100%' }}>
             {/* 用户信息 */}
-            <UserInfoCard info={user_info} />
+            <UserInfoCard info={user_info} data={{num:listTotal,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
               <h4>卡密充值</h4>
               <Input.Search
-                loading={carmiLoading}
+                loading={false}
                 placeholder="请输入充值金额"
                 allowClear
                 enterButton="充值"
                 size="large"
                 bordered
                 onChange={(e:any)=>{
-                  console.log(e);
-                  
+                  let data = e.target.value;
+                  data = data.match(/[0-9]*/g);
+                  data = data.join().length!==0?Number(data.join('')):''
+                  setPayAmount(data)
                 }}
                 value={payAmount}
                 onSearch={getPostMoney}
               />
             </div>
-            {/* <div className={styles.goodsPay_card}>
+            <div className={styles.goodsPay_card}>
               <h4
                 onClick={() => {
-                  onTurnoverLog(1, turnover.pageSize)
+                  // onTurnoverLog(1, turnover.pageSize)
                 }}
               >
-                订单记录 <SyncOutlined spin={turnover.loading} />
+                订单记录 <SyncOutlined spin={false} />
               </h4>
-              <Table<TurnoverInfo>
+              <Table
                 scroll={{
                   x: 800
                 }}
                 bordered
-                loading={turnover.loading}
-                dataSource={turnover.rows}
+                loading={false}
+                dataSource={billList}
                 pagination={false}
                 rowKey="id"
                 columns={[
                   {
-                    title: '描述',
-                    dataIndex: 'describe',
-                    key: 'describe'
+                    title: '单号',
+                    dataIndex: 'bill_id',
+                    key: 'bill_id'
                   },
                   {
-                    title: '额度',
-                    key: 'value',
-                    render: (data) => {
-                      return <a key={data.value}>{data.value}</a>
-                    }
+                    title: '模型',
+                    key: 'function_name',
+                    dataIndex:'function_name'
                   },
                   {
                     title: '日期',
-                    dataIndex: 'create_time',
-                    key: 'create_time'
+                    dataIndex: 'generate_time',
+                    key: 'generate_time'
+                  },{
+                    title:'金额',
+                    dataIndex:'pay',
+                    key:'pay'
                   }
                 ]}
               />
               <div className={styles.goodsPay_pagination}>
                 <Pagination
                   size="small"
-                  current={turnover.page}
-                  defaultCurrent={turnover.page}
-                  defaultPageSize={turnover.pageSize}
-                  total={turnover.count}
+                  current={tableObj.current}
+                  pageSize={tableObj.pageSize}
+                  total={listTotal}
                   onChange={(current, pageSize) => {
-                    onTurnoverLog(current, pageSize)
+                    console.log(current, pageSize);
+                    setTableObj({current,pageSize})
                   }}
-                  hideOnSinglePage
                 />
               </div>
-            </div> */}
+            </div>
           </Space>
         </div>
       </Layout>

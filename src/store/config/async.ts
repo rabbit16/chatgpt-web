@@ -1,4 +1,4 @@
-import { getConfig } from '@/request/api'
+import { getConfig,getModelList } from '@/request/api'
 import configStore from './slice'
 
 async function fetchConfig() {
@@ -8,7 +8,19 @@ async function fetchConfig() {
   }
   return res
 }
+async function fetchGetModelList() {
+  const res = await getModelList();
+  console.log(res);
+  
+  let data = res?.data?.modeList?.map((value:any)=>({value:value.mode,label:value.mode}))
+  if(data.length>0){
+    configStore.getState().upModelsData(data);
+    configStore.getState().changeConfig({model:data[0].value})
+  }
+
+}
 
 export default {
-  fetchConfig
+  fetchConfig,
+  fetchGetModelList
 }

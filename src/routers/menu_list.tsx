@@ -51,12 +51,12 @@ const web = [
   //   icon: <RadarChartOutlined />,
   //   message: '利用智能AI生成思维导图'
   // },
-  // {
-  //   path: '/shop',
-  //   name: '商城',
-  //   icon: <ShopOutlined />,
-  //   message: '账户余额和充值套餐记录'
-  // },
+  {
+    path: '/shop',
+    name: '商城',
+    icon: <ShopOutlined />,
+    message: '账户余额和充值套餐记录'
+  },
   // {
   //   path: '/user',
   //   name: '邀请',

@@ -47,7 +47,6 @@ console.log(website_logo, website_title, website_footer, website_description, we
     createMetaElement('description', website_description)
     createMetaElement('keywords', website_keywords)
   }, [])
-  console.log(props.route,'>>>>')
   return (
     <ProLayout
       title={website_title}

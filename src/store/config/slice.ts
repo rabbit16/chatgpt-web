@@ -28,6 +28,7 @@ export interface ConfigState {
   website_footer: string
   invite_introduce: string,
   random_personas: Array<PersonaInfo>
+  upModelsData:any
 }
 
 const configStore = create<ConfigState>()(
@@ -47,19 +48,11 @@ const configStore = create<ConfigState>()(
       models: [
         {
           label: 'GPT-3.5',
-          value: 'gpt-3.5-turbo'
+          value: 'chatGpt'
         },
-		{
-			label: 'GPT-3.5-16k',
-			value: 'gpt-3.5-turbo-16k'
-		},
-        {
-          label: 'GPT-4',
-          value: 'gpt-4'
-        }
       ],
       config: {
-        model: 'gpt-3.5-turbo-16k',
+        model: 'chatGpt',
         temperature: 0.8,
         presence_penalty: 0,
         frequency_penalty: 0,
@@ -70,7 +63,8 @@ const configStore = create<ConfigState>()(
         set((state: ConfigState) => ({
           config: { ...state.config, ...config }
         })),
-      replaceData: (data) => set((state: ConfigState) => ({ ...state, ...data }))
+      replaceData: (data) => set((state: ConfigState) => ({ ...state, ...data })),
+      upModelsData:(value:any)=> set(state=>({...state,models:value})),
     }),
     {
       name: 'config_storage', // name of item in the storage (must be unique)

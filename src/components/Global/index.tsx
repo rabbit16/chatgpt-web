@@ -69,17 +69,17 @@ function Global(props: Props) {
         value.path = value.id
         value.name = numList
       })
-      
+      configAsync.fetchGetModelList()
       if (list.length<=0) {
         addChat()
       } else {
         getAllChatList(list,list[0].id)
-        // const id = list[0].id
-        // changeSelectChatId(id)
       }
     }
 
+
     if (token) {
+      
       init()
     }
     // configAsync.fetchConfig()
