@@ -39,7 +39,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
         />
       )}
       <div className={styles.header__logo}>
-        {renderLogo}
+
         {!props.isMobile && <h1>{props.title}</h1>}
       </div>
       {!props.isMobile && <MenuList />}
