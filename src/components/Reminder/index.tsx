@@ -13,10 +13,6 @@ function Reminder() {
       <p className={styles.reminder_message}>
         与AI智能聊天，畅想无限可能！基于先进的AI引擎，让你的交流更加智能、高效、便捷！
       </p>
-      <p className={styles.reminder_message}>
-        <span>Shift</span> + <span>Enter</span> 换行。开头输入 <span>/</span> 召唤 Prompt
-        AI提示指令预设。
-      </p>
       <div className={styles.reminder_question}>
         {random_personas.map((item) => {
           return (

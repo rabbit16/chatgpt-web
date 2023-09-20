@@ -1,7 +1,7 @@
 import { AutoComplete, Button, Input, Modal, message } from 'antd'
 import styles from './index.module.less'
 import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { promptStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import { htmlToImage } from '@/utils'
@@ -23,7 +23,7 @@ function AllInput(props: Props) {
     open: false,
     loading: false
   })
-
+  const inputRef = useRef() as any;
   const searchOptions = useMemo(() => {
     if (prompt.startsWith('/')) {
       return localPrompt
@@ -95,6 +95,13 @@ function AllInput(props: Props) {
       >
         <Input.TextArea
           value={prompt}
+          onFocus={()=>{
+            inputRef.current.resizableTextArea.textArea.style.fontSize = '16px'
+          }}
+          onBlur={()=>{
+            inputRef.current.resizableTextArea.textArea.style.fontSize = '14px'
+          }}
+          ref={inputRef}
           // showCount
           size="large"
           placeholder="问点什么吧..."
