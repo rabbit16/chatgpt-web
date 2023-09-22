@@ -1,7 +1,7 @@
 import { AutoComplete, Button, Input, Modal, message } from 'antd'
 import styles from './index.module.less'
 import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { promptStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import { htmlToImage } from '@/utils'
@@ -53,7 +53,9 @@ function AllInput(props: Props) {
         message.error('下载聊天记录失败')
       })
   }
-
+useEffect(()=>{
+  inputRef.current.resizableTextArea.textArea.style.fontSize = '16px'
+},[])
   return (
     <div className={styles.allInput}>
       {bodyResize.width > 800 && (
@@ -95,12 +97,6 @@ function AllInput(props: Props) {
       >
         <Input.TextArea
           value={prompt}
-          onFocus={()=>{
-            inputRef.current.resizableTextArea.textArea.style.fontSize = '16px'
-          }}
-          onBlur={()=>{
-            inputRef.current.resizableTextArea.textArea.style.fontSize = '14px'
-          }}
           ref={inputRef}
           // showCount
           size="large"
