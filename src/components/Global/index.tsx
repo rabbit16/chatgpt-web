@@ -13,7 +13,7 @@ type Props = {
 
 function Global(props: Props) {
   const { models, config, configModal, changeConfig, setConfigModal, notifications } = configStore()
-  const { chats, addChat, changeSelectChatId,getAllChatList } = chatStore()
+  const { chats, addChat, changeSelectChatId,getAllChatList ,page,page_num,setPage} = chatStore()
   const { token, loginModal, setLoginModal,upglobal } = userStore()
 
   const openNotification = ({
@@ -60,9 +60,12 @@ function Global(props: Props) {
     async function init() {
 
       let data = await getGPTListMessage({
-        userId: userStore.getState().user_info?.data?.bodyMessage?.userId
+        userId: userStore.getState().user_info?.data?.bodyMessage?.userId,
+        page:page,
+        page_num:page_num,
+        allContext:false
       })
-      let list = data?.data?.context_dict || []
+      let list = data?.data?.context_dict || [];
       list.forEach((value:any)=>{
         let numList = value.data.filter((value:any)=>value.role==='user')
         numList =numList.length>0 ? numList[numList.length-1].text:'新的对话'
@@ -74,6 +77,7 @@ function Global(props: Props) {
         addChat()
       } else {
         getAllChatList(list,list[0].id)
+        setPage(data?.data?.allContextNum)
       }
     }
 
@@ -83,7 +87,7 @@ function Global(props: Props) {
       init()
     }
     // configAsync.fetchConfig()
-  }, [token,upglobal])
+  }, [token,upglobal,page])
 
   useLayoutEffect(() => {
     onOpenNotifications()

@@ -47,7 +47,7 @@ export function getCode(params: { source: string }) {
   return request.get('/api/send_sms', params)
 }
 // 获取记录chat列表：姜昊良
-export function getGPTListMessage(params:{userId:number}){
+export function getGPTListMessage(params:{userId:number,page:number,page_num:number,allContext:boolean}){
   return request.post('/user/getContextList',params)
 }
 // 删除gpt列表的某一项：姜昊良

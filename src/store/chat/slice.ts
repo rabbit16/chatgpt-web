@@ -9,6 +9,9 @@ export interface ChatState {
   chats: Array<ChatsInfo>
   // 当前选择的会话id
   selectChatId: string | number
+  page:number,
+  page_num:number,
+  total:number,
   // 新增一个对话
   addChat: (value?: { persona_id?: number | string; name?: string }) => void
   // 删除一个对话
@@ -37,17 +40,28 @@ export interface ChatState {
   changeChatMessage: (data: Array<ChatsInfo>) => void
   // 初始化列表
   getAllChatList: (data: any,id:any) => void
+  setPage:(value:number,total:number)=>void
+  changPage:(value:number)=>void
 }
 
 const chatStore = create<ChatState>()(
   // persist(
   (set) => ({
     chats: [],
+    page:1,
+    page_num:10,
+    total:0,
     selectChatId: '',
+    // 初始化
+    setPage:(total:number) =>{
+      set({total})
+    },
+    //翻页
+    changPage:(value:number)=>{
+      set({page:value})
+    },
     // 获取全部的gpt列表
     getAllChatList: async (value:any,id:any) => {
-      // let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
-      // console.log(res);
       set((state)=>{
         return {
           chats:[...value],

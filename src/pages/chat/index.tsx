@@ -5,7 +5,7 @@ import {
   RedditCircleFilled,
   RedditSquareFilled
 } from '@ant-design/icons'
-import { Button, Modal, Popconfirm, Space, Tabs, Select, message, Badge } from 'antd'
+import { Button, Modal, Popconfirm, Space, Tabs, Select, message, Badge, Pagination } from 'antd'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import styles from './index.module.less'
@@ -31,8 +31,9 @@ function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { scrollToBottomIfAtBottom, scrollToBottom } = useScroll(scrollRef.current)
   const { token, setLoginModal } = userStore()
+  const { page, page_num, total, changPage } = chatStore()
   const { config, models, changeConfig, setConfigModal } = configStore()
-  const  clearLoading  = useRef(false)
+  const clearLoading = useRef(false)
   const {
     chats,
     addChat,
@@ -49,7 +50,6 @@ function ChatPage() {
   const bodyResize = useDocumentResize()
 
   const isMobile = useMobile()
-
 
   useLayoutEffect(() => {
     if (scrollRef) {
@@ -86,9 +86,7 @@ function ChatPage() {
         }}
         onClick={() => {
           if (!token) {
-            setLoginModal(
-               true
-            )
+            setLoginModal(true)
             return
           }
           addChat()
@@ -116,54 +114,51 @@ function ChatPage() {
     // "withoutContext": true,
     // "prompt": "string",
     // "userId": 0
-    try{
+    try {
       const response = await postChatCompletions(
         {
-          contextId:chatStore.getState().selectChatId,
-          withoutContext:false,
-          prompt:requestOptions.prompt,
-          userId:userStore.getState().user_info?.data?.bodyMessage?.userId,
-          mode:configStore.getState().config.model
-        }, 
-          signal
+          contextId: chatStore.getState().selectChatId,
+          withoutContext: false,
+          prompt: requestOptions.prompt,
+          userId: userStore.getState().user_info?.data?.bodyMessage?.userId,
+          mode: configStore.getState().config.model
+        },
+        signal
       )
       let data = await response.json()
-      
+
       setChatDataInfo(selectChatId, assistantMessageId, {
         status: 'pass',
         text: `${data?.gptResult[0]?.gpt}`
       })
-    }catch(e){
+    } catch (e) {
       setChatDataInfo(selectChatId, assistantMessageId, {
         status: 'pass',
-        text: clearLoading?"已取消":`请求超时请重试`
+        text: clearLoading ? '已取消' : `请求超时请重试`
       })
-      
     }
 
-    
-      // .then((res) => {
-      //   return res
-      // })
-      // .catch((error) => {
-      //   // 终止： AbortError
-      //   console.log(error.name)
-      // })
+    // .then((res) => {
+    //   return res
+    // })
+    // .catch((error) => {
+    //   // 终止： AbortError
+    //   console.log(error.name)
+    // })
 
     // if (!(response instanceof Response)) {
-      // 这里返回是错误 ...
-      // if (userMessageId) {
-      //   setChatDataInfo(selectChatId, userMessageId, {
-      //     status: 'error'
-      //   })
-      // }
-      // console.log(response,response?.data?.gptResult[0]?.gpt);
-      
+    // 这里返回是错误 ...
+    // if (userMessageId) {
+    //   setChatDataInfo(selectChatId, userMessageId, {
+    //     status: 'error'
+    //   })
+    // }
+    // console.log(response,response?.data?.gptResult[0]?.gpt);
 
-      fetchController?.abort()
-      setFetchController(null)
-      // message.error('请求失败')
-      return
+    fetchController?.abort()
+    setFetchController(null)
+    // message.error('请求失败')
+    return
     // }
     // const reader = response.body?.getReader?.()
     // let allContent = ''
@@ -230,9 +225,9 @@ function ChatPage() {
       setLoginModal(true)
       return
     }
-    
+
     const selectChat = chats.filter((c) => c.id === selectChatId)[0]
-    
+
     const parentMessageId = refurbishOptions?.requestOptions.parentMessageId || selectChat.id
     let userMessageId = generateUUID()
     const requestOptions = {
@@ -283,7 +278,10 @@ function ChatPage() {
       assistantMessageId
     })
   }
-  
+  // 翻页
+  function onChange(e: any) {
+    changPage(e)
+  }
   return (
     <div className={styles.chatPage}>
       <Layout
@@ -297,21 +295,23 @@ function ChatPage() {
         }}
         menuItemRender={(item, dom) => {
           return (
-          <MessageItem
-            id = {item.id}
-            isSelect={item.id === selectChatId}
-            isPersona={!!item.persona_id}
-            name={item.name}
-            onConfirm={() => {
-              chatAsync.fetchDelUserMessagesList({id:item.id})
-            }}
-          />
-        )}}
+            <div>
+              <MessageItem
+                id={item.id}
+                isSelect={item.id === selectChatId}
+                isPersona={!!item.persona_id}
+                name={item.name}
+                onConfirm={() => {
+                  chatAsync.fetchDelUserMessagesList({ id: item.id })
+                }}
+              />
+            </div>
+          )
+        }}
         menuFooterRender={(props) => {
-          console.log(config,models,props);
-          
           return (
             <Space direction="vertical" style={{ width: '100%' }}>
+              <Pagination simple current={page} onChange={onChange} total={total} />
               <Select
                 size="middle"
                 style={{ width: '100%' }}
@@ -352,9 +352,9 @@ function ChatPage() {
         }}
       >
         <div className={styles.chatPage_container}>
-          {
-            chatMessages[0]?.persona_id && <div className={styles.chatPage_container_persona}>当前为预置角色对话</div>
-          }
+          {chatMessages[0]?.persona_id && (
+            <div className={styles.chatPage_container_persona}>当前为预置角色对话</div>
+          )}
           <div ref={scrollRef} className={styles.chatPage_container_one}>
             <div id="image-wrapper">
               {chatMessages.map((item) => {
@@ -405,7 +405,7 @@ function ChatPage() {
                 // 结束
                 setFetchController((c) => {
                   c?.abort()
-                  clearLoading.current = true;
+                  clearLoading.current = true
                   return null
                 })
               }}
