@@ -68,7 +68,6 @@ const chatStore = create<ChatState>()(
           selectChatId: id
         }
       })
-
     },
     addChat: async (value) => {
       let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
@@ -193,11 +192,6 @@ const chatStore = create<ChatState>()(
         }
       })
   }),
-  // {
-  //   name: 'chat_storage', // name of item in the storage (must be unique)
-  //   storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
-  // }
-  // )
 )
 
 export default chatStore

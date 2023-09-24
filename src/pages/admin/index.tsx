@@ -48,7 +48,7 @@ function AdminPage() {
         siderMenuType="group"
         menu={{
           locale: false,
-          collapsedShowGroupTitle: false,
+          collapsedShowGroupTitle: false
         }}
         // settings={{}}
         suppressSiderWhenMenuEmpty
@@ -81,7 +81,8 @@ function AdminPage() {
                       label: '退出登录',
                       onClick: () => {
                         logout()
-						clearChats()
+                        clearChats()
+                        window.localStorage.clear();
                         navigate('/login')
                       }
                     }
