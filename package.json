@@ -22,6 +22,9 @@
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@ant-design/pro-components": "2.6.5",
+    "@microsoft/fetch-event-source": "^2.0.1",
+    "@react-buddy/ide-toolbox": "^2.4.0",
+    "@react-buddy/palette-antd": "^5.3.0",
     "@traptitech/markdown-it-katex": "^3.6.0",
     "ace-builds": "^1.23.1",
     "ali-oss": "^6.17.1",
@@ -61,9 +64,7 @@
     "upyun": "^3.4.4",
     "vm2": "^3.9.19",
     "zustand": "^4.3.7",
-    "zustand-persist": "^0.4.0",
-    "@react-buddy/ide-toolbox": "^2.4.0",
-    "@react-buddy/palette-antd": "^5.3.0"
+    "zustand-persist": "^0.4.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.1",
