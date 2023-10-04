@@ -33,3 +33,7 @@ export function handleChatData(text: string) {
 
   return data
 }
+export function analyzeChatData(text:string){
+  let data = text?.split('$_$').slice(0,-1).map(value=>JSON.parse(value))
+  return data
+}

@@ -79,6 +79,11 @@ export function postChatCompletions(
   return request.gptPost('/user/gpt/ask',params,option)
   // return request.postStreams<Response>('/api/chat/completions', params, config)
 }
+//流请求 请求对话:姜昊良
+export function postStreamChatCompletions(params: any,option:any){
+  return request.gptPost('/user/gpt/askStream',params,option)
+}
+
 
 export function postChatCompletion(
   params: {

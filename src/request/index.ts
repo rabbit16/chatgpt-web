@@ -1,6 +1,6 @@
 import { notification } from 'antd'
 import { chatStore, userStore } from '@/store'
-
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 export type ResponseData<T> = {
   code: number
   data: T
@@ -69,6 +69,8 @@ const interceptorsRequest = (config: { url: string; options?: RequestInit }) => 
 const interceptorsResponse = async <T>(options: any, response: any): Promise<ResponseData<T>> => {
   console.log('响应拦截器：', options, response)
   let data: ResponseData<T> = await response.json()
+  console.log(data);
+  
   if (!isResponseData(data)) {
     data = {
       code: response.status === 200 ? 0 : response.status,
@@ -76,17 +78,17 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
       message: ''
     }
   }
-  
-  if (data.code||data.data.code==='3004') {
-    
-    if ((response.status === 401 && data.code === 4001)||data.data.code==='3004') {
+
+  if (data.code || data.data.code === '3004') {
+
+    if ((response.status === 401 && data.code === 4001) || data.data.code === '3004') {
       console.log('123123');
-      
+
       userStore.getState().logout()
       chatStore.getState().clearChats()
     }
-    
-    
+
+
     if (data.message) {
       notification.error({
         message: '错误',
@@ -120,7 +122,7 @@ const request = <T>(
   config?: RequestConfig
 ): Promise<ResponseData<T>> => {
   // 超时时间
-  const { timeout = 60*1000*3 } = config || {}
+  const { timeout = 60 * 1000 * 3 } = config || {}
   let timeoutId: string | number | NodeJS.Timeout | null | undefined = null
 
   if (typeof url !== 'string') throw new TypeError('url must be required and of string type!')
@@ -163,28 +165,28 @@ const request = <T>(
   const fetchPromise: Promise<ResponseData<T>> = new Promise((resolve, reject) => {
     fetch(url, options)
       .then(async (res) => {
-        
-        let token:string = ''
+
+        let token: string = ''
         // console.log(res.headers);
         // console.log(,[...res.headers.keys()],[...res.headers.entries()]);
         // for (const [key, value] of res.headers.entries()) {
         //   console.log(`${key}: ${value}`);
         // }
-        
-        if(res.headers.get('x-set-cookie')&&url.includes('verify')){
-          token = res.headers.get('x-set-cookie')||''
+
+        if (res.headers.get('x-set-cookie') && url.includes('verify')) {
+          token = res.headers.get('x-set-cookie') || ''
         }
-        const response:any = await interceptorsResponse<T>(
+        const response: any = await interceptorsResponse<T>(
           {
             url,
             options
           },
           res
         )
-        if(url.includes('verify')){
-          response.data.token = token.replace('token=','')
+        if (url.includes('verify')) {
+          response.data.token = token.replace('token=', '')
         }
-        
+
         await resolve(response)
       })
       .catch(async (error) => {
@@ -333,16 +335,42 @@ const postStreams = async <T>(
   return response
 }
 
-const gptPost = async (url:any,params:any,options:any)=>{
-  return await fetch(getBaseUrl(url),{
-    method:'post',
-    headers:{
+const gptPost = async (url: any, params: any, options: any) => {
+  return await fetch(getBaseUrl(url), {
+    method: 'post',
+    headers: {
       token: userStore.getState().token,
-      'Content-Type':'application/json',
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream'
     } as any,
-    body:JSON.stringify(params),
-    signal:options
+    body: JSON.stringify(params),
+    signal: options
   })
+  let da = await fetchEventSource(getBaseUrl(url), {
+    method: 'POST',
+    headers: {
+      token: userStore.getState().token,
+      'Content-Type': 'application/json',
+    } as any,
+    body: JSON.stringify(params),
+    signal: options,
+    async onopen(response) {
+      console.log(response,123)
+    },
+    async onmessage(params) {
+      console.log(params,45)
+    },
+    async onclose(err: number | void | null | undefined) {
+      console.log(err,6);
+    },
+    onerror:(e)=>{
+      console.log(e);
+      
+    }
+
+  })
+  console.log(da,123123132);
+  
 }
 export default {
   get,
@@ -352,3 +380,4 @@ export default {
   gptPost,
   postStreams
 }
+
