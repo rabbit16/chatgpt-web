@@ -232,7 +232,6 @@ function ChatMessage({
               menu={{
                 items: [...screenDropdownItems(status, position)],
                 onClick: ({ key }) => {
-                  console.log(key)
                   if (key === 'delete') {
                     onDelChatMessage?.()
                   }

@@ -5,7 +5,18 @@ import {
   RedditCircleFilled,
   RedditSquareFilled
 } from '@ant-design/icons'
-import { Button, Modal, Popconfirm, Space, Tabs, Select, message, Badge, Pagination } from 'antd'
+import {
+  Button,
+  Modal,
+  Popconfirm,
+  Space,
+  Tabs,
+  Select,
+  message,
+  Badge,
+  Pagination,
+  Switch
+} from 'antd'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import styles from './index.module.less'
@@ -16,9 +27,15 @@ import RoleLocal from './components/RoleLocal'
 import AllInput from './components/AllInput'
 import ChatMessage from './components/ChatMessage'
 import { ChatGpt, RequestChatOptions } from '@/types'
-import { postChatCompletions,postStreamChatCompletions } from '@/request/api'
+import { postChatCompletions, postStreamChatCompletions } from '@/request/api'
 import Reminder from '@/components/Reminder'
-import { filterObjectNull, formatTime, generateUUID, handleChatData,analyzeChatData } from '@/utils'
+import {
+  filterObjectNull,
+  formatTime,
+  generateUUID,
+  handleChatData,
+  analyzeChatData
+} from '@/utils'
 import { useScroll } from '@/hooks/useScroll'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import Layout from '@/components/Layout'
@@ -31,7 +48,7 @@ function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { scrollToBottomIfAtBottom, scrollToBottom } = useScroll(scrollRef.current)
   const { token, setLoginModal } = userStore()
-  const { page, page_num, total, changPage } = chatStore()
+  const { page, page_num, total, changPage, updateRepeatedly, repeatedly } = chatStore()
   const { config, models, changeConfig, setConfigModal } = configStore()
   const clearLoading = useRef(false)
   const {
@@ -114,7 +131,7 @@ function ChatPage() {
     // "withoutContext": true,
     // "prompt": "string",
     // "userId": 0
-    if(false){
+    if (false) {
       try {
         const response = await postChatCompletions(
           {
@@ -127,7 +144,7 @@ function ChatPage() {
           signal
         )
         let data = await response.json()
-  
+
         setChatDataInfo(selectChatId, assistantMessageId, {
           status: 'pass',
           text: `${data?.gptResult[0]?.gpt}`
@@ -142,111 +159,102 @@ function ChatPage() {
       setFetchController(null)
       // message.error('请求失败')
       return
+    } else {
+      const response = await postStreamChatCompletions(
+        {
+          contextId: chatStore.getState().selectChatId,
+          withoutContext: repeatedly,
+          prompt: requestOptions.prompt,
+          userId: userStore.getState().user_info?.data?.bodyMessage?.userId,
+          mode: configStore.getState().config.model
+        },
+        signal
+      )
+        .then((res) => {
+          return res
+        })
+        .catch((error) => {
+          // 终止： AbortError
+          console.log(error.name)
+        })
 
-    }else{
-      
+      // if (!(response instanceof Response)) {
+      //   // 这里返回是错误 ...
+      //   if (userMessageId) {
+      //     setChatDataInfo(selectChatId, userMessageId, {
+      //       status: 'error'
+      //     })
+      //   }
 
-    const response = await postStreamChatCompletions(
-      {
-        contextId: chatStore.getState().selectChatId,
-        withoutContext: false,
-        prompt: requestOptions.prompt,
-        userId: userStore.getState().user_info?.data?.bodyMessage?.userId,
-        mode: configStore.getState().config.model
-      },
-      signal
-    )
-      .then((res) => {
-        return res
-      })
-      .catch((error) => {
-        // 终止： AbortError
-        console.log(error.name)
-      })
+      //   setChatDataInfo(selectChatId, assistantMessageId, {
+      //     status: 'error',
+      //     text: `${response?.message || '❌ 请求异常，请稍后在尝试。'} \n \`\`\` ${JSON.stringify(response, null, 2)}   `
+      //   })
+      //   fetchController?.abort()
+      //   setFetchController(null)
+      //   message.error('请求失败')
+      //   return
+      // }
+      console.log(response)
+      // let reader = response?.body?.pipeThrough(new TextDecoderStream())?.getReader();
+      // console.log(reader);
 
-    // if (!(response instanceof Response)) {
-    //   // 这里返回是错误 ...
-    //   if (userMessageId) {
-    //     setChatDataInfo(selectChatId, userMessageId, {
-    //       status: 'error'
-    //     })
-    //   }
+      // while (true) {
+      //   var { value, done } = await reader.read();
+      //   console.log(value,done);
+      //   console.log(value?.split('$_$').slice(0,-1).forEach(value=>console.log(JSON.parse(value)))
+      //   );
 
-    //   setChatDataInfo(selectChatId, assistantMessageId, {
-    //     status: 'error',
-    //     text: `${response?.message || '❌ 请求异常，请稍后在尝试。'} \n \`\`\` ${JSON.stringify(response, null, 2)}   `
-    //   })
-    //   fetchController?.abort()
-    //   setFetchController(null)
-    //   message.error('请求失败')
-    //   return
-    // }
-    console.log(response);
-    // let reader = response?.body?.pipeThrough(new TextDecoderStream())?.getReader();
-    // console.log(reader);
-    
-    // while (true) {
-    //   var { value, done } = await reader.read();
-    //   console.log(value,done);
-    //   console.log(value?.split('$_$').slice(0,-1).forEach(value=>console.log(JSON.parse(value)))
-    //   );
-      
-    //   if (done) break;
-    //   value = value?.replace('undefined', '')
-    //   console.log("received data -", value)
-    //   output.value += value?.replace('undefined', '')
-    // }
-    // return
+      //   if (done) break;
+      //   value = value?.replace('undefined', '')
+      //   console.log("received data -", value)
+      //   output.value += value?.replace('undefined', '')
+      // }
+      // return
 
-    const reader = response.body?.getReader();
-    let allContent = ''
-    while (true) {
-      const { done, value } = (await reader?.read()) || {}
-      console.log(done,value,'>>>');
-      
-      if (done) {
-        fetchController?.abort()
-        setFetchController(null)
-        break
-      }
-      // 将获取到的数据片段显示在屏幕上
-      const text = new TextDecoder('utf-8').decode(value)
-      console.log(text,'<<<<<',text.split('$_$'));
-      
-      const texts = analyzeChatData(text);
-      console.log(texts);
+      const reader = response.body?.getReader()
+      let allContent = ''
+      while (true) {
+        const { done, value } = (await reader?.read()) || {}
+        console.log(done, value, '>>>')
 
-      
-      for (let i = 0; i < texts.length; i++) {
-        const { choices } = texts[i];
-        const {finish_reason='',delta:{content}   } = choices[0]
-        allContent += content ? content : ''
-        if (finish_reason === 'stop') {
+        if (done) {
+          fetchController?.abort()
           setFetchController(null)
-          setChatDataInfo(selectChatId, assistantMessageId, {
-            text: allContent,
-            status: 'pass'
-          })
           break
         }
-        if (finish_reason === null) {
-          setChatDataInfo(selectChatId, assistantMessageId, {
-            text: allContent,
-            status: 'pass'
-          })
+        // 将获取到的数据片段显示在屏幕上
+        const text = new TextDecoder('utf-8').decode(value)
+        console.log(text, '<<<<<', text.split('$_$'))
+
+        const texts = analyzeChatData(text)
+        console.log(texts)
+
+        for (let i = 0; i < texts.length; i++) {
+          const { choices } = texts[i]
+          const {
+            finish_reason = '',
+            delta: { content }
+          } = choices[0]
+          allContent += content ? content : ''
+          if (finish_reason === 'stop') {
+            setFetchController(null)
+            setChatDataInfo(selectChatId, assistantMessageId, {
+              text: allContent,
+              status: 'pass'
+            })
+            break
+          }
+          if (finish_reason === null) {
+            setChatDataInfo(selectChatId, assistantMessageId, {
+              text: allContent,
+              status: 'pass'
+            })
+          }
         }
+        scrollToBottomIfAtBottom()
       }
-      scrollToBottomIfAtBottom()
     }
-    }
-
-
-   
-   
-
-  
-
-
   }
 
   const [fetchController, setFetchController] = useState<AbortController | null>(null)
@@ -419,6 +427,15 @@ function ChatPage() {
               position: isMobile ? 'fixed' : 'absolute'
             }}
           >
+            <div className={styles.chatPage_container_two_title}>
+              多伦:
+              <Switch
+                checkedChildren="开"
+                unCheckedChildren="关"
+                checked={repeatedly}
+                onChange={(e) => updateRepeatedly(e)}
+              />
+            </div>
             <AllInput
               disabled={!!fetchController}
               onSend={(value) => {

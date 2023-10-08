@@ -3,7 +3,7 @@ import { chatStore, userStore } from '@/store'
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 export type ResponseData<T> = {
   code: number
-  data: T
+  data: any
   message: string
 }
 
@@ -69,7 +69,6 @@ const interceptorsRequest = (config: { url: string; options?: RequestInit }) => 
 const interceptorsResponse = async <T>(options: any, response: any): Promise<ResponseData<T>> => {
   console.log('响应拦截器：', options, response)
   let data: ResponseData<T> = await response.json()
-  console.log(data);
   
   if (!isResponseData(data)) {
     data = {
@@ -79,20 +78,17 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
     }
   }
 
-  if (data.code || data.data.code === '3004') {
-
-    if ((response.status === 401 && data.code === 4001) || data.data.code === '3004') {
-      console.log('123123');
-
+  if (data.code || data.data.code !== '0') {
+    if ((response.status === 401 && data.code === 4001) || data.data.code == '3005') {
       userStore.getState().logout()
       chatStore.getState().clearChats()
     }
 
 
-    if (data.message) {
+    if (data.message||data.data.code!='0') {
       notification.error({
         message: '错误',
-        description: data.message ? data.message : '网络请求错误',
+        description: data.data.codeMsg ? data.data.codeMsg : '网络请求错误',
         style: {
           top: 60,
           zIndex: 1011

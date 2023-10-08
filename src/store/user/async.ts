@@ -6,7 +6,6 @@ import { getUserInfo, getUserRecords, postLogin, postUserWithdrawal, putUserPass
 // 登录
 export async function fetchLogin(params: Login) {
   const response:any = await postLogin(params);
-  console.log(response);
   
   if (!response.code) {
     userStore.getState().login({ token:response.data.token,user_info:response })

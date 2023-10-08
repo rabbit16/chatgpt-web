@@ -1,8 +1,8 @@
-import { AutoComplete, Button, Input, Modal, message } from 'antd'
+import { AutoComplete, Button, Input, Modal, message, Switch } from 'antd'
 import styles from './index.module.less'
 import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { promptStore } from '@/store'
+import { promptStore, chatStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import { htmlToImage } from '@/utils'
 
@@ -18,12 +18,11 @@ function AllInput(props: Props) {
   const { localPrompt } = promptStore()
 
   const bodyResize = useDocumentResize()
-
   const [downloadModal, setDownloadModal] = useState({
     open: false,
     loading: false
   })
-  const inputRef = useRef() as any;
+  const inputRef = useRef() as any
   const searchOptions = useMemo(() => {
     if (prompt.startsWith('/')) {
       return localPrompt
@@ -46,18 +45,19 @@ function AllInput(props: Props) {
     setDownloadModal((d) => ({ ...d, loading: true }))
     htmlToImage('image-wrapper')
       .then(() => {
-		message.success('下载聊天记录成功')
-        setDownloadModal((d) => ({ ...d,  open: false,loading: false }))
+        message.success('下载聊天记录成功')
+        setDownloadModal((d) => ({ ...d, open: false, loading: false }))
       })
       .catch(() => {
         message.error('下载聊天记录失败')
       })
   }
-useEffect(()=>{
-  inputRef.current.resizableTextArea.textArea.style.fontSize = '16px'
-},[])
+  useEffect(() => {
+    inputRef.current.resizableTextArea.textArea.style.fontSize = '16px'
+  }, [])
   return (
     <div className={styles.allInput}>
+
       {bodyResize.width > 800 && (
         <div
           className={styles.allInput_icon}

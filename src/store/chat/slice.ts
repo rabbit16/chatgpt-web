@@ -12,6 +12,7 @@ export interface ChatState {
   page:number,
   page_num:number,
   total:number,
+  repeatedly:boolean
   // 新增一个对话
   addChat: (value?: { persona_id?: number | string; name?: string }) => void
   // 删除一个对话
@@ -42,6 +43,7 @@ export interface ChatState {
   getAllChatList: (data: any,id:any) => void
   setPage:(value:number,total:number)=>void
   changPage:(value:number)=>void
+  updateRepeatedly:(value:boolean)=>void
 }
 
 const chatStore = create<ChatState>()(
@@ -52,9 +54,13 @@ const chatStore = create<ChatState>()(
     page_num:10,
     total:0,
     selectChatId: '',
+    repeatedly:false,
     // 初始化
     setPage:(total:number) =>{
       set({total})
+    },
+    updateRepeatedly:(value:boolean)=>{
+      set({repeatedly:value})
     },
     //翻页
     changPage:(value:number)=>{
