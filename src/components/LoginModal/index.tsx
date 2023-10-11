@@ -216,7 +216,9 @@ export function LoginCard(props: {
             placeholder="电话号码"
             rules={[
               {
-                required: true
+                required: true,
+                pattern: /^1[3456789]\d{9}$/,
+                message:'请填写正确的电话号码'
               }
             ]}
           />
@@ -229,7 +231,9 @@ export function LoginCard(props: {
             placeholder="电子邮箱"
             rules={[
               {
-                required: true
+                required: true,
+                pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message:'请填写正确的邮箱'
               }
             ]}
           />
