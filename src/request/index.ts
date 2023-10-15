@@ -77,23 +77,26 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
       message: ''
     }
   }
-
   if (data.code || data.data.code !== '0') {
-    if ((response.status === 401 && data.code === 4001) || data.data.code == '3005') {
-      userStore.getState().logout()
-      chatStore.getState().clearChats()
-    }
+
 
 
     if (data.message||data.data.code!='0') {
-      notification.error({
-        message: '错误',
-        description: data.data.codeMsg ? data.data.codeMsg : '网络请求错误',
-        style: {
-          top: 60,
-          zIndex: 1011
-        }
-      })
+      if(!userStore.getState().loginModal){
+        notification.error({
+          message: '错误',
+          description: data.data.codeMsg ? data.data.codeMsg : '网络请求错误',
+          style: {
+            top: 60,
+            zIndex: 1011
+          }
+        })
+      }
+      
+    }
+    if ((response.status === 401 && data.code === 4001) || data.data.code == '3004') {
+      userStore.getState().logout()
+      chatStore.getState().clearChats()
     }
   }
   return data

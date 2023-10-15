@@ -37,7 +37,7 @@ const userStore = create<userState>()(
       token: undefined,
       setLoginModal: (value) => set({ loginModal: value }),
       login: (data) => set(() => ({ ...data })),
-      logout: () => set(() => ({ user_info: undefined, token: undefined })),
+      logout: () => set(() => ({ user_info: undefined, token: undefined,loginModal:true })),
       invitation_records: {
         count: 0,
         rows: []
