@@ -81,7 +81,7 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
 
 
 
-    if (data.message||data.data.code!='0') {
+    if (data.data.code!='0') {
       if(!userStore.getState().loginModal||data.data.code!==3004){
         notification.error({
           message: '错误',
