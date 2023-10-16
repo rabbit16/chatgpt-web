@@ -34,6 +34,8 @@ function AuthRouter(props: AuthRouterProps) {
     } else if (token && !routerDetail?.configure?.role.includes(userRole)) {
       navigate('/')
       navigate('/404')
+    }else if(!token){
+      navigate('/login')
     }
   }, [pathname, routerDetail,token])
 
