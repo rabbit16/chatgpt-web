@@ -10,7 +10,7 @@ type AuthRouterProps = {
 function AuthRouter(props: AuthRouterProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { token, user_info } = userStore()
+  const { token, user_info ,setLoginModal} = userStore()
   const { pathname } = location
   const routerDetail = searchRouteDetail(pathname, [...webRouter, ...adminRouter])
   const title = routerDetail?.configure?.title
@@ -30,11 +30,12 @@ function AuthRouter(props: AuthRouterProps) {
           form: routerDetail?.path
         }
       })
+      
     } else if (token && !routerDetail?.configure?.role.includes(userRole)) {
       navigate('/')
       navigate('/404')
     }
-  }, [pathname, routerDetail])
+  }, [pathname, routerDetail,token])
 
   return <>{props.children}</>
 }

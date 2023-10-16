@@ -79,6 +79,7 @@ export function LoginCard(props: {
           delete e.passwordSecond
           let res = await userAsync.fetchRegister({...e})
           if(res && res.data.code==='0'){
+            debugger
             message.success(res.data.statusInfo)
             let datalogin =  await userAsync.fetchLogin({password: e.password,userId: e.telephone} as any)
             console.log(datalogin);
