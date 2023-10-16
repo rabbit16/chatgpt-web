@@ -79,10 +79,8 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
   }
   if (data.code || data.data.code !== '0') {
 
-
-
     if (data.data.code!='0') {
-      if(!userStore.getState().loginModal||data.data.code!==3004){
+      if(!userStore.getState().loginModal||data.data.code!==3004){  
         notification.error({
           message: '错误',
           description: data.data.codeMsg ? data.data.codeMsg : '网络请求错误',
@@ -193,6 +191,7 @@ const request = <T>(
           // We know it's been canceled!
           return
         }
+        debugger
         const data = { code: 504, data: error, message: '网络异常，请稍后重新尝试。' }
         await interceptorsErrorResponse(data)
         await reject(data)
