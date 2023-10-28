@@ -3,7 +3,7 @@ import UserInfoCard from '@/components/UserInfoCard'
 import styles from './index.module.less'
 import Layout from '@/components/Layout'
 import { configStore, shopStore, userStore } from '@/store'
-import { Button, Input, Modal, Pagination, QRCode, Radio, Space, Table, message } from 'antd'
+import {Image,Spin, Button, Input, Modal, Pagination, QRCode, Radio, Space, Table, message } from 'antd'
 import GoodsList from '@/components/GoodsList'
 import { CloseCircleFilled, SyncOutlined } from '@ant-design/icons'
 import { shopAsync, userAsync } from '@/store/async'
@@ -11,27 +11,62 @@ import { getUserTurnover, postPayPrecreate, postUseCarmi,userBillList,userBillIn
 import { ProductInfo, TurnoverInfo } from '@/types'
 import OpenAiLogo from '@/components/OpenAiLogo'
 import { Link } from 'react-router-dom'
-import {getAliPayPage}from '../../request/api'
+import {getAliPayPage,payVerify}from '../../request/api'
 
 function GoodsPay() {
   const { token, user_info } = userStore();
-  const [payAmount,setPayAmount] = useState(10);
   const [billList,setBillList] = useState([]);
   const [tableObj,setTableObj] = useState({
     current:1,
     pageSize:5,
   })
+  const [moneyObj,setMoneyObj] = useState({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
   const [askNum,setAskNum]=useState(0);
   const [listTotal,setListTotal] = useState(0);
-  const getPostMoney=()=>{
+  const [updata,setUpdata] = useState({});
+  const getPostMoney=(value:number)=>{
     const params = {
-      money:payAmount,
+      money:value,
       userId:user_info?.data?.bodyMessage?.userId,
       function_code:'chatGpt'
     }
+    setMoneyObj((e:any)=>({...e,visiblePop:true,loading:true}))
     getAliPayPage(params).then((res)=>{
-      const data = res.data?.payUrl;
-      window.open(data,'_self')
+      console.log(res);
+     
+      const data = res.data?.payUrl||{};
+      const {code_num,request_id,data:{QRcode_url}} = data;
+      setMoneyObj({visiblePop:true,url:QRcode_url,code_num,request_id,loading:false})
+      // setMoneyObj((e:any)=>({...e,url:}));
+    })
+  }
+  const handleOk =async()=>{
+    const res = await payVerify({codeNum:moneyObj.code_num});
+    console.log(res);
+    if(res?.data?.code==='0'){
+      message.success('支付成功');
+      setMoneyObj((e:any)=>({...e,visiblePop:false}))
+    }
+    
+  }
+  const handleCancel=()=>{
+    setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
+  }
+  const renderMoneyList=()=>{
+    const moneyInfoList =[{day:30,money:0.01},{day:30,money:50},{day:30,money:100}]
+    return moneyInfoList.map((value:{day:number,money:number})=>{
+      return (
+      
+        <div className={styles.item} onClick={()=>{getPostMoney(value.money)}}>
+          <div className={styles.days}>
+            {value.day}天
+          </div>
+          <div className={styles.money_box}>
+            {value.money}元<span className={styles.old_money}>99元</span>
+          </div>
+        </div>
+     
+      )
     })
   }
   useEffect(()=>{
@@ -42,7 +77,7 @@ function GoodsPay() {
         setAskNum(res.data.userMessage.token)
       }
     })
-  },[])
+  },[updata])
   useEffect(() => {
     async function fetchUserBillList() {
       const params = {
@@ -59,7 +94,7 @@ function GoodsPay() {
       }
     }
     fetchUserBillList()
-  }, [tableObj])
+  }, [tableObj,updata])
 
 
 
@@ -82,29 +117,32 @@ function GoodsPay() {
   return (
     <div className={styles.goodsPay}>
       <Layout>
+        <Modal title="微信支付" open={moneyObj.visiblePop} onOk={handleOk} onCancel={handleCancel}>
+
+        <div style={{display:'flex',justifyContent:'center'}}>
+        <Spin spinning={moneyObj.loading}>
+        <Image
+          width={200}
+          height={200}
+          src={moneyObj.url}
+          fallback="data:image/png;base64,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"
+        />
+
+        </Spin>
+        </div>
+        <div>若支付出现问题请请联系客服:</div>
+          <a href="tel:17511684584">17511684584</a>
+        </Modal>
         <div className={styles.goodsPay_container}>
           <Space direction="vertical" style={{ width: '100%' }}>
             {/* 用户信息 */}
             <UserInfoCard info={user_info} data={{num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
-              <h4>卡密充值</h4>
-              <Input.Search
-                loading={false}
-                placeholder="请输入充值金额"
-                // allowClear
-                enterButton="充值"
-                size="large"
-                bordered
-                onChange={(e:any)=>{
-                  let data = e.target.value;
-                  data = data.match(/[0-9]*/g);
-                  data = data.join().length!==0?Number(data.join('')):''
-                  setPayAmount(data)
-                }}
-                value={payAmount}
-                onSearch={getPostMoney}
-              />
+              <h4>会员选项</h4>
+              <div className={styles.goodsPay_card_item_box}>
+             {renderMoneyList()}
+             </div>
             </div>
             <div className={styles.goodsPay_card}>
               <h4

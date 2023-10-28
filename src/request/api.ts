@@ -40,11 +40,16 @@ export function getModelList(){
 }
 // 获取支付链接页面:姜昊良
 export function getAliPayPage(params:{userId:string,money:number,function_code:string}){
-  return request.post('/user/pay',params)
+  return request.post('/user/pay_rabbit',params)
+}
+// 支付验证
+
+export function payVerify(params:{codeNum:string}) {
+  return request.post('/user/verify_pay_again', params)
 }
 // 获取验证码
 export function getCode(params: { source: string }) {
-  return request.get('/api/send_sms', params)
+  return request.post('/api/send_sms', params)
 }
 // 获取记录chat列表：姜昊良
 export function getGPTListMessage(params:{userId:number,page:number,page_num:number,allContext:boolean}){
