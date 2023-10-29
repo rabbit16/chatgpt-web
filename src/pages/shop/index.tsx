@@ -122,6 +122,7 @@ function GoodsPay() {
         <div style={{display:'flex',justifyContent:'center'}}>
         <Spin spinning={moneyObj.loading}>
         <Image
+        preview={false}
           width={200}
           height={200}
           src={moneyObj.url}
