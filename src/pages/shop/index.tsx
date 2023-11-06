@@ -53,17 +53,21 @@ function GoodsPay() {
     setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
   }
   const renderMoneyList=()=>{
-    const moneyInfoList =[{day:30,money:0.01},{day:30,money:50},{day:30,money:100}]
-    return moneyInfoList.map((value:{day:number,money:number})=>{
+    const moneyInfoList =[{day:30,money:15,level:'普通会员',Describe:"享受  \n\n1. gpt3.5每天30次 \n2. gpt4 每3天10次plus会员",bigMoney:20},{day:10,money:5},{day:30,money:35},{day:30,money:10}]
+    return moneyInfoList.map((value:any)=>{
       return (
       
         <div className={styles.item} onClick={()=>{getPostMoney(value.money)}}>
+          <span className={styles.level}>{value.level}</span>
           <div className={styles.days}>
             {value.day}天
           </div>
           <div className={styles.money_box}>
-            {value.money}元<span className={styles.old_money}>99元</span>
+            {value.money}元<span className={styles.old_money}>{value.bigMoney}元</span>
           </div>
+          <span className={styles.describe}>
+            {value.Describe}
+          </span>
         </div>
      
       )

@@ -428,7 +428,7 @@ function ChatPage() {
             }}
           >
             <div className={styles.chatPage_container_two_title}>
-              多伦:
+              加入上下文:
               <Switch
                 checkedChildren="开"
                 unCheckedChildren="关"
