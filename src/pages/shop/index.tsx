@@ -20,6 +20,7 @@ function GoodsPay() {
     current:1,
     pageSize:5,
   })
+  const [num4,set4Num] = useState(0)
   const [moneyObj,setMoneyObj] = useState({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
   const [askNum,setAskNum]=useState(0);
   const [listTotal,setListTotal] = useState(0);
@@ -79,6 +80,7 @@ function GoodsPay() {
       if(res.code===0){
         console.log(res);
         setAskNum(res.data.userMessage.token)
+        set4Num(res.data.userMessage.plus_user_count)
       }
     })
   },[updata])
@@ -141,7 +143,7 @@ function GoodsPay() {
         <div className={styles.goodsPay_container}>
           <Space direction="vertical" style={{ width: '100%' }}>
             {/* 用户信息 */}
-            <UserInfoCard info={user_info} data={{num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
+            <UserInfoCard info={user_info} data={{num4:num4,num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
               <h4>会员选项</h4>

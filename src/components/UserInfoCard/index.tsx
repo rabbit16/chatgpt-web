@@ -3,7 +3,7 @@ import styles from './index.module.less'
 import { Space, Statistic, Tooltip,Avatar } from 'antd'
 import { useMemo } from 'react'
 
-function UserInfoCard(props: { info?: UserInfo,  children?: React.ReactNode;data?:{num:number,avatar:string} }) {
+function UserInfoCard(props: { info?: UserInfo,  children?: React.ReactNode;data?:{num4:number,num:number,avatar:string} }) {
 
   return (
     <div className={styles.userInfo}>
@@ -15,7 +15,9 @@ function UserInfoCard(props: { info?: UserInfo,  children?: React.ReactNode;data
         </div>
         <div className={styles.userInfo_vip}>
           <Space wrap size="large">
-            <Statistic title="剩余提问次数" value={props.data?.num} />
+            <Statistic title="gpt3.5剩余提问次数" value={props.data?.num} />
+            <Statistic title="gpt4剩余提问次数" value={props.data?.num4} />
+
           </Space>
         </div>
       </div>
