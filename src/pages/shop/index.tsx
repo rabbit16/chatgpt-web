@@ -54,7 +54,11 @@ function GoodsPay() {
     setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
   }
   const renderMoneyList=()=>{
-    const moneyInfoList =[{day:30,money:15,level:'普通会员',Describe:"享受  \n\n1. gpt3.5每天30次 \n2. gpt4 每3天10次plus会员",bigMoney:20},{day:10,money:5},{day:30,money:35},{day:30,money:10}]
+    const moneyInfoList =[
+      {day:30,money:15,level:'普通会员',Describe:"享受\n1.gpt3.5每天30次 \n2.gpt4 每3天10次plus会员",bigMoney:20},
+      {day:30,money:35,level:'plus会员',Describe:"享受\n1.gpt3.5免费畅用 \n2.gpt4.0 每天15次",bigMoney:50},
+      {day:30,money:5,level:'按次购买',Describe:"20次gpt3.5对话",bigMoney:10},
+      {day:30,money:10,level:'按次购买',Describe:"12次gpt4.0对话",bigMoney:15}]
     return moneyInfoList.map((value:any)=>{
       return (
       
