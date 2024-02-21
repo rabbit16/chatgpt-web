@@ -1,22 +1,41 @@
-import { AutoComplete, Button, Input, Modal, message, Switch } from 'antd'
+import { AutoComplete, Button, Input, Modal, message, Switch, } from 'antd'
 import styles from './index.module.less'
 import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { promptStore, chatStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import { htmlToImage } from '@/utils'
-
+import { UploadOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import {  Upload } from 'antd';
+import fileIcon from '../../../../assets/img/file.png';
 type Props = {
   onSend: (value: string) => void
   disabled?: boolean
   clearMessage?: () => void
   onStopFetch?: () => void
 }
-
+const propsUpload: UploadProps = {
+  name: 'file',
+  action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+  headers: {
+    authorization: 'authorization-text',
+  },
+  onChange(info) {
+    if (info.file.status !== 'uploading') {
+      console.log(info.file, info.fileList);
+    }
+    if (info.file.status === 'done') {
+      message.success(`${info.file.name} file uploaded successfully`);
+    } else if (info.file.status === 'error') {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  },
+};
 function AllInput(props: Props) {
   const [prompt, setPrompt] = useState('')
   const { localPrompt } = promptStore()
-
+  const [inputFile,setInputFile] = useState();
   const bodyResize = useDocumentResize()
   const [downloadModal, setDownloadModal] = useState({
     open: false,
@@ -57,7 +76,17 @@ function AllInput(props: Props) {
   }, [])
   return (
     <div className={styles.allInput}>
-
+  <Upload {...propsUpload} 
+    maxCount={1}
+    multiple
+  >
+  <div
+          className={styles.allInput_icon}
+       
+        >
+          <img src={fileIcon} alt="" style={{height:'24px',width:'24px'}} />
+        </div>
+  </Upload>
       {bodyResize.width > 800 && (
         <div
           className={styles.allInput_icon}

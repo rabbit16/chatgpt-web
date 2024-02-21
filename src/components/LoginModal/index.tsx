@@ -52,10 +52,10 @@ export function LoginCard(props: {
             fontSize: 14
           }}
         >
-          <p>
+          {/* <p>
             登录即代表你同意 <a href="https://www.baidu.com/">《平台协议》</a>和
             <a href="https://www.baidu.com/">《隐私政策》</a>{' '}
-          </p>
+          </p> */}
         </div>
       )}
       contentStyle={{
@@ -238,6 +238,14 @@ export function LoginCard(props: {
               }
             ]}
           />
+          {/* <ProFormText
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined />
+            }}
+            name="email_code"
+            placeholder="电子邮箱验证码"
+          /> */}
           <ProFormText
             fieldProps={{
               size: 'large',

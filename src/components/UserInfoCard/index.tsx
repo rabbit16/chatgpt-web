@@ -15,9 +15,9 @@ function UserInfoCard(props: { info?: UserInfo,  children?: React.ReactNode;data
         </div>
         <div className={styles.userInfo_vip}>
           <Space wrap size="large">
-            <Statistic title="gpt3.5剩余提问次数" value={props.data?.num} />
-            <Statistic title="gpt4剩余提问次数" value={props.data?.num4} />
-
+            <Statistic title="当前余额" value={props.data?.num} />
+            <Statistic title="今日token计算折扣" value={props.data?.num4} />
+            {/* <Statistic title="累计充值" value={props.data?.num4} /> */}
           </Space>
         </div>
       </div>

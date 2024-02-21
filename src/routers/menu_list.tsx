@@ -52,11 +52,18 @@ const web = [
   //   message: '利用智能AI生成思维导图'
   // },
   {
+    path: 'http://139.9.140.186:8080',
+    name: '智能搜索',
+    icon: <CommentOutlined />,
+    message: '搜索引擎'
+  },
+  {
     path: '/shop',
     name: '商城',
     icon: <ShopOutlined />,
     message: '账户余额和充值套餐记录'
   },
+  
   // {
   //   path: '/user',
   //   name: '邀请',

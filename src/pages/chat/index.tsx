@@ -26,6 +26,7 @@ import RoleNetwork from './components/RoleNetwork'
 import RoleLocal from './components/RoleLocal'
 import AllInput from './components/AllInput'
 import ChatMessage from './components/ChatMessage'
+import { notification } from 'antd'
 import { ChatGpt, RequestChatOptions } from '@/types'
 import { postChatCompletions, postStreamChatCompletions } from '@/request/api'
 import Reminder from '@/components/Reminder'
@@ -229,8 +230,9 @@ function ChatPage() {
 
         const texts = analyzeChatData(text)
         console.log(texts)
-
+        let flag = 0;
         for (let i = 0; i < texts.length; i++) {
+          flag = 1;
           const { choices } = texts[i]
           const {
             finish_reason = '',
@@ -251,6 +253,18 @@ function ChatPage() {
               status: 'pass'
             })
           }
+        }
+        if (flag == 0){
+          notification.error({
+            message: '错误',
+            description: '用户状态过期',
+            style: {
+              top: 60,
+              zIndex: 1011
+            }
+          })
+          userStore.getState().logout()
+          chatStore.getState().clearChats()
         }
         scrollToBottomIfAtBottom()
       }
@@ -357,7 +371,7 @@ function ChatPage() {
                 style={{ width: '100%' }}
                 defaultValue={config.model}
                 value={config.model}
-                options={models.map((m) => ({ ...m, label: 'AI模型: ' + m.label }))}
+                options={models.map((m) => ({ ...m, label: '模型(点击选择): ' + m.label }))}
                 onChange={(e) => {
                   changeConfig({
                     ...config,
@@ -428,7 +442,7 @@ function ChatPage() {
             }}
           >
             <div className={styles.chatPage_container_two_title}>
-              加入上下文:
+              开启记忆模式:
               <Switch
                 checkedChildren="开"
                 unCheckedChildren="关"

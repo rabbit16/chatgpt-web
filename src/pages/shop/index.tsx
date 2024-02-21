@@ -55,20 +55,28 @@ function GoodsPay() {
   }
   const renderMoneyList=()=>{
     const moneyInfoList =[
-      {day:30,money:15,level:'普通会员',Describe:"享受\n1.gpt3.5每天30次 \n2.gpt4 每3天10次plus会员",bigMoney:20},
-      {day:30,money:35,level:'plus会员',Describe:"享受\n1.gpt3.5免费畅用 \n2.gpt4.0 每天15次",bigMoney:50},
-      {day:30,money:5,level:'按次购买',Describe:"20次gpt3.5对话",bigMoney:10},
-      {day:30,money:10,level:'按次购买',Describe:"12次gpt4.0对话",bigMoney:15}]
+      {day:"永久",money:1,level:'',Describe:"体验一下gpt。"},
+      {day:"永久",money:10,level:'',Describe:"攒着\n够用好多次了\n适合轻量用户。"},
+      // {day:30,money:20,level:'gpt3.5购买',Describe:"享受\n1.gpt3.5免费使用",bigMoney:25},
+      // {day:30,money:69.9,level:'gpt4购买',Describe:"享受\n1.gpt4免费使用",bigMoney:140},
+      {day:"永久",money:20,level:'',Describe:"主打一个双倍享受"},
+      {day:"永久",money:50,level:'',Describe:"中度使用用户\n基本满足gpt4的需求\n实现3.5自由。"},
+      {day:"永久",money:100,level:'',Describe:"gpt4随便用\n3.5不屑一顾。"}
+      
+      // {day:90,money:89.9,level:'季度购买',Describe:"享受\n1.gpt3.5免费使用\n2.gpt4每天30次",bigMoney:105},
+      // {day:180,money:169.9,level:'半年购买',Describe:"享受\n1.gpt3.5免费使用\n2.gpt4每天36次",bigMoney:190}, 
+      // {day:365,money:269.9,level:'包年购买',Describe:"享受\n1.gpt3.5免费使用\n2.gpt4每天88次",bigMoney:420},
+    ]
     return moneyInfoList.map((value:any)=>{
       return (
       
         <div className={styles.item} onClick={()=>{getPostMoney(value.money)}}>
           <span className={styles.level}>{value.level}</span>
           <div className={styles.days}>
-            {value.day}天
+            {value.day}
           </div>
           <div className={styles.money_box}>
-            {value.money}元<span className={styles.old_money}>{value.bigMoney}元</span>
+            {value.money}元<span className={styles.old_money}>{value.bigMoney}</span>
           </div>
           <span className={styles.describe}>
             {value.Describe}
@@ -150,7 +158,7 @@ function GoodsPay() {
             <UserInfoCard info={user_info} data={{num4:num4,num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
-              <h4>会员选项</h4>
+              <h4>充值选项 冲多少花多少(手机端需要保存图片在微信扫码支付哦～手机端可左右滑动屏幕观看更多支付选项，电脑端需要按鼠标中键左右拖动)</h4>
               <div className={styles.goodsPay_card_item_box}>
              {renderMoneyList()}
              </div>

@@ -54,7 +54,7 @@ const chatStore = create<ChatState>()(
     page_num:10,
     total:0,
     selectChatId: '',
-    repeatedly:false,
+    repeatedly:true,
     // 初始化
     setPage:(total:number) =>{
       set({total})
