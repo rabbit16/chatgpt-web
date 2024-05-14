@@ -17,7 +17,7 @@ type Props = {
 }
 const propsUpload: UploadProps = {
   name: 'file',
-  action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+  action: '',  //https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188
   headers: {
     authorization: 'authorization-text',
   },
@@ -28,7 +28,7 @@ const propsUpload: UploadProps = {
     if (info.file.status === 'done') {
       message.success(`${info.file.name} file uploaded successfully`);
     } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
+      message.error(`${info.file.name} 对不起，功能正在开发中，后续加入文件问答！`);
     }
   },
 };
@@ -158,11 +158,9 @@ function AllInput(props: Props) {
           ghost
           danger
           disabled={!props.disabled}
-          onClick={() => {
-            props.onStopFetch?.()
-          }}
+       
         >
-          <SyncOutlined spin /> 停止回答 🤚
+          <SyncOutlined spin /> 正在思考 🤚
         </Button>
       ) : (
         <Button

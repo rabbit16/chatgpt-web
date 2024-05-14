@@ -63,6 +63,12 @@ const web = [
     icon: <ShopOutlined />,
     message: '账户余额和充值套餐记录'
   },
+  {
+    path: 'https://www.rabbitj.top/table_show_price.html',
+    name: '对话收费价格',
+    icon: <ShopOutlined />,
+    message: '模型价格'
+  },
   
   // {
   //   path: '/user',

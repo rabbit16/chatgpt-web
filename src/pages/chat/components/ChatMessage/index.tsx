@@ -5,6 +5,7 @@ import OpenAiLogo from '@/components/OpenAiLogo'
 import { Space, Popconfirm, message, Dropdown } from 'antd'
 
 import MarkdownIt from 'markdown-it'
+import { MathJax, MathJaxContext } from "better-react-mathjax";
 import mdKatex from '@traptitech/markdown-it-katex'
 import mila from 'markdown-it-link-attributes'
 import hljs from 'highlight.js'
@@ -15,7 +16,18 @@ import ai4Logo from '@/assets/openai/ai4.svg'
 import avatarIcon from '@/assets/avatar.png'
 import { PluginInfo } from '@/types'
 import PluginCard from '@/components/PluginCard'
-
+const config = {
+  loader: { load: ["input/asciimath"] },
+  asciimath: {
+    displaystyle: true,
+    delimiters: [
+      ["$", "$"],
+      ["`", "`"],
+      ["[", "]"],
+      ["(", ")"],
+    ]
+  }
+};
 const dropdownItems = [
   {
     icon: <CopyOutlined />,
@@ -154,7 +166,11 @@ function ChatMessage({
       />
     )
   }, [content, position])
+  useEffect(() => {
+    if (status !== 'loading') {
 
+    }
+  }, [status])
   useLayoutEffect(() => {
     addCopyEvents()
     return () => {
@@ -214,7 +230,11 @@ function ChatMessage({
             position === 'right' ? styles.right : styles.left
           ])}
         >
-          {status === 'loading' ? <OpenAiLogo rotate /> : renderText}
+          {status === 'loading' ? <OpenAiLogo rotate /> : <MathJaxContext config={config}>
+            <MathJax hideUntilTypeset={"first"}>
+              {renderText}
+              </MathJax>
+              </MathJaxContext>}
           <div
             className={styles.chatMessage_content_operate}
             style={{

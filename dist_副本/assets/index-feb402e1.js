@@ -1,1 +1,0 @@
-import{bc as e,dx as i,cX as o,dP as t}from"./index-c4654276.js";const a="_login_1jhhh_1",r={login:a};function g(){const[s]=e.useForm(),n=i();return o.jsx("div",{className:r.login,children:o.jsx(t,{form:s,onSuccess:()=>{s.resetFields(),n("/")}})})}export{g as default};
