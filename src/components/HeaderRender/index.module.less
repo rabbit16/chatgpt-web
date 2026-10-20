@@ -1,0 +1,128 @@
+.header{
+	height: 56px;
+	display: flex;
+	align-items: center;
+	padding: 0 12px;
+	position: relative;
+	&__menuIcon{
+		font-size: 18px;
+		margin-right: 12px;
+	}
+	&__nameLogo{
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		line-height: 40px;
+		text-align: center;
+		background-color: rgba(197, 196, 193, 0.592);
+	}
+	&__logo{
+		display: flex;
+		height: 28px;
+		img{
+			width: 28px;
+		}
+		h1{
+			margin-block: 0;
+			margin-inline: 0;
+			margin-inline-start: 8px;
+			font-weight: 600;
+			color: rgba(0, 0, 0, 0.88);
+			font-size: 18px;
+			line-height: 1.6;
+		}
+	}
+
+	&__actives{
+		display: flex;
+		align-items: center;
+		margin-left: auto;
+		&_menu{
+			font-size: 24px;
+			margin-left: 12px;
+			color: #666;
+			cursor: pointer;
+			&:hover{
+				color: #1877ff;
+			}
+		}
+	}
+	&__balance {
+		height: 34px;
+		padding: 0 8px;
+		margin: 0 8px;
+		background-color: #f1f1f1;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.3s ease-in-out;
+		&:hover{
+			background-color: #d9d9d9;
+		}
+		p{
+			white-space:nowrap;
+			margin-right: 12px;
+		}
+	}
+}
+
+.billingToast {
+	position: fixed;
+	left: 50%;
+	top: 10px;
+	transform: translateX(-50%);
+	z-index: 1100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	max-width: min(720px, calc(100vw - 24px));
+	padding: 6px 16px;
+	border-radius: 999px;
+	background: rgba(16, 24, 40, 0.88);
+	color: #fff;
+	font-size: 13px;
+	line-height: 1.4;
+	pointer-events: none;
+	box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18);
+	animation: billingToastIn 0.24s ease-out;
+
+	span + span {
+		position: relative;
+		padding-left: 16px;
+
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 50%;
+			width: 1px;
+			height: 10px;
+			background: rgba(255, 255, 255, 0.28);
+			transform: translateY(-50%);
+		}
+	}
+}
+
+@media (max-width: 768px) {
+	.billingToast {
+		top: 8px;
+		border-radius: 12px;
+		font-size: 12px;
+		gap: 4px 10px;
+	}
+}
+
+@keyframes billingToastIn {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -8px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+}

@@ -1,0 +1,426 @@
+.page {
+  min-height: 100%;
+  background: #f4f6fb;
+
+  [class*='ant-pro-layout-content'] {
+    padding-block: 0;
+    background: #f4f6fb !important;
+  }
+}
+
+.wrap {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px 16px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero {
+  padding: 28px 26px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a 0%, #1877ff 58%, #22c1c3 120%);
+
+  h1 {
+    margin: 8px 0 10px;
+    font-size: 30px;
+    line-height: 1.25;
+  }
+}
+
+.kicker,
+.lead {
+  margin: 0;
+}
+
+.kicker {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+.lead {
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card {
+  padding: 22px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  > p {
+    margin: 8px 0 16px;
+    color: #667085;
+    line-height: 1.7;
+  }
+}
+
+.stepHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+
+  span {
+    color: #1877ff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+.phoneBox {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.keyLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+
+  code {
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: #f2f4f7;
+    color: #101828;
+    font-size: 13px;
+    word-break: break-all;
+  }
+}
+
+.keyList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.keyRow,
+.keyRowActive {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+
+  strong {
+    margin-right: 8px;
+  }
+
+  span,
+  em {
+    display: block;
+    color: #667085;
+    font-style: normal;
+    font-size: 12px;
+  }
+}
+
+.keyRow {
+  border: 1px solid #e8edf5;
+}
+
+.keyRowActive {
+  border: 2px solid #1877ff;
+  background: #f5f9ff;
+}
+
+.keyActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hint,
+.ok {
+  margin: 10px 0 0 !important;
+  font-size: 13px;
+}
+
+.ok {
+  color: #067647 !important;
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.choice,
+.choiceActive {
+  text-align: left;
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  background: #fff;
+
+  strong {
+    display: block;
+    margin: 8px 0 6px;
+    color: #101828;
+    font-size: 16px;
+  }
+
+  span {
+    display: block;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.choice {
+  border: 1px solid #e8edf5;
+}
+
+.choiceActive {
+  border: 2px solid #1877ff;
+  background: #f5f9ff;
+}
+
+.moreApps {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.linkLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0 !important;
+  word-break: break-all;
+}
+
+.jobRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.job,
+.jobActive {
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.job {
+  border: 1px solid #e8edf5;
+  background: #fff;
+  color: #475467;
+}
+
+.jobActive {
+  border: 1px solid #1877ff;
+  background: #1877ff;
+  color: #fff;
+}
+
+.clickSteps {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  i {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1877ff;
+    color: #fff;
+    font-style: normal;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+  }
+
+  strong {
+    display: block;
+    color: #101828;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #667085;
+    line-height: 1.6;
+  }
+}
+
+.fillCard {
+  border: 1px solid #dbe7ff;
+  background: #f8fbff;
+  border-radius: 14px;
+  padding: 16px;
+
+  h3 {
+    margin: 0 0 6px;
+  }
+}
+
+.fillLead {
+  margin: 0 0 12px;
+  color: #475467;
+}
+
+.fillList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+
+  li {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) 1fr;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #eef2f7;
+  }
+}
+
+.fillMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  strong {
+    color: #101828;
+    font-size: 15px;
+  }
+
+  em {
+    color: #667085;
+    font-style: normal;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+.fillLabel {
+  color: #1877ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fillValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  code {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 13px;
+    word-break: break-all;
+  }
+}
+
+.warnLine {
+  margin: 14px 0 0 !important;
+  color: #b54708 !important;
+}
+
+.drawNote {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #7a2e0e;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 18px;
+    line-height: 1.8;
+  }
+}
+
+.memory {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  article {
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    display: grid;
+    gap: 6px;
+  }
+
+  strong {
+    font-size: 16px;
+  }
+
+  span {
+    color: #1877ff;
+    font-size: 13px;
+  }
+
+  code {
+    font-size: 12px;
+    word-break: break-all;
+    color: #101828;
+  }
+
+  small {
+    color: #667085;
+  }
+}
+
+@media (max-width: 800px) {
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .choiceGrid,
+  .memory,
+  .fillList li,
+  .phoneBox,
+  .keyRow,
+  .keyRowActive {
+    grid-template-columns: 1fr;
+    flex-wrap: wrap;
+  }
+}

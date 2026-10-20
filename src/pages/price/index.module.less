@@ -1,0 +1,402 @@
+.pricePage {
+  min-height: 100%;
+  background: #f4f6fb;
+
+  [class*='ant-pro-layout-content'] {
+    padding-block: 0;
+    background: #f4f6fb !important;
+  }
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pageHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  h1 { margin: 0 0 6px; font-size: 26px; }
+  p { margin: 0; color: #667085; font-size: 13px; }
+}
+
+.tierNote { margin: 10px 0 0 !important; font-size: 12px; }
+.tableHead small { font-size: 12px; font-weight: 400; color: #667085; }
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f172a 0%, #1877ff 58%, #22c1c3 120%);
+  box-shadow: 0 16px 40px rgba(24, 119, 255, 0.18);
+
+  h1 {
+    margin: 8px 0 10px;
+    font-size: 30px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  button {
+    height: 44px;
+    padding: 0 22px;
+    border: 0;
+    font-weight: 600;
+  }
+}
+
+.kicker {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.lead {
+  max-width: 640px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+
+  span {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 12px;
+  }
+}
+
+.featured {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.featureCard {
+  padding: 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+
+  h3 {
+    margin: 12px 0 8px;
+    font-size: 20px;
+  }
+
+  p {
+    min-height: 44px;
+    margin: 0 0 16px;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.featureCardHot {
+  border-color: #1877ff;
+  box-shadow: 0 12px 28px rgba(24, 119, 255, 0.14);
+}
+
+.featureTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hot {
+  color: #1877ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.featurePrices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  label,
+  small {
+    display: block;
+    color: #98a2b3;
+    font-size: 12px;
+  }
+
+  b {
+    display: block;
+    margin: 4px 0 0;
+    font-size: 16px;
+    color: #1877ff;
+  }
+}
+
+.calculator,
+.tableCard,
+.mediaCard {
+  min-width: 0;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+}
+
+.calculator h2,
+.tableCard h2,
+.mediaCard h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.calculator p {
+  margin: 0 0 16px;
+  color: #667085;
+}
+
+.calcRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+
+  .field:first-child {
+    grid-column: span 2;
+  }
+}
+
+.field,
+.calcResult {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    color: #667085;
+    font-size: 12px;
+  }
+
+  small {
+    color: #98a2b3;
+    font-size: 12px;
+    min-height: 18px;
+  }
+
+  :global(.ant-select),
+  :global(.ant-input-number) {
+    width: 100%;
+  }
+}
+
+.calcFooter {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.calcBreakdown {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475467;
+  font-size: 13px;
+}
+
+.calcResult {
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f0f7ff;
+
+  strong {
+    font-size: 24px;
+    color: #1877ff;
+    line-height: 1.2;
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #344054;
+  }
+}
+
+.tableHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: flex;
+  padding: 4px;
+  border-radius: 8px;
+  background: #f2f4f7;
+  flex-wrap: wrap;
+  gap: 2px;
+
+  button {
+    border: 0;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: 999px;
+    color: #667085;
+    cursor: pointer;
+  }
+}
+
+.tabActive {
+  background: #fff !important;
+  color: #1877ff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+}
+
+.modelCellName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #101828;
+}
+
+.modelCellId {
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.modelIntro {
+  margin-top: 6px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+  max-width: 100%;
+}
+
+.modelPickHint {
+  margin: -8px 0 14px !important;
+  color: #1877ff !important;
+  font-size: 13px !important;
+}
+
+.priceEmpty {
+  color: #98a2b3;
+  font-weight: 500;
+}
+
+.usdOnly {
+  color: #1877ff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.longCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #1877ff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.expand {
+  color: #475467;
+  font-size: 13px;
+  line-height: 1.7;
+
+  p {
+    margin: 0 0 6px;
+  }
+}
+
+.footnote {
+  margin: 12px 0 0;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mediaItem {
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h4 {
+    margin: 8px 0 0;
+    font-size: 14px;
+  }
+
+  p,
+  span {
+    margin: 0;
+    color: #98a2b3;
+    font-size: 12px;
+  }
+
+  b {
+    margin-top: 8px;
+    color: #101828;
+  }
+}
+
+@media (max-width: 960px) {
+  .calcRow .field:first-child {
+    grid-column: auto;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .featured,
+  .mediaGrid,
+  .calcRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tableHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

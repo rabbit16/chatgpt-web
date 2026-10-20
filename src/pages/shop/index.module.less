@@ -1,0 +1,239 @@
+.goodsPay {
+	.describe{
+		white-space: break-spaces;
+	}
+	&_container {
+		width: 100%;
+		max-width: 1000px;
+		margin: 0 auto;
+		overflow: auto;
+		padding: 20px 0;
+
+		&::-webkit-scrollbar {
+			display: none;
+			/* Chrome Safari */
+		}
+	}
+
+	&_card {
+		background-color: #f8f9fa;
+		padding: 12px 20px;
+		border-radius: 12px;
+
+		h4 {
+			font-size: 16px;
+			margin-bottom: 12px;
+			color: #444;
+			cursor: pointer;
+		}
+
+		.priceTitle {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			cursor: default;
+		}
+
+		.pricePreview {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 12px;
+
+			@media (max-width: 768px) {
+				grid-template-columns: 1fr;
+			}
+
+			&Item {
+				padding: 14px;
+				border-radius: 12px;
+				background: #fff;
+				border: 1px solid #edf0f5;
+				cursor: pointer;
+				transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+				&:hover {
+					border-color: #1877ff;
+					box-shadow: 0 8px 20px rgba(24, 119, 255, 0.08);
+				}
+
+				strong {
+					display: block;
+					margin: 8px 0 4px;
+					font-size: 16px;
+				}
+
+				p {
+					margin: 0 0 10px;
+					color: #98a2b3;
+					font-size: 12px;
+				}
+
+				div {
+					color: #344054;
+					font-size: 13px;
+					line-height: 1.7;
+				}
+			}
+		}
+
+		.priceProvider {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 999px;
+			background: #eef4ff;
+			color: #1877ff;
+			font-size: 12px;
+		}
+
+		&_item_box {
+			display: flex;
+			overflow: auto;
+
+			.item {
+				min-width: 120px;
+				// height: 40px;
+				background-color: #fff;
+				border-radius: 4px;
+				padding: 12px;
+				margin: 6px;
+				box-sizing: border-box;
+				border: 1px solid #00000000 ;
+				&:active,&:hover{
+					border: 1px solid #1877ff;
+				}
+				.days {
+					font-size: 24px;
+					color: #1877ff;
+				}
+
+				.money_box {
+					font-size: 16px;
+					font-weight: 500;
+					color: #333;
+
+					.old_money {
+						font-size: 12px;
+						color: #999;
+						text-decoration: line-through;
+						margin-bottom: 2px;
+						margin-left: 4px;
+					}
+				}
+
+			}
+		}
+
+		.customRecharge {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px;
+			flex-wrap: wrap;
+			margin-top: 12px;
+			padding: 14px 16px;
+			border-radius: 12px;
+			background: #fff;
+			border: 1px dashed #b7d2ff;
+
+			strong {
+				display: block;
+				margin-bottom: 4px;
+				color: #101828;
+			}
+
+			p {
+				margin: 0;
+				color: #667085;
+				font-size: 12px;
+			}
+
+			&_form {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+
+				:global(.ant-input-number) {
+					width: 180px;
+				}
+			}
+		}
+	}
+
+	[class*='ant-pro-layout-content'] {
+		padding-block: 0;
+	}
+
+	&_pagination {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		width: 100%;
+		margin-top: 12px;
+	}
+
+	&_pay {
+		display: flex;
+		align-items: center;
+		margin-top: 20px;
+
+		&_type {
+			background-color: #fff;
+			border: 1px solid #999;
+			border-radius: 8px;
+			display: flex;
+			padding-left: 12px;
+
+			img {
+				margin-top: 5px;
+				width: auto;
+				height: 28px;
+			}
+
+			&:hover {
+				border-color: #1677ff;
+			}
+
+			&_select {
+				border-color: #1677ff;
+			}
+		}
+
+	}
+}
+
+.payModal {
+	width: 100%;
+	display: flex;
+	padding: 20px;
+	box-sizing: border-box;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+
+	&_icon {
+		color: red;
+		font-size: 44px;
+	}
+
+	&_paylogo {
+		height: 40px;
+	}
+
+	&_message {
+		text-align: center;
+
+		p {
+			margin-top: 20px;
+
+			span {
+				font-size: 22px;
+				font-weight: 500;
+				color: red;
+			}
+		}
+	}
+
+	&_button {
+		margin-top: 20px;
+	}
+}

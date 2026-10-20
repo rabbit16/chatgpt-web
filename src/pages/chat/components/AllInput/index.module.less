@@ -1,0 +1,34 @@
+.allInput{
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+	width: 100%;
+    &_icon{
+        font-size: 24px;
+        min-width: 40px;
+        min-height: 40px;
+        line-height: 40px;
+        margin-right: 12px;
+        color: #333;
+        cursor: pointer;
+        border-radius: 8px;
+        text-align: center;
+        background-color: transparent;
+        transition: background-color 0.3s ease-in-out;
+		border: 1px solid #d9d9d9;
+        &:hover{
+            background-color: #d9d9d9;
+        }
+    }
+    &_button{
+        margin-left: 12px;
+    }
+
+    :global(.ant-select-disabled .ant-select-selector),
+    :global(.ant-input-disabled),
+    :global(.ant-input[disabled]) {
+        color: #667085 !important;
+        background: #f2f4f7 !important;
+        cursor: not-allowed;
+    }
+}
