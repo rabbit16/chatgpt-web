@@ -58,6 +58,11 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_LLM_PROXY_TARGET || 'https://your-llm-domain.example.com',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/llm/, '')
+        },
+        // 本地开发时把 /v1 代理到线上网关；生产环境由 Nginx 处理
+        '/v1': {
+          target: env.VITE_LLM_PROXY_TARGET || 'https://www.rabbitj.top',
+          changeOrigin: true
         }
       }
     }
