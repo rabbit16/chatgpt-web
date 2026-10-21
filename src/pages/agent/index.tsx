@@ -283,22 +283,22 @@ export function AgentPanel() {
                 onClick={() => setAppId('haha')}
               >
                 <Tag color="blue">推荐</Tag>
-                <strong>Claude-haha</strong>
-                <span>电脑上点几下就能用。支持 OpenAI，写代码、画图一条配置。</span>
+                <strong>Claude-haha（推荐）</strong>
+                <span>桌面客户端，安装即用；兼容 OpenAI 协议，代码与绘图共用一套配置。</span>
               </button>
               <button
                 className={appId === 'codex' ? styles.choiceActive : styles.choice}
                 onClick={() => setAppId('codex')}
               >
                 <strong>Codex</strong>
-                <span>OpenAI 的编程软件。只填三行：密钥、地址、GPT 模型。</span>
+                <span>面向编程的客户端，仅需填写三项：API Key、API 地址与 GPT 模型名。</span>
               </button>
               <button
                 className={appId === 'cursor' ? styles.choiceActive : styles.choice}
                 onClick={() => setAppId('cursor')}
               >
                 <strong>Cursor</strong>
-                <span>编辑器设置里改 OpenAI 地址。</span>
+                <span>代码编辑器，在设置中将 OpenAI Base URL 替换为本站地址。</span>
               </button>
             </div>
             <Button type="link" onClick={() => setShowMoreApps((v) => !v)}>

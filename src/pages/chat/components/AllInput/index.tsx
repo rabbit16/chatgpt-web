@@ -1,6 +1,6 @@
 import { AutoComplete, Button, Input, Modal, message, Switch, } from 'antd'
 import styles from './index.module.less'
-import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
+import { ClearOutlined, CloudDownloadOutlined, PaperClipOutlined, SyncOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { promptStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
@@ -8,7 +8,6 @@ import { htmlToImage } from '@/utils/htmlToImage'
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import {  Upload } from 'antd';
-import fileIcon from '../../../../assets/img/file.png';
 type Props = {
   onSend: (value: string) => Promise<boolean>
   disabled?: boolean
@@ -96,16 +95,14 @@ function AllInput(props: Props) {
     maxCount={1}
     multiple
   >
-  <div
-          className={styles.allInput_icon}
-       
-        >
-          <img src={fileIcon} alt="" style={{height:'24px',width:'24px'}} />
+  <div className={styles.allInput_icon} title="上传附件（开发中）">
+          <PaperClipOutlined />
         </div>
   </Upload>
       {bodyResize.width > 800 && (
         <div
           className={styles.allInput_icon}
+          title="把这段对话存成图片"
           onClick={() => {
             setDownloadModal((d) => ({ ...d, open: true }))
           }}

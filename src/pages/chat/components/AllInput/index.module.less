@@ -1,27 +1,77 @@
 .allInput{
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 10px;
 	width: 100%;
-    &_icon{
-        font-size: 24px;
-        min-width: 40px;
-        min-height: 40px;
-        line-height: 40px;
-        margin-right: 12px;
-        color: #333;
-        cursor: pointer;
-        border-radius: 8px;
-        text-align: center;
-        background-color: transparent;
-        transition: background-color 0.3s ease-in-out;
-		border: 1px solid #d9d9d9;
-        &:hover{
-            background-color: #d9d9d9;
-        }
-    }
+	padding: 10px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	background: var(--surface);
+	box-shadow: 0 6px 20px rgba(16, 32, 64, 0.05);
+	transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+
+	&:focus-within{
+		border-color: var(--brand-soft);
+		box-shadow: 0 6px 24px rgba(24, 119, 255, 0.1);
+	}
+
+	/* 附件 / 下载记录：同一套 40×40 圆角描边按钮，hover 才出现品牌色 */
+	&_icon{
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		font-size: 17px;
+		color: var(--text-3);
+		cursor: pointer;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--border-soft);
+		background: var(--surface-muted);
+		transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+			border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+
+		&:hover{
+			color: var(--brand);
+			background: var(--tint-brand);
+			border-color: var(--brand-soft);
+			transform: translateY(-1px);
+		}
+	}
+
+	/* 多行输入：去边框，只留浅底，聚焦时变白并出品牌光环 */
+	:global{
+		.ant-input,
+		textarea.ant-input{
+			border: none !important;
+			background: var(--surface-muted) !important;
+			border-radius: var(--radius-md) !important;
+			padding: 10px 12px !important;
+			box-shadow: none !important;
+			font-size: 14px !important;
+			line-height: 1.6 !important;
+			resize: none;
+		}
+		.ant-input:focus,
+		textarea.ant-input:focus{
+			background: var(--surface) !important;
+			box-shadow: 0 0 0 3px var(--tint-brand) !important;
+		}
+	}
+
     &_button{
-        margin-left: 12px;
+        flex: 0 0 auto;
+
+        :global(.ant-btn){
+            height: 40px;
+            padding: 0 22px;
+            border-radius: var(--radius-pill);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: none;
+        }
     }
 
     :global(.ant-select-disabled .ant-select-selector),

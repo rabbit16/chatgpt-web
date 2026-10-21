@@ -1,6 +1,6 @@
 /**
- * 接入指南（合并 docs + agent + software）
- * 三步一屏看懂：地址、密钥、模型名；下面是分软件教程与下载。
+ * 接入指南：一条主线，不再用页签分割
+ * 区块顺序：插画三步 → 两项值 → 选软件 → 下载 → 接口文档
  */
 .page {
 	min-height: 100vh;
@@ -14,20 +14,22 @@
 
 .wrap {
 	width: 100%;
-	max-width: 1180px;
+	max-width: 1080px;
 	margin: 0 auto;
-	padding: 24px var(--container-pad) 56px;
+	padding: 28px var(--container-pad) 64px;
 	display: flex;
 	flex-direction: column;
-	gap: 18px;
+	gap: 28px;
 }
 
+/* ---------------- 头部 ---------------- */
 .head {
 	h1 {
-		margin: 8px 0;
-		font-size: 28px;
-		line-height: 1.25;
+		margin: 8px 0 10px;
+		font-size: 30px;
+		line-height: 1.24;
 		letter-spacing: -0.02em;
+		color: var(--text-1);
 	}
 }
 
@@ -43,203 +45,201 @@
 
 .lead {
 	margin: 0;
-	max-width: 56em;
+	max-width: 58em;
 	font-size: 14px;
-	line-height: 1.7;
+	line-height: 1.8;
 	color: var(--text-4);
+
+	b {
+		color: var(--text-2);
+	}
 }
 
-/* 一屏看懂：地址 + 密钥 + 模型名 三个值 */
-.values {
+/* ---------------- 三张插画 ---------------- */
+.steps {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 14px;
+	gap: 16px;
 }
 
-.valueCard {
-	padding: 16px;
+.stepCard {
+	display: flex;
+	flex-direction: column;
 	background: var(--surface);
 	border: 1px solid var(--border-soft);
 	border-radius: var(--radius-lg);
+	overflow: hidden;
+	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 
-	h3 {
-		margin: 0 0 4px;
-		font-size: 13px;
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-hover);
+	}
+}
+
+.stepArt {
+	padding: 14px 14px 0;
+}
+
+/* 插画本身：铺满卡片宽度，圆角与卡片内边距对齐 */
+.art {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: var(--radius-md);
+}
+
+.stepBody {
+	padding: 14px 16px 18px;
+
+	h2 {
+		margin: 6px 0 8px;
+		font-size: 16px;
 		font-weight: 600;
-		color: var(--text-2);
+		line-height: 1.4;
+		color: var(--text-1);
 	}
 
 	p {
-		margin: 0 0 10px;
+		margin: 0 0 8px;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+
+	small {
 		font-size: 12px;
 		line-height: 1.6;
 		color: var(--text-5);
 	}
 }
 
-.valueText {
-	display: block;
-	padding: 8px 10px;
-	border-radius: var(--radius-xs);
-	background: var(--surface-muted);
-	font-family: var(--font-mono);
-	font-size: 12px;
-	color: var(--text-2);
-	word-break: break-all;
+.stepNo {
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	color: var(--brand);
 }
 
-/* 通用流程：4 步横排 */
-.flow {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 10px;
-}
-
-.flowStep {
-	position: relative;
-	padding: 16px;
+/* ---------------- 两项值 ---------------- */
+.values {
+	padding: 20px 22px;
 	background: var(--surface);
 	border: 1px solid var(--border-soft);
 	border-radius: var(--radius-lg);
+}
 
-	h3 {
-		margin: 10px 0 4px;
-		font-size: 14px;
+.valuesHead {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 16px;
+
+	h2 {
+		margin: 0 0 4px;
+		font-size: 16px;
 		font-weight: 600;
 	}
 
 	p {
 		margin: 0;
-		font-size: 12px;
+		font-size: 13px;
 		line-height: 1.6;
 		color: var(--text-4);
 	}
 }
 
-.flowNo {
-	position: absolute;
-	top: 14px;
-	right: 14px;
-	font-family: var(--font-mono);
-	font-size: 12px;
-	color: var(--text-5);
+.valueRows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
+.valueRow {
+	display: grid;
+	grid-template-columns: 240px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
+	background: var(--surface-muted);
+
+	code {
+		font-family: var(--font-mono);
+		font-size: 12.5px;
+		color: var(--text-2);
+		word-break: break-all;
+	}
+}
+
+.valueLabel {
+	font-size: 12.5px;
+	color: var(--text-4);
+}
+
+.valuesFoot {
+	margin: 12px 0 0;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--text-5);
+
+	code {
+		font-family: var(--font-mono);
+		color: var(--text-3);
+	}
+}
+
+/* ---------------- 各区块 ---------------- */
+.block {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+.blockHead {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+
+	h2 {
+		margin: 0 0 4px;
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	p {
+		margin: 0;
+		max-width: 60em;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+/* ---------------- 响应式 ---------------- */
 @media (max-width: 900px) {
-	.values,
-	.flow {
+	.steps {
 		grid-template-columns: 1fr;
+	}
+
+	.valueRow {
+		grid-template-columns: 1fr;
+		gap: 8px;
 	}
 }
 
 @media (max-width: 640px) {
 	.wrap {
-		padding: 18px var(--space-4) 40px;
+		padding: 18px var(--space-4) 44px;
+		gap: 22px;
 	}
 
 	.head h1 {
-		font-size: 22px;
+		font-size: 23px;
 	}
-}
 
-/* ---------- 软件设置界面示意 ---------- */
-.mock {
-	width: 100%;
-	max-width: 720px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	overflow: hidden;
-	box-shadow: 0 10px 30px rgba(16, 32, 64, 0.06);
-}
-
-.mockBar {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 10px 14px;
-	background: var(--surface-muted);
-	border-bottom: 1px solid var(--divider);
-}
-
-.mockDot {
-	width: 9px;
-	height: 9px;
-	border-radius: 50%;
-	background: var(--border);
-}
-
-.mockTitle {
-	margin-left: 8px;
-	font-size: 12px;
-	color: var(--text-5);
-}
-
-.mockBody {
-	padding: 16px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.mockRow {
-	position: relative;
-	display: grid;
-	grid-template-columns: 168px minmax(0, 1fr);
-	align-items: center;
-	gap: 12px;
-
-	label {
-		font-size: 12.5px;
-		color: var(--text-4);
-	}
-}
-
-.mockInput {
-	padding: 8px 10px;
-	border: 1px solid var(--border);
-	border-radius: var(--radius-xs);
-	background: var(--surface-muted);
-	font-family: var(--font-mono);
-	font-size: 12px;
-	color: var(--text-3);
-	word-break: break-all;
-}
-
-/* 需要动手填的格子：品牌浅底 + 序号角标 */
-.mockKey {
-	.mockInput {
-		background: var(--tint-brand);
-		border-color: var(--brand-soft);
-		color: var(--text-2);
-	}
-}
-
-.mockNo {
-	position: absolute;
-	right: -8px;
-	top: -8px;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	background: var(--brand);
-	color: #fff;
-	font-size: 11px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.mockFoot {
-	margin: 0;
-	padding: 10px 16px 14px;
-	font-size: 12px;
-	color: var(--text-5);
-}
-
-@media (max-width: 640px) {
-	.mockRow {
-		grid-template-columns: 1fr;
-		gap: 6px;
+	.blockHead h2 {
+		font-size: 16px;
 	}
 }

@@ -1,4 +1,9 @@
+/* 数字滚动只负责字体特性，字号与颜色一律继承父级，避免被外层规则压小 */
 .count {
 	font-family: var(--font-mono);
 	font-variant-numeric: tabular-nums;
+	font-size: inherit;
+	line-height: inherit;
+	color: inherit;
+	font-weight: inherit;
 }

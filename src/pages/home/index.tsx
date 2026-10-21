@@ -136,7 +136,7 @@ function HomePage() {
                 接通主流大模型
               </h1>
               <p className={styles.subtitle}>
-                兼容 OpenAI 协议，一个密钥调度 GPT、Claude、Gemini 等 {stats.models} 个模型。
+                兼容 OpenAI 协议接入，使用单一密钥即可调度 GPT、Claude、Gemini 等 {stats.models} 个模型。
                 按实际用量付费，余额与账单随时可查。
               </p>
 
@@ -288,7 +288,7 @@ function HomePage() {
           <div className={styles.sectionHead}>
             <div>
               <h2>为什么用兔子网站</h2>
-              <p>只写能兑现的三件事。</p>
+              <p>以下三项均为可直接验证的能力，不含宣传性表述。</p>
             </div>
           </div>
           <div className={styles.featureGrid}>
@@ -305,8 +305,8 @@ function HomePage() {
         {/* ---------- 体验入口 ---------- */}
         <Reveal as="section" className={styles.experience}>
           <div>
-            <h2>先试试再说</h2>
-            <p>不注册也能直接对话和绘图，只是历史不会保存；满意了再拿密钥接入自己的工具。</p>
+            <h2>先体验，再决定</h2>
+            <p>无需注册即可对话与绘图，会话记录不做保留；确认可用后，再生成密钥接入自己的工具。</p>
           </div>
           <div className={styles.experienceActions}>
             <Button size="large" icon={<ExperimentOutlined />} onClick={() => navigate('/chat')}>
@@ -323,8 +323,8 @@ function HomePage() {
         {/* ---------- 底部 CTA ---------- */}
         <Reveal as="section" className={styles.finalCta}>
           <span className={styles.finalGlow} aria-hidden="true" />
-          <h2>把模型接进你的工作流</h2>
-          <p>注册后创建密钥，5 分钟跑通第一条请求。</p>
+          <h2>把模型接入你的工作流</h2>
+          <p>注册并创建密钥后，约 5 分钟即可完成首次调用。</p>
           <div className={styles.finalActions}>
             <Button
               type="primary"

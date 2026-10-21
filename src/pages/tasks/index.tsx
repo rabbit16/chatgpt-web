@@ -152,7 +152,7 @@ export function TasksPanel() {
             type="info"
             className={styles.tip}
             message="任务是怎么来的"
-            description="同一会话里连续的工具调用算一个任务：Claude 的 tool_use、OpenAI 的 function_call 表示还在调工具（进行中），没有待执行工具的 end_turn / stop / completed 才算这一轮结束。"
+            description="同一会话中连续的工具调用归并为同一任务：Claude 的 tool_use、OpenAI 的 function_call 表示仍在调用工具（进行中）；出现 end_turn / stop / completed 且无待执行工具时，该轮结束。"
           />
 
           {!token ? (

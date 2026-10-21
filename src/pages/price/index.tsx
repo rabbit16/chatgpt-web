@@ -315,7 +315,7 @@ function PricePage() {
               <p>
                 {viewTab === 'shop'
                   ? '查看当前余额、选择充值套餐，历史订单在下方列表里'
-                  : '按当前供应商实际可用模型展示 · 美元（USD）/ 百万 tokens · 最新优先'}
+                  : '按当前供应商可用模型展示 · 美元（USD）/ 百万 Tokens · 新模型优先'}
               </p>
             </div>
             {viewTab === 'price' && token && (
@@ -371,7 +371,7 @@ function PricePage() {
               <section className={styles.calculator}>
                 <h2>费用估算</h2>
                 <p>
-                  按当前个人美元单价估算。有长短上下文差价的模型，会按非缓存输入、缓存读取、缓存写入的合计自动切换单价。
+                  依据当前账号单价估算。若模型设有长短上下文差价，将按非缓存输入、缓存读取与缓存写入的合计自动切换计价档位。
                 </p>
                 {currentModel?.intro ? <p className={styles.modelPickHint}>当前选型：{currentModel.intro}</p> : null}
                 <div className={styles.calcRow}>
