@@ -13,6 +13,7 @@ import {
 } from '@/request/api'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
+import Sparkline from './Sparkline'
 import styles from './index.module.less'
 
 const PAGE_SIZE = 20
@@ -97,6 +98,8 @@ export function UsagePanel() {
   const [loading, setLoading] = useState(false)
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [list, setList] = useState<UsageItem[]>([])
+  // 趋势图单独取最近 200 条（只用于画图，不影响表格分页）
+  const [trendItems, setTrendItems] = useState<UsageItem[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [summary, setSummary] = useState<UsageSummary | null>(null)
@@ -108,6 +111,24 @@ export function UsagePanel() {
   const [applied, setApplied] = useState<UsageQueryFilters>({})
 
   const pageCharged = useMemo(() => sumBilledCharged(list), [list])
+
+  // 趋势图：按当前筛选条件取最近 200 条，聚合到天
+  useEffect(() => {
+    if (!token || !hasUserId) return
+    let alive = true
+    void (async () => {
+      try {
+        const data = await getRequestUsage({ ...applied, userId, limit: 200, offset: 0 })
+        if (alive) setTrendItems(data.items)
+      } catch {
+        /* 趋势图失败不影响主表格 */
+      }
+    })()
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applied, token, hasUserId, page])
 
   const buildFilters = (): UsageQueryFilters => {
     const filters: UsageQueryFilters = { userId, ...rangeToApi(range) }
@@ -263,6 +284,8 @@ export function UsagePanel() {
                   <Button onClick={onReset}>重置</Button>
                 </Space>
               </div>
+
+              <Sparkline items={trendItems.length ? trendItems : list} />
 
               <div className={styles.stats}>
                 <div className={styles.stat}>

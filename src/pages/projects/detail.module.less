@@ -170,3 +170,75 @@
 	font-size: 18px;
 	line-height: 1;
 }
+
+/* ---------- 版本时间线 ---------- */
+.timeline {
+	margin: 0;
+	padding: 0 0 0 6px;
+	list-style: none;
+	position: relative;
+
+	&::before {
+		content: '';
+		position: absolute;
+		left: 9px;
+		top: 6px;
+		bottom: 10px;
+		width: 1px;
+		background: var(--divider);
+	}
+}
+
+.timelineItem {
+	position: relative;
+	display: flex;
+	gap: 14px;
+	padding: 0 0 16px;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.timelineDot {
+	position: relative;
+	z-index: 1;
+	flex: 0 0 auto;
+	width: 7px;
+	height: 7px;
+	margin-top: 6px;
+	margin-left: 3px;
+	border-radius: 50%;
+	background: var(--brand);
+	box-shadow: 0 0 0 3px var(--tint-brand);
+}
+
+.timelineBody {
+	min-width: 0;
+
+	p {
+		margin: 4px 0 0;
+		font-size: 12.5px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+.timelineHead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+
+	strong {
+		font-size: 13.5px;
+		font-weight: 600;
+		color: var(--text-1);
+	}
+
+	time {
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		color: var(--text-5);
+	}
+}

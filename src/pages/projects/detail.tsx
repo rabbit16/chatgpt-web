@@ -145,21 +145,31 @@ function ProjectDetailPage() {
             ) : null}
           </section>
 
+          {/* 版本时间线：一眼看清哪个平台哪一版改了什么 */}
           <section className={styles.changelog}>
-            <h2>更新说明</h2>
-            <ul>
-              {project.releases
-                .filter((r) => r.changelog)
+            <h2>版本更新</h2>
+            <ol className={styles.timeline}>
+              {[...project.releases]
+                .filter((r) => r.status !== 'rejected')
+                .sort((a, b) => String(b.version).localeCompare(String(a.version), 'en', { numeric: true }))
                 .map((r) => (
-                  <li key={r.id}>
-                    <strong>
-                      {PLATFORM_LABEL[r.platform]} v{r.version}
-                    </strong>
-                    <span>{r.changelog}</span>
+                  <li key={r.id} className={styles.timelineItem}>
+                    <span className={styles.timelineDot} />
+                    <div className={styles.timelineBody}>
+                      <div className={styles.timelineHead}>
+                        <strong>
+                          {PLATFORM_LABEL[r.platform]} v{r.version || '—'}
+                        </strong>
+                        {r.created_at ? <time>{String(r.created_at).slice(0, 10)}</time> : null}
+                        <Tag color={r.status === 'approved' ? 'green' : 'orange'}>
+                          {r.status === 'approved' ? '已上架' : '审核中'}
+                        </Tag>
+                      </div>
+                      <p>{r.changelog || '这一版没有填写更新说明。'}</p>
+                    </div>
                   </li>
                 ))}
-              {project.releases.every((r) => !r.changelog) ? <li className={styles.muted}>暂无更新说明</li> : null}
-            </ul>
+            </ol>
           </section>
         </div>
       </Layout>

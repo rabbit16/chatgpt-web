@@ -72,6 +72,7 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
         platform: 'windows',
         file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.3.0-windows.zip',
         file_size: '414 KB',
+        created_at: '2026-10-20 21:18',
         changelog: '免安装版，解压后直接运行；修复托盘余额刷新延迟。',
         status: 'approved'
       },
@@ -81,6 +82,7 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
         platform: 'macos',
         file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.3.0-macos.zip',
         file_size: '1.1 MB',
+        created_at: '2026-10-20 21:18',
         changelog: '与 Windows 版同步到 1.3.0；解压后拖入「应用程序」，首次打开需在「隐私与安全性」中允许。',
         status: 'approved'
       },
@@ -90,6 +92,7 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
         platform: 'linux',
         file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.1.0-linux.zip',
         file_size: '70 KB',
+        created_at: '2026-10-20 20:30',
         changelog: 'Linux 版：解压后运行 install.sh 安装，卸载运行 uninstall.sh。',
         status: 'approved'
       }
