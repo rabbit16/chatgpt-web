@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import UserInfoCard from '@/components/UserInfoCard'
 import styles from './index.module.less'
-import Layout from '@/components/Layout'
 import { userStore } from '@/store'
 import {Image,Spin, Button, InputNumber, Modal, Pagination, Space, Table, message } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
@@ -28,7 +27,7 @@ type FeaturedCard = {
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || ''
 
-function GoodsPay() {
+export function ShopPanel() {
   const navigate = useNavigate()
   const { token, user_info, llm_api_key } = userStore();
   const phone =
@@ -224,8 +223,7 @@ function GoodsPay() {
     )
   }
   return (
-    <div className={styles.goodsPay}>
-      <Layout>
+    <div className={styles.shopPanel}>
         <Modal title="微信支付" open={moneyObj.visiblePop} onOk={handleOk} onCancel={handleCancel}>
 
         <div style={{display:'flex',justifyContent:'center'}}>
@@ -374,9 +372,8 @@ function GoodsPay() {
             </div>
           </Space>
         </div>
-      </Layout>
     </div>
   )
 }
 
-export default GoodsPay
+export default ShopPanel

@@ -11,10 +11,10 @@
 			background-color var(--dur) var(--ease);
 
 		&_text {
-			height: 100%;
 			display: flex;
 			flex-direction: column;
 			align-items: flex-start;
+			justify-content: center;
 		}
 	}
 
@@ -22,14 +22,15 @@
 	&_horizontal {
 		align-items: center;
 		height: var(--header-h);
-		margin-left: 32px;
-		gap: 2px;
+		margin-left: auto;
+		gap: 1px;
+		min-width: 0;
 
 		.item {
-			/* 药丸式选中态（学模板站）：悬停浅底、选中品牌浅底，不用下划线 */
-			padding: 0 12px;
-			margin: 0 2px;
-			height: 36px;
+			/* 药丸式选中态：悬停浅底、选中品牌浅底，不用下划线 */
+			padding: 0 10px;
+			margin: 0 1px;
+			height: 34px;
 			border-radius: var(--radius-pill);
 			white-space: nowrap;
 
@@ -39,17 +40,20 @@
 			}
 
 			&_icon {
-				font-size: 15px;
 				display: inline-flex;
 				align-items: center;
+				justify-content: center;
+				width: 16px;
+				height: 16px;
+				font-size: 15px;
+				line-height: 1;
 			}
 
 			&_title {
 				white-space: nowrap;
-				font-size: 14px;
-				margin-left: 6px;
-				display: inline-flex;
-				align-items: center;
+				font-size: 13.5px;
+				line-height: 1;
+				margin: 0 0 0 6px;
 				color: inherit;
 			}
 

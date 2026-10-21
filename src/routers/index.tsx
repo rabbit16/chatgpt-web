@@ -16,7 +16,6 @@ export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index
 
 const HomePage = React.lazy(() => import('@/pages/home'))
 const ChatPage = React.lazy(() => import('@/pages/chat'))
-const ShopPage = React.lazy(() => import('@/pages/shop'))
 const UsagePage = React.lazy(() => import('@/pages/usage'))
 const TasksPage = React.lazy(() => import('@/pages/tasks'))
 const PricePage = React.lazy(() => import('@/pages/price'))
@@ -56,12 +55,13 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'ShopPage',
+    id: 'ShopRedirect',
     path: '/shop',
-    element: <ShopPage />,
+    element: <Navigate to="/price?tab=shop" replace />,
     children: [],
     configure: {
       verifToken: true,
+      title: '余额与充值',
       role: ['user', 'administrator']
     }
   },

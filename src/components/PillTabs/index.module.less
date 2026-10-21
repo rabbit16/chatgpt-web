@@ -1,0 +1,39 @@
+/**
+ * 药丸式页签：浅灰底槽 + 白色浮起的当前项。
+ */
+.tabs {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px;
+	width: fit-content;
+	border-radius: var(--radius-md);
+	background: var(--surface-muted);
+}
+
+.tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 16px;
+	border: none;
+	background: transparent;
+	border-radius: var(--radius-xs);
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--text-4);
+	cursor: pointer;
+	transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+		box-shadow var(--dur) var(--ease);
+
+	&:hover {
+		color: var(--text-2);
+	}
+}
+
+.active {
+	background: var(--surface);
+	color: var(--text-1);
+	font-weight: 500;
+	box-shadow: var(--shadow-xs);
+}

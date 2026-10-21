@@ -1,52 +1,42 @@
 import menuList from '@/routers/menu_list'
 import styles from './index.module.less'
 import { joinTrim } from '@/utils'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useMemo } from 'react'
 import { userStore } from '@/store'
-import { Dropdown } from 'antd'
-import { DownOutlined, EllipsisOutlined } from '@ant-design/icons'
 
 type Props = {
   mode?: 'vertical' | 'horizontal' | 'inline'
 }
 
-type MenuItemData = (typeof menuList.web)[number]
+type MenuItemData = (typeof menuList.guestNav)[number]
 
 /**
- * 导航菜单（T2 · IA-2）
+ * 导航菜单（扁平化 + 靠右）
  * ------------------------------------------------------------
- * horizontal：顶栏只出 5 项高频 + 「更多」下拉，解决 11 项挤一行；
- * inline/vertical：保持完整列表，给移动端抽屉用。
- * 当前页若在「更多」里，更多按钮本身高亮，用户不会"迷路"。
+ * 没有「更多」下拉了：访客 7 项、登录后 8 项全部平铺，右对齐到登录按钮旁。
+ * 当前页高亮为药丸底（浅蓝底 + 品牌字色），移动端沿用竖向列表。
  */
 function MenuList(props: Props) {
   const location = useLocation()
-  const navigate = useNavigate()
-
-  const pathname = useMemo(() => {
-    return location.pathname
-  }, [location])
-
   const { mode = 'horizontal' } = props
   const token = userStore((state) => state.token)
-  // 未登录访客看到「体验 / 价格 / 文档」，登录用户看到自己的工具入口
-  const primary = token ? menuList.primary : menuList.guestPrimary
-  const more = token ? menuList.more : menuList.guestMore
+
+  const pathname = useMemo(() => location.pathname, [location])
+
+  const items: MenuItemData[] = token ? menuList.userNav : menuList.guestNav
 
   const renderItem = (item: MenuItemData) => {
     const isExternal = /^(http:\/\/|https:\/\/)/.test(item.path)
+    const active = pathname === item.path
+
     return (
       <Link key={item.path} to={item.path} target={isExternal ? '_blank' : '_self'}>
-        <div
-          className={joinTrim([styles.item, pathname === item.path ? styles.select_item : ''])}
-        >
+        <div className={joinTrim([styles.item, active ? styles.select_item : ''])}>
           <span className={styles.item_icon}>{item.icon}</span>
           <div className={styles.item_text}>
             <p className={styles.item_title}>{item.name}</p>
-            {mode !== 'horizontal' && (
-              <span className={styles.item_message}>{item.message}</span>
-            )}
+            {mode !== 'horizontal' && <span className={styles.item_message}>{item.message}</span>}
           </div>
         </div>
       </Link>
@@ -56,44 +46,15 @@ function MenuList(props: Props) {
   if (mode !== 'horizontal') {
     return (
       <div className={joinTrim([styles.menuList, styles['menuList_' + mode]])}>
-        {[...primary, ...more].map(renderItem)}
+        {items.map(renderItem)}
       </div>
     )
   }
 
-  const hasActiveInMore = more.some((item) => item.path === pathname)
-
-  const moreItems = more.map((item) => ({
-    key: item.path,
-    icon: item.icon,
-    label: item.name,
-    onClick: () => navigate(item.path)
-  }))
-
   return (
-    <div className={joinTrim([styles.menuList, styles.menuList_horizontal])}>
-      {primary.map(renderItem)}
-      <Dropdown
-        menu={{ items: moreItems, selectedKeys: [pathname] }}
-        trigger={['hover', 'click']}
-        placement="bottomRight"
-      >
-        <div
-          className={joinTrim([styles.item, hasActiveInMore ? styles.select_item : ''])}
-          aria-label="更多功能"
-        >
-          <span className={styles.item_icon}>
-            <EllipsisOutlined />
-          </span>
-          <div className={styles.item_text}>
-            <p className={styles.item_title}>
-              更多
-              <DownOutlined className={styles.item_caret} />
-            </p>
-          </div>
-        </div>
-      </Dropdown>
-    </div>
+    <nav className={joinTrim([styles.menuList, styles.menuList_horizontal])} aria-label="主导航">
+      {items.map(renderItem)}
+    </nav>
   )
 }
 

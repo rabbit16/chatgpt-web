@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
+import { useSearchParams } from 'react-router-dom'
 import { ReloadOutlined } from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
 import Layout from '@/components/Layout'
+import PillTabs from '@/components/PillTabs'
+import ShopPanel from '@/pages/shop'
 import { getUserPricing, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
@@ -72,6 +75,15 @@ function longContextGate(rate: UserModelRate['long_context']) {
 }
 
 function PricePage() {
+  // 价格与充值合并在同一页：?tab=shop 看余额与套餐
+  const [searchParams, setSearchParams] = useSearchParams()
+  const viewTab = searchParams.get('tab') === 'shop' ? 'shop' : 'price'
+  const switchTab = (next: string) => {
+    const nextParams = new URLSearchParams(searchParams)
+    if (next === 'shop') nextParams.set('tab', 'shop')
+    else nextParams.delete('tab')
+    setSearchParams(nextParams, { replace: true })
+  }
   const { token, user_info, setLoginModal, llm_api_key } = userStore()
   const info = user_info as { data?: { bodyMessage?: { telephone?: string } }; telephone?: string } | undefined
   const phone = info?.data?.bodyMessage?.telephone || info?.telephone
@@ -299,15 +311,43 @@ function PricePage() {
         <div className={styles.wrap}>
           <header className={styles.pageHead}>
             <div>
-              <h1>模型价格</h1>
-              <p>按当前供应商实际可用模型展示 · 美元（USD）/ 百万 tokens · 最新优先</p>
+              <h1>{viewTab === 'shop' ? '余额与充值' : '模型价格'}</h1>
+              <p>
+                {viewTab === 'shop'
+                  ? '查看当前余额、选择充值套餐，历史订单在下方列表里'
+                  : '按当前供应商实际可用模型展示 · 美元（USD）/ 百万 tokens · 最新优先'}
+              </p>
             </div>
-            {token && (
+            {viewTab === 'price' && token && (
               <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadPricing()}>
                 刷新价格
               </Button>
             )}
           </header>
+
+          <PillTabs
+            ariaLabel="价格与充值"
+            value={viewTab}
+            onChange={switchTab}
+            items={[
+              { key: 'price', label: '模型价格' },
+              { key: 'shop', label: '余额与充值' }
+            ]}
+          />
+
+          {viewTab === 'shop' ? (
+            token ? (
+              <ShopPanel />
+            ) : (
+              <div className={styles.publicNote}>
+                <span className={styles.publicNoteText}>登录后可以查看余额、选择套餐充值</span>
+                <Button type="primary" onClick={() => setLoginModal(true)}>
+                  登录 / 注册
+                </Button>
+              </div>
+            )
+          ) : (
+            <>
 
           {!token ? (
             <div className={styles.publicNote}>
@@ -550,6 +590,8 @@ function PricePage() {
               <p className={styles.footnote}>
                 列表完全跟随当前供应商价目；本地简介仅作选型参考。单位为美元 / 百万 tokens。长上下文价按整笔请求切换，阈值按非缓存输入、缓存读取与缓存写入合计计算。
               </p>
+            </>
+          )}
             </>
           )}
         </div>
