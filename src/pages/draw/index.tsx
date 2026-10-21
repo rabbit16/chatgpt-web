@@ -22,6 +22,7 @@ import {
   UploadOutlined
 } from '@ant-design/icons'
 import Layout from '@/components/Layout'
+import ExperienceTabs from '@/components/ExperienceTabs'
 import { userStore } from '@/store'
 import {
   getUserPricing,
@@ -409,6 +410,7 @@ function DrawPage() {
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
+          <ExperienceTabs />
           <header className={styles.head}>
             <div>
               <p className={styles.kicker}>

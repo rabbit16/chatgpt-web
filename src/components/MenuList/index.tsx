@@ -3,6 +3,7 @@ import styles from './index.module.less'
 import { joinTrim } from '@/utils'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useMemo } from 'react'
+import { userStore } from '@/store'
 import { Dropdown } from 'antd'
 import { DownOutlined, EllipsisOutlined } from '@ant-design/icons'
 
@@ -28,6 +29,10 @@ function MenuList(props: Props) {
   }, [location])
 
   const { mode = 'horizontal' } = props
+  const token = userStore((state) => state.token)
+  // 未登录访客看到「体验 / 价格 / 文档」，登录用户看到自己的工具入口
+  const primary = token ? menuList.primary : menuList.guestPrimary
+  const more = token ? menuList.more : menuList.guestMore
 
   const renderItem = (item: MenuItemData) => {
     const isExternal = /^(http:\/\/|https:\/\/)/.test(item.path)
@@ -51,14 +56,14 @@ function MenuList(props: Props) {
   if (mode !== 'horizontal') {
     return (
       <div className={joinTrim([styles.menuList, styles['menuList_' + mode]])}>
-        {menuList.web.map(renderItem)}
+        {[...primary, ...more].map(renderItem)}
       </div>
     )
   }
 
-  const hasActiveInMore = menuList.more.some((item) => item.path === pathname)
+  const hasActiveInMore = more.some((item) => item.path === pathname)
 
-  const moreItems = menuList.more.map((item) => ({
+  const moreItems = more.map((item) => ({
     key: item.path,
     icon: item.icon,
     label: item.name,
@@ -67,7 +72,7 @@ function MenuList(props: Props) {
 
   return (
     <div className={joinTrim([styles.menuList, styles.menuList_horizontal])}>
-      {menuList.primary.map(renderItem)}
+      {primary.map(renderItem)}
       <Dropdown
         menu={{ items: moreItems, selectedKeys: [pathname] }}
         trigger={['hover', 'click']}

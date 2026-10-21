@@ -19,6 +19,7 @@ const ShopPage = React.lazy(() => import('@/pages/shop'))
 const UsagePage = React.lazy(() => import('@/pages/usage'))
 const TasksPage = React.lazy(() => import('@/pages/tasks'))
 const PricePage = React.lazy(() => import('@/pages/price'))
+const DocsPage = React.lazy(() => import('@/pages/docs'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const AnnouncementPage = React.lazy(() => import('@/pages/announcement'))
 const FeedbackPage = React.lazy(() => import('@/pages/feedback'))
@@ -82,6 +83,18 @@ export const webRouter: RouteOptions[] = [
       verifToken: false,
       public: true,
       title: '模型价格',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'DocsPage',
+    path: '/docs',
+    element: <DocsPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '接入文档',
       role: ['user', 'administrator']
     }
   },

@@ -1,0 +1,35 @@
+/**
+ * 模型体验页签：紧贴内容顶部，一行高，不额外占空间。
+ */
+.tabs {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px;
+	margin-bottom: 12px;
+	border-radius: var(--radius-md);
+	background: var(--surface-muted);
+}
+
+.tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border-radius: var(--radius-xs);
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--text-4);
+	transition: all var(--dur) var(--ease);
+
+	&:hover {
+		color: var(--text-2);
+	}
+}
+
+.active {
+	background: var(--surface);
+	color: var(--text-1);
+	font-weight: 500;
+	box-shadow: var(--shadow-xs);
+}

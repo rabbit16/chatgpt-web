@@ -1,17 +1,17 @@
 import {
   ApiOutlined,
   BarChartOutlined,
+  BookOutlined,
+  ExperimentOutlined,
   CloudDownloadOutlined,
   CloudServerOutlined,
   BulbOutlined,
-  CommentOutlined,
   DashboardOutlined,
   ProfileOutlined,
   FormOutlined,
   HistoryOutlined,
   MoneyCollectFilled,
   NotificationOutlined,
-  PictureOutlined,
   SettingOutlined,
   ShopOutlined,
   TeamOutlined,
@@ -30,19 +30,18 @@ import {
  * 账号相关（个人资料/钱包/后台）在头像菜单里，不占顶栏。
  */
 
+/**
+ * 模型体验：对话与绘图合并成一个入口（页内用页签切换），菜单只占一格。
+ */
+const experience = {
+  path: '/',
+  name: '模型体验',
+  icon: <ExperimentOutlined />,
+  message: '对话与绘图，登录后保存历史'
+}
+
 const primary = [
-  {
-    path: '/',
-    name: '对话',
-    icon: <CommentOutlined />,
-    message: '与智能AI进行对话交流'
-  },
-  {
-    path: '/draw',
-    name: '绘图',
-    icon: <PictureOutlined />,
-    message: 'TeamRouter 图像模型生成图片'
-  },
+  experience,
   {
     path: '/shop',
     name: '商城',
@@ -99,6 +98,64 @@ const more = [
     name: '个人资料',
     icon: <UserOutlined />,
     message: '修改名称、手机号、邮箱和密码'
+  }
+]
+
+/**
+ * 未登录访客导航（S3）
+ * ------------------------------------------------------------
+ * 站点定位是"卖 API 中转"，访客第一眼要看到"体验 / 价格 / 文档"，
+ * 而不是把首页当成一个聊天工具。商品类（商城）与账号类（使用记录）收进「更多」。
+ */
+const guestPrimary = [
+  {
+    ...experience,
+    message: '不登录也能试对话与绘图，历史不保存'
+  },
+  {
+    path: '/price',
+    name: '模型价格',
+    icon: <MoneyCollectFilled />,
+    message: '公开参考价，注册后看你的折扣'
+  },
+  {
+    path: '/docs',
+    name: '接入文档',
+    icon: <BookOutlined />,
+    message: '三步接入：密钥、地址、第一条请求'
+  }
+]
+
+const guestMore = [
+  {
+    path: '/shop',
+    name: '商城',
+    icon: <ShopOutlined />,
+    message: '账户余额和充值套餐记录'
+  },
+  {
+    path: '/agent',
+    name: 'Agent 接入',
+    icon: <ApiOutlined />,
+    message: '中转地址对接 Claude Code / Codex'
+  },
+  {
+    path: '/software',
+    name: '软件下载',
+    icon: <CloudDownloadOutlined />,
+    message: '按分类浏览软件，跳转网盘下载'
+  },
+  {
+    path: '/announcement',
+    name: '公告',
+    icon: <NotificationOutlined />,
+    message: '查看站点公告与历史通知'
+  },
+  {
+    path: '/feedback',
+    name: '留言',
+    icon: <FormOutlined />,
+    message: '可匿名留言，不留名就不记身份'
   }
 ]
 
@@ -168,7 +225,10 @@ const admin = {
 
 export default {
   web,
+  experience,
   primary,
   more,
+  guestPrimary,
+  guestMore,
   admin
 }
