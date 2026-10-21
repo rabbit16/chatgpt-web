@@ -335,8 +335,7 @@ function HomePage() {
           <span className={styles.footerLinks}>
             <Link to="/price">模型价格</Link>
             <Link to="/docs">接入文档</Link>
-            <Link to="/announcement">公告</Link>
-            <Link to="/feedback">留言</Link>
+            <Link to="/notice">公告留言</Link>
           </span>
         </footer>
       </Layout>

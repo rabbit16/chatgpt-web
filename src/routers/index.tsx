@@ -1,5 +1,5 @@
 import React from 'react'
-import type { RouteObject } from 'react-router-dom'
+import { Navigate, type RouteObject } from 'react-router-dom'
 
 type ConfigureType = {
   verifToken?: boolean
@@ -22,8 +22,7 @@ const TasksPage = React.lazy(() => import('@/pages/tasks'))
 const PricePage = React.lazy(() => import('@/pages/price'))
 const DocsPage = React.lazy(() => import('@/pages/docs'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
-const AnnouncementPage = React.lazy(() => import('@/pages/announcement'))
-const FeedbackPage = React.lazy(() => import('@/pages/feedback'))
+const NoticePage = React.lazy(() => import('@/pages/notice'))
 const AgentPage = React.lazy(() => import('@/pages/agent'))
 const SoftwarePage = React.lazy(() => import('@/pages/software'))
 const ProfilePage = React.lazy(() => import('@/pages/profile'))
@@ -124,26 +123,39 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'AnnouncementPage',
-    path: '/announcement',
-    element: <AnnouncementPage />,
+    id: 'NoticePage',
+    path: '/notice',
+    element: <NoticePage />,
     children: [],
     configure: {
       verifToken: false,
       public: true,
-      title: '公告',
+      title: '公告与留言',
+      role: ['user', 'administrator']
+    }
+  },
+  // 老地址保留跳转，避免站内旧链接与收藏失效
+  {
+    id: 'AnnouncementRedirect',
+    path: '/announcement',
+    element: <Navigate to="/notice" replace />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '公告与留言',
       role: ['user', 'administrator']
     }
   },
   {
-    id: 'FeedbackPage',
+    id: 'FeedbackRedirect',
     path: '/feedback',
-    element: <FeedbackPage />,
+    element: <Navigate to="/notice?tab=feedback" replace />,
     children: [],
     configure: {
       verifToken: false,
       public: true,
-      title: '留言反馈',
+      title: '公告与留言',
       role: ['user', 'administrator']
     }
   },

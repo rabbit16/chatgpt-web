@@ -82,16 +82,10 @@ const more = [
     message: '按分类浏览软件，跳转网盘下载'
   },
   {
-    path: '/announcement',
-    name: '公告',
+    path: '/notice',
+    name: '公告留言',
     icon: <NotificationOutlined />,
-    message: '查看站点公告与历史通知'
-  },
-  {
-    path: '/feedback',
-    name: '留言',
-    icon: <FormOutlined />,
-    message: '可匿名留言，不留名就不记身份'
+    message: '看通知、提建议，匿名也行'
   },
   {
     path: '/profile',
@@ -146,16 +140,10 @@ const guestMore = [
     message: '按分类浏览软件，跳转网盘下载'
   },
   {
-    path: '/announcement',
-    name: '公告',
+    path: '/notice',
+    name: '公告留言',
     icon: <NotificationOutlined />,
-    message: '查看站点公告与历史通知'
-  },
-  {
-    path: '/feedback',
-    name: '留言',
-    icon: <FormOutlined />,
-    message: '可匿名留言，不留名就不记身份'
+    message: '看通知、提建议，匿名也行'
   }
 ]
 

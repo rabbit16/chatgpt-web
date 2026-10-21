@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Empty, Form, Input, Pagination, Spin, Switch, Tag, message } from 'antd'
-import Layout from '@/components/Layout'
 import { userStore } from '@/store'
 import { getFeedbackList, postFeedback } from '@/request/api'
 import styles from './index.module.less'
@@ -24,7 +23,7 @@ type FeedbackItem = {
 
 const PAGE_SIZE = 10
 
-function FeedbackPage() {
+export function FeedbackPanel() {
   const [form] = Form.useForm<FeedbackForm>()
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -81,19 +80,6 @@ function FeedbackPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
-          <section className={styles.hero}>
-            <div>
-              <p className={styles.kicker}>公共留言板</p>
-              <h1>看看大家怎么说</h1>
-              <p className={styles.lead}>
-                这里是共享频道，所有人都能看到留言和管理员回复。默认匿名：不署名就不绑定账号，也不会留下可识别身份；联系方式选填，你不填我们就不记录。
-              </p>
-            </div>
-          </section>
-
           <div className={styles.board}>
             <section className={`${styles.card} ${styles.listCard}`}>
               <div className={styles.listHead}>
@@ -209,11 +195,8 @@ function FeedbackPage() {
                 </Button>
               </Form>
             </section>
-          </div>
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default FeedbackPage
+export default FeedbackPanel

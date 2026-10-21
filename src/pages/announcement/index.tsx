@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Empty, Pagination, Spin, Tag } from 'antd'
 import { NotificationOutlined } from '@ant-design/icons'
-import Layout from '@/components/Layout'
 import { getAnnouncementList, type AnnouncementItem } from '@/request/api'
 import styles from './index.module.less'
 
 const PAGE_SIZE = 10
 
-function AnnouncementPage() {
+export function AnnouncementPanel() {
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<AnnouncementItem[]>([])
   const [page, setPage] = useState(1)
@@ -31,19 +30,7 @@ function AnnouncementPage() {
   }, [loadList])
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
-          <section className={styles.hero}>
-            <div>
-              <p className={styles.kicker}>
-                <NotificationOutlined /> 站点公告
-              </p>
-              <h1>公告栏</h1>
-              <p className={styles.lead}>查看最新通知与历史公告。进入网站时会自动弹出最新一条。</p>
-            </div>
-          </section>
-
+    <div className={styles.panel}>
           <section className={styles.card}>
             <div className={styles.listHead}>
               <h2>全部公告</h2>
@@ -79,10 +66,8 @@ function AnnouncementPage() {
               </div>
             ) : null}
           </section>
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default AnnouncementPage
+export default AnnouncementPanel
