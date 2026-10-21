@@ -224,12 +224,6 @@ function PricePage() {
   const write = billedRate ? estimate(billedRate.cache_write, cacheWriteTokens) : 0
   const output = billedRate ? estimate(billedRate.output, outputTokens) : 0
 
-  // 极简图示用：目前最低的输入单价，给访客一个具体数字
-  const minInputPrice = useMemo(() => {
-    const values = models.map((item) => standardRate(item.rates).input).filter((value) => value > 0)
-    return values.length ? Math.min(...values) : 0
-  }, [models])
-
   const columns = [
     {
       title: '模型',
@@ -379,7 +373,7 @@ function PricePage() {
               </div>
             </div>
             <p className={styles.moneyFlowFormula}>
-              费用 = 单价 × Tokens ÷ 100 万，最低约 <b>{formatPrice(minInputPrice)}</b> / 百万 Tokens
+              费用 = 单价 × Tokens ÷ 100 万，用多少算多少，没有最低消费
             </p>
           </section>
 

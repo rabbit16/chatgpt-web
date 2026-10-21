@@ -17,6 +17,7 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
+  InfoCircleFilled,
   PictureOutlined,
   ReloadOutlined,
   UploadOutlined
@@ -85,8 +86,8 @@ const MODE_GUIDE: Record<DrawMode, { title: string; steps: string[]; example: st
     title: '只写文字，从零生成一张新图',
     steps: [
       '选图像模型和尺寸。',
-      '在提示词里写清主体、风格、光线和构图。',
-      '点「生成图片」。请求走 /v1/images/generations。'
+      '提示词写清：主体、风格、光线、构图。',
+      '点「生成图片」等待出图。'
     ],
     example: '一只坐在窗边的橘猫，柔和阳光，写实摄影，浅景深'
   },
@@ -417,9 +418,7 @@ function DrawPage() {
                 <PictureOutlined /> 文生图 · 图生图 · 修改图片
               </p>
               <h1>AI 绘图</h1>
-              <p>
-                文生图从文字出图；图生图和修改图片在本机选图，提交时把图片数据放进同一次请求由中转转发，网站不保存原图。修改图片时，多数情况写清楚改哪里即可；只有必须锁住其余画面时，才用「只改一块」。价格跟随当前供应商。
-              </p>
+              <p>文字直接出图；图生图与改图在本机选图，图片只随请求转发，服务器不留存。价格跟随当前供应商。</p>
             </div>
             {token && credential ? (
               <Button icon={<ReloadOutlined />} loading={loadingModels} onClick={() => void loadModels()}>
@@ -428,18 +427,17 @@ function DrawPage() {
             ) : null}
           </header>
 
-          <Alert
-            showIcon
-            type="warning"
-            className={styles.storageNotice}
-            message="图像仅保存在您当前设备的浏览器中"
-            description={
-              <span>
-                本网站<strong>数据库不存储</strong>您的原图和生成结果。参考图只在浏览器里读取，点生成时把图片数据放进同一次请求，由中转转发。生成结果写入本机 IndexedDB。刷新页面或重启浏览器后仍可在此查看（同一台电脑、同一浏览器）。
-                换设备、换浏览器、清除站点数据或卸载浏览器会导致<strong>永久丢失</strong>，若满意请及时点击「下载」保存到本地磁盘。
-              </span>
-            }
-          />
+          {/* 存储说明：浅底 + 图标 + 两句人话，替代原来的长段黄色告警 */}
+          <section className={styles.storageNotice}>
+            <InfoCircleFilled className={styles.storageNoticeIcon} />
+            <div>
+              <strong>图片只存在你这台电脑的浏览器里</strong>
+              <p>
+                服务器不留原图与生成结果；换设备、清缓存、卸载浏览器都会导致图片永久丢失，
+                满意的图请及时点「下载」存到本地。
+              </p>
+            </div>
+          </section>
 
           <section className={styles.guide}>
             {(Object.keys(MODE_GUIDE) as DrawMode[]).map((key) => {
@@ -472,8 +470,10 @@ function DrawPage() {
                 <p>示例提示词：{guide.example}</p>
                 {mode === 'edit' ? (
                   <div className={styles.maskHelp}>
-                    <p>「只改一块」是可选的，多数人用不到。它是一张和原图一样大的 PNG，专门圈出允许重画的位置：要改的地方做成透明，其余涂实。</p>
-                    <p>适合：去掉路人、水印或杂物；只换背景、人不要动；只改衣服或手里的东西。整张图换风格时不要用。不会做这种图就跳过，把位置写进修改说明。</p>
+                    <p>
+                      「只改一块」可选：一张与原图同尺寸的 PNG，要改的位置透明、其余涂实。
+                      适合去杂物、换背景、改局部；整张换风格时不要用。不做也能改——把位置写进修改说明即可。
+                    </p>
                   </div>
                 ) : null}
               </div>
