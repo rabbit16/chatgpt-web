@@ -6,6 +6,14 @@ import Layout from '@/components/Layout'
 import { getUserPricing, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
+  PUBLIC_IMAGE_MODELS,
+  PUBLIC_MODEL_IDS,
+  PUBLIC_MODELS,
+  PUBLIC_PRICING_NOTE,
+  PUBLIC_PRICING_UPDATED_AT
+} from '@/data/publicPricing'
+import type { UserPricing as PublicPricingShape } from '@/request/api'
+import {
   PROVIDER_META,
   compareModelNewestFirst,
   enrichVendorModel,
@@ -23,6 +31,24 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: 'all', label: '全部' },
   ...Object.entries(PROVIDER_META).map(([key, meta]) => ({ key: key as ModelProvider, label: meta.label }))
 ]
+
+/**
+ * 未登录时的公开参考价。
+ * 接口 /v1/pricing/models 需要密钥（匿名 401），所以用离线抓取的标准价快照，
+ * 保证访客在没注册时也能看到"有哪些模型、大概多少钱"。
+ */
+const PUBLIC_PRICING: PublicPricingShape = {
+  currency: 'USD',
+  price_unit: 'per 1M tokens',
+  usd_cny_rate: 0,
+  profit_multiplier: 0,
+  money_rate: 0,
+  discount: 1,
+  vendor: undefined,
+  model_ids: PUBLIC_MODEL_IDS,
+  models: PUBLIC_MODELS,
+  image_models: PUBLIC_IMAGE_MODELS
+}
 
 function formatPrice(amount: number) {
   if (amount === 0) return '$0'
@@ -87,7 +113,12 @@ function PricePage() {
     const controller = new AbortController()
     setPricing(null)
     setError('')
-    if (token && credential) void loadPricing(controller.signal)
+    if (token && credential) {
+      void loadPricing(controller.signal)
+    } else if (!token) {
+      // 未登录：用公开参考价，页面不再是空白 + 一句"登录后可见"
+      setPricing(PUBLIC_PRICING)
+    }
     return () => {
       controller.abort()
       requestRef.current++
@@ -279,16 +310,14 @@ function PricePage() {
           </header>
 
           {!token ? (
-            <Alert
-              showIcon
-              type="info"
-              message="登录后查看你的实际价格"
-              description={
-                <Button type="link" onClick={() => setLoginModal(true)}>
-                  登录 / 注册
-                </Button>
-              }
-            />
+            <div className={styles.publicNote}>
+              <span className={styles.publicNoteText}>
+                {PUBLIC_PRICING_NOTE} · 更新于 {PUBLIC_PRICING_UPDATED_AT}
+              </span>
+              <Button type="primary" onClick={() => setLoginModal(true)}>
+                登录 / 注册
+              </Button>
+            </div>
           ) : !credential ? (
             <Alert showIcon type="warning" message="请先到「Agent 接入」页创建 sk- 密钥，再查看个人费率" />
           ) : loading && !pricing ? (

@@ -400,3 +400,23 @@
     align-items: flex-start;
   }
 }
+
+/* 未登录访客的参考价提示条（S1）：一行说明 + 主按钮，不占高度 */
+.publicNote {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-md);
+	background: var(--surface-muted);
+}
+
+.publicNoteText {
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--text-3);
+}

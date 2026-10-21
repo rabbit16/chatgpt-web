@@ -38,6 +38,7 @@ import {
 import { useScroll } from '@/hooks/useScroll'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import Layout from '@/components/Layout'
+import MarketingBar from '@/components/MarketingBar'
 import useMobile from '@/hooks/useMobile'
 import MessageItem from './components/MessageItem'
 
@@ -565,6 +566,7 @@ function ChatPage() {
         }}
       >
         <div className={styles.chatPage_container}>
+          {!token && <MarketingBar onRegister={() => setLoginModal(true)} />}
           <div className={styles.chatPage_container_toolbar}>
             {isNarrow ? (
               <Button.Group>
