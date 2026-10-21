@@ -63,7 +63,7 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
     author_name: 'anyGPT 官方',
     official: true,
     status: 'approved',
-    repo_url: '',
+    repo_url: 'https://github.com/rabbit16/chatgpt-web/tree/feature/dev/open-source/yuebao',
     cover_url: '/covers/yuebao.svg',
     releases: [
       {
@@ -77,14 +77,22 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
       },
       {
         id: 'bb-mac',
-        version: '1.2.4',
+        version: '1.3.0',
         platform: 'macos',
-        file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.2.4-macos.zip',
-        file_size: '891 KB',
-        changelog: 'macOS 版，解压后拖入「应用程序」；首次打开需在「隐私与安全性」中允许。',
+        file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.3.0-macos.zip',
+        file_size: '1.1 MB',
+        changelog: '与 Windows 版同步到 1.3.0；解压后拖入「应用程序」，首次打开需在「隐私与安全性」中允许。',
         status: 'approved'
       },
-      { id: 'bb-linux', version: '', platform: 'linux', file_url: '', status: 'pending' }
+      {
+        id: 'bb-linux',
+        version: '1.1.0',
+        platform: 'linux',
+        file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.1.0-linux.zip',
+        file_size: '70 KB',
+        changelog: 'Linux 版：解压后运行 install.sh 安装，卸载运行 uninstall.sh。',
+        status: 'approved'
+      }
     ]
   }
 ]
