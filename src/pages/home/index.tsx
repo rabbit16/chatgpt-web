@@ -72,20 +72,23 @@ const features = [
   {
     icon: <ApiOutlined />,
     tone: 'brand' as const,
-    title: '一个地址，多家模型',
-    desc: 'OpenAI / Claude / Gemini 三种协议都挂在同一个 /v1 下，换模型只改一个字段。'
+    title: '一个地址，全部模型',
+    desc: '三种协议共用一个入口，换模型只改一个字段。',
+    href: '/guide'
   },
   {
     icon: <WalletOutlined />,
     tone: 'mint' as const,
-    title: '按量付费，账目清楚',
-    desc: '没有订阅绑定；每次请求的 token 与扣费都能在「使用记录」里核对。'
+    title: '按量付费，不订阅',
+    desc: '每次请求的 Token 与扣费，都能逐条核对。',
+    href: '/price'
   },
   {
     icon: <SafetyCertificateOutlined />,
     tone: 'violet' as const,
-    title: '密钥自己管',
-    desc: '密钥由你自己创建、随时吊销；余额、用量、密钥都在控制台里，不经过第三方。'
+    title: '密钥在你手里',
+    desc: '自行创建、随时吊销，不经过第三方。',
+    href: '/guide?tab=client'
   }
 ]
 
@@ -287,17 +290,23 @@ function HomePage() {
         <Reveal as="section" id="why" className={styles.section}>
           <div className={styles.sectionHead}>
             <div>
-              <h2>为什么用兔子网站</h2>
-              <p>以下三项均为可直接验证的能力，不含宣传性表述。</p>
+              <h2>为什么选这里</h2>
+              <p>三个可以自己验证的事实。</p>
             </div>
           </div>
           <div className={styles.featureGrid}>
             {features.map((item) => (
-              <div key={item.title} className={styles.featureCard}>
+              <button
+                key={item.title}
+                type="button"
+                className={styles.featureCard}
+                onClick={() => navigate(item.href)}
+              >
                 <IconBadge icon={item.icon} tone={item.tone} size="lg" />
                 <h3>{item.title}</h3>
                 <p>{item.desc}</p>
-              </div>
+                <span className={styles.featureMore}>了解详情 →</span>
+              </button>
             ))}
           </div>
         </Reveal>
@@ -306,7 +315,7 @@ function HomePage() {
         <Reveal as="section" className={styles.experience}>
           <div>
             <h2>先体验，再决定</h2>
-            <p>无需注册即可对话与绘图，会话记录不做保留；确认可用后，再生成密钥接入自己的工具。</p>
+            <p>不注册也能对话和绘图，记录不留存。</p>
           </div>
           <div className={styles.experienceActions}>
             <Button size="large" icon={<ExperimentOutlined />} onClick={() => navigate('/chat')}>

@@ -170,6 +170,12 @@ function ProjectsPage() {
         </div>
       </div>
 
+      {item.cover_url && (
+        <div className={styles.cardCover}>
+          <img src={item.cover_url} alt={`${item.name} 封面`} loading="lazy" />
+        </div>
+      )}
+
       {item.description && <p className={styles.cardDesc}>{item.description}</p>}
 
       <div className={styles.releaseList}>

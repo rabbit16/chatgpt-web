@@ -36,6 +36,8 @@ export type OpenSourceProject = {
   /** 每个平台最新一个已审核版本 */
   releases: ProjectRelease[]
   status?: 'pending' | 'approved' | 'rejected'
+  /** 项目封面（社卡图），没有就用纯色占位 */
+  cover_url?: string
   updated_at?: string
 }
 
@@ -62,10 +64,27 @@ export const FALLBACK_PROJECTS: OpenSourceProject[] = [
     official: true,
     status: 'approved',
     repo_url: '',
+    cover_url: '/covers/yuebao.svg',
     releases: [
-      { id: 'bb-win', version: '0.1.0', platform: 'windows', file_url: '', status: 'pending' },
-      { id: 'bb-mac', version: '0.1.0', platform: 'macos', file_url: '', status: 'pending' },
-      { id: 'bb-linux', version: '0.1.0', platform: 'linux', file_url: '', status: 'pending' }
+      {
+        id: 'bb-win',
+        version: '1.3.0',
+        platform: 'windows',
+        file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.3.0-windows.zip',
+        file_size: '414 KB',
+        changelog: '免安装版，解压后直接运行；修复托盘余额刷新延迟。',
+        status: 'approved'
+      },
+      {
+        id: 'bb-mac',
+        version: '1.2.4',
+        platform: 'macos',
+        file_url: 'https://raw.githubusercontent.com/rabbit16/chatgpt-web/feature/dev/public/downloads/yuebao-v1.2.4-macos.zip',
+        file_size: '891 KB',
+        changelog: 'macOS 版，解压后拖入「应用程序」；首次打开需在「隐私与安全性」中允许。',
+        status: 'approved'
+      },
+      { id: 'bb-linux', version: '', platform: 'linux', file_url: '', status: 'pending' }
     ]
   }
 ]

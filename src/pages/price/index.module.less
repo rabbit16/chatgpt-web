@@ -421,3 +421,53 @@
 	color: var(--text-3);
 }
 
+
+
+/* 「怎么算钱」极简图示：三个图标一行，替代原来的长段说明 */
+.moneyFlow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px 28px;
+	padding: 16px 18px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+}
+
+.moneyFlowItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+
+	strong {
+		display: block;
+		font-size: 13.5px;
+		font-weight: 600;
+		color: var(--text-1);
+	}
+
+	span {
+		display: block;
+		font-size: 12px;
+		color: var(--text-5);
+	}
+}
+
+.moneyFlowFormula {
+	margin: 0 0 0 auto;
+	font-size: 12.5px;
+	color: var(--text-4);
+
+	b {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-1);
+	}
+}
+
+@media (max-width: 900px) {
+	.moneyFlowFormula {
+		margin-left: 0;
+	}
+}

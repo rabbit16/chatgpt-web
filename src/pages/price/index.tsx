@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
 import { useSearchParams } from 'react-router-dom'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ExportOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
+import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
 import ShopPanel from '@/pages/shop'
@@ -223,6 +224,12 @@ function PricePage() {
   const write = billedRate ? estimate(billedRate.cache_write, cacheWriteTokens) : 0
   const output = billedRate ? estimate(billedRate.output, outputTokens) : 0
 
+  // 极简图示用：目前最低的输入单价，给访客一个具体数字
+  const minInputPrice = useMemo(() => {
+    const values = models.map((item) => standardRate(item.rates).input).filter((value) => value > 0)
+    return values.length ? Math.min(...values) : 0
+  }, [models])
+
   const columns = [
     {
       title: '模型',
@@ -348,6 +355,33 @@ function PricePage() {
             )
           ) : (
             <>
+          {/* 怎么算钱：三个图标讲清计费构成，长解释交给下方表格 */}
+          <section className={styles.moneyFlow} aria-label="计费构成">
+            <div className={styles.moneyFlowItem}>
+              <IconBadge icon={<ImportOutlined />} tone="brand" size="md" />
+              <div>
+                <strong>输入 Tokens</strong>
+                <span>你发出去的内容</span>
+              </div>
+            </div>
+            <div className={styles.moneyFlowItem}>
+              <IconBadge icon={<ExportOutlined />} tone="mint" size="md" />
+              <div>
+                <strong>输出 Tokens</strong>
+                <span>它回答的内容</span>
+              </div>
+            </div>
+            <div className={styles.moneyFlowItem}>
+              <IconBadge icon={<ThunderboltOutlined />} tone="violet" size="md" />
+              <div>
+                <strong>缓存读取</strong>
+                <span>重复内容按折扣价</span>
+              </div>
+            </div>
+            <p className={styles.moneyFlowFormula}>
+              费用 = 单价 × Tokens ÷ 100 万，最低约 <b>{formatPrice(minInputPrice)}</b> / 百万 Tokens
+            </p>
+          </section>
 
           {!token ? (
             <div className={styles.publicNote}>
