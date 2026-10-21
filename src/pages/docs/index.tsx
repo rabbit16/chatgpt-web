@@ -11,7 +11,6 @@ import {
   RocketOutlined,
   ThunderboltOutlined
 } from '@ant-design/icons'
-import Layout from '@/components/Layout'
 import IconBadge, { type IconBadgeTone } from '@/components/IconBadge'
 import { userStore } from '@/store'
 import styles from './index.module.less'
@@ -87,7 +86,7 @@ const faqs = [
  * 目的：让"想接的人"在一屏内拿到三样东西 —— 地址、密钥入口、可复制的第一条请求。
  * 不做花活：没有 3D、没有动画，只有可抄走的代码。
  */
-function DocsPage() {
+export function DocsPanel() {
   const setLoginModal = userStore((state) => state.setLoginModal)
   const token = userStore((state) => state.token)
   const [copied, setCopied] = useState(false)
@@ -104,17 +103,7 @@ function DocsPage() {
   }
 
   return (
-    <div className={styles.docsPage}>
-      <Layout>
-        <div className={styles.wrap}>
-          <header className={styles.head}>
-            <p className={styles.kicker}>
-              <ApiOutlined /> 兼容 OpenAI 协议 · Claude · Gemini
-            </p>
-            <h1>接入文档</h1>
-            <p className={styles.desc}>三步把兔子网站接到你的工具里，只需要一个基础地址和一把密钥。</p>
-          </header>
-
+    <div className={styles.wrapPanel}>
           <section className={styles.baseBox}>
             <div className={styles.baseLabel}>API 基础地址</div>
             <div className={styles.baseRow}>
@@ -215,10 +204,7 @@ function DocsPage() {
               </Link>
             </div>
           </section>
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default DocsPage

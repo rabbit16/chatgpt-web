@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { CheckOutlined, DeleteOutlined, ProfileOutlined, ReloadOutlined } from '@ant-design/icons'
-import Layout from '@/components/Layout'
 import { userStore } from '@/store'
 import {
   completeAllTasks,
@@ -40,7 +39,7 @@ const FILTERS: Array<{ value: TaskScope; label: string }> = [
 
 const EMPTY_COUNTS: TaskCounts = { open: 0, all: 0, running: 0, failed: 0, done: 0 }
 
-function TasksPage() {
+export function TasksPanel() {
   const { token, setLoginModal } = userStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -147,18 +146,14 @@ function TasksPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
-          <section className={styles.hero}>
-            <p className={styles.kicker}>
-              <ProfileOutlined /> 任务进度
-            </p>
-            <h1>还有哪些没跑完</h1>
-            <p className={styles.lead}>
-              任务由中转日志自动归并。Claude 的 tool_use，以及 OpenAI 响应里的 function_call，都表示模型还在调工具，任务进行中。没有待执行工具的 end_turn、stop、completed 才表示这一轮结束。请求失败，或 result 是 error、incomplete，记为失败。同一会话里连续的工具调用算同一个任务。
-            </p>
-          </section>
+    <div className={styles.wrapPanel}>
+          <Alert
+            showIcon
+            type="info"
+            className={styles.tip}
+            message="任务是怎么来的"
+            description="同一会话里连续的工具调用算一个任务：Claude 的 tool_use、OpenAI 的 function_call 表示还在调工具（进行中），没有待执行工具的 end_turn / stop / completed 才算这一轮结束。"
+          />
 
           {!token ? (
             <Alert
@@ -314,10 +309,7 @@ function TasksPage() {
               />
             </>
           ) : null}
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default TasksPage

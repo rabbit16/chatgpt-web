@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Empty, Image, Input, Pagination, Spin, Tag, message } from 'antd'
 import { CloudDownloadOutlined, DownloadOutlined, PictureOutlined } from '@ant-design/icons'
-import Layout from '@/components/Layout'
 import {
   getSoftwareCategories,
   getSoftwareList,
@@ -65,7 +64,7 @@ function DownloadLinks({ links }: { links: SoftwareLink[] }) {
   )
 }
 
-function SoftwarePage() {
+export function SoftwarePanel() {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<SoftwareCategoryItem[]>([])
   const [list, setList] = useState<SoftwareItem[]>([])
@@ -113,19 +112,7 @@ function SoftwarePage() {
   }
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
-          <section className={styles.hero}>
-            <div>
-              <p className={styles.kicker}>
-                <CloudDownloadOutlined /> 软件下载
-              </p>
-              <h1>软件下载</h1>
-              <p className={styles.lead}>按分类浏览，或用关键字搜索名称和简介。</p>
-            </div>
-          </section>
-
+    <div className={styles.wrapPanel}>
           <Alert
             className={styles.notice}
             type="info"
@@ -209,10 +196,7 @@ function SoftwarePage() {
               </div>
             ) : null}
           </section>
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default SoftwarePage

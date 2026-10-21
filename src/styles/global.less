@@ -129,3 +129,86 @@ samp {
     padding: 0 var(--space-4);
   }
 }
+
+/* ------------------------------------------------------------
+   组件级统一：按钮 / 输入 / 卡片 / 滚动条
+   只调整"皮肤"，不动任何交互逻辑；目的是让所有自带组件跟自研卡片同一套语言。
+   ------------------------------------------------------------ */
+
+/* 虚线按钮（新建对话、清除所有对话这类）→ 品牌浅底，不再是灰虚线 */
+.ant-btn-dashed {
+  border-color: var(--brand-soft) !important;
+  background: var(--brand-softer) !important;
+  color: var(--brand) !important;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+
+  &:hover {
+    border-color: var(--brand) !important;
+    background: var(--brand-soft) !important;
+  }
+}
+
+.ant-btn-dangerous.ant-btn-dashed {
+  border-color: #fecdc9 !important;
+  background: var(--danger-soft) !important;
+  color: var(--danger) !important;
+
+  &:hover {
+    border-color: var(--danger) !important;
+    background: #fde4e1 !important;
+  }
+}
+
+/* 输入类控件统一 12 圆角与发丝描边 */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  border-color: var(--border) !important;
+}
+
+.ant-input-affix-wrapper,
+.ant-select-selector {
+  border-radius: var(--radius-md) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper-focused {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px var(--brand-soft) !important;
+}
+
+/* 卡片统一 16 圆角 */
+.ant-card {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* 滚动条：细、浅，悬停才明显 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d3d9e4 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #d3d9e4;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #b6c0d0;
+  background-clip: content-box;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--text-1);
+}

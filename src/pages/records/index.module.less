@@ -1,0 +1,59 @@
+/**
+ * 用量与任务（合并原「使用记录」「任务」）
+ */
+.page {
+	min-height: 100vh;
+	background: var(--canvas);
+
+	[class*='ant-pro-layout-content'] {
+		padding-block: 0;
+		background: var(--canvas) !important;
+	}
+}
+
+.wrap {
+	width: 100%;
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 24px var(--container-pad) 56px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.head {
+	h1 {
+		margin: 8px 0;
+		font-size: 28px;
+		line-height: 1.25;
+		letter-spacing: -0.02em;
+	}
+}
+
+.kicker {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 12px;
+	letter-spacing: 0.04em;
+	color: var(--brand);
+}
+
+.lead {
+	margin: 0;
+	max-width: 56em;
+	font-size: 14px;
+	line-height: 1.7;
+	color: var(--text-4);
+}
+
+@media (max-width: 640px) {
+	.wrap {
+		padding: 18px var(--space-4) 40px;
+	}
+
+	.head h1 {
+		font-size: 22px;
+	}
+}

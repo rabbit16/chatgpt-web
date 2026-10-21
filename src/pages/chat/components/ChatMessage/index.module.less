@@ -14,9 +14,11 @@
         align-items: center;
         justify-content: space-between;
         img {
-            width: 34px;
-            height: 34px;
-            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            box-shadow: 0 0 0 1px var(--border-soft);
+            background: var(--surface);
         }
         
     }
@@ -25,15 +27,18 @@
         flex-direction: column;
         width: calc(100% - 42px);
         &_time{
-            margin-top: 4px;
-            margin-bottom: 4px;
-            font-size: 12px;
-            color: #999;
+            margin: 6px 0;
+            font-size: 11px;
+            line-height: 1.4;
+            color: var(--text-5);
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
         }
         &_text{
-            max-width: calc(100% - 42px);
+            max-width: min(calc(100% - 42px), 46em);
             display: inline-block;
-            padding: 12px;
+            padding: 10px 14px;
+            line-height: 1.7;
             position: relative;
             overflow-x: auto;
             overflow-y: hidden;
@@ -68,30 +73,34 @@
             // right: -20px;
             cursor: pointer;
             &_icon{
-                width: 20px;
-                height: 20px;
+                width: 22px;
+                height: 22px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 20px;
+                font-size: 15px;
+                color: var(--text-5);
+                border-radius: var(--radius-xs);
+                transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+                &:hover{
+                    color: var(--brand);
+                    background: var(--surface-muted);
+                }
             }
         }
         .left{
             margin-right: auto;
-            background-color: #f4f6f8;
-            border-top-left-radius: 2px;
-            border-top-right-radius: 12px;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            background-color: var(--surface-muted);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px 14px 14px 4px;
             white-space: normal;
         }
         .right{
             margin-left: auto;
-            background-color: #cdeeff;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 2px;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            background-color: var(--tint-brand);
+            border: 1px solid var(--brand-soft);
+            color: var(--text-1);
+            border-radius: 14px 14px 4px 14px;
             white-space: pre-wrap;
             :global {
                 .markdown-body {

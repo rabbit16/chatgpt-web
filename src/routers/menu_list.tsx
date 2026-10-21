@@ -5,6 +5,7 @@ import {
   BulbOutlined,
   CloudDownloadOutlined,
   CloudServerOutlined,
+  CodeOutlined,
   DashboardOutlined,
   ExperimentOutlined,
   FormOutlined,
@@ -66,44 +67,39 @@ const notice = {
   message: '看通知、提建议，匿名也行'
 }
 
-const agent = {
-  path: '/agent',
-  name: 'Agent 接入',
-  icon: <ApiOutlined />,
-  message: '中转地址对接 Claude Code / Codex'
+const guide = {
+  path: '/guide',
+  name: '接入指南',
+  icon: <BookOutlined />,
+  message: '三个值、四步流程、各软件怎么填'
 }
 
-const software = {
-  path: '/software',
-  name: '软件下载',
-  icon: <CloudDownloadOutlined />,
-  message: '按分类浏览软件，跳转网盘下载'
+const projects = {
+  path: '/projects',
+  name: '开源项目',
+  icon: <CodeOutlined />,
+  message: '余额兔等周边工具，三平台下载与上传'
 }
 
-/** 访客导航：全部平铺 */
-const guestNav = [home, experience, priceShop, docs, agent, software, notice]
+const usage = {
+  path: '/usage',
+  name: '使用记录',
+  icon: <HistoryOutlined />,
+  message: '用量、扣费与任务'
+}
+
+/**
+ * 访客导航顺序（漏斗）：认识 → 试 → 价 → 接 → 生态 → 互动
+ * 首页 / 模型体验 / 价格与充值 / 接入指南 / 开源项目 / 公告留言
+ */
+const guestNav = [home, experience, priceShop, guide, projects, notice]
 
 /** 登录后导航：多出与账号相关的入口 */
-const userNav = [
-  home,
-  experience,
-  priceShop,
-  {
-    path: '/usage',
-    name: '使用记录',
-    icon: <HistoryOutlined />,
-    message: '查看本账号请求用量与扣费'
-  },
-  {
-    path: '/tasks',
-    name: '任务',
-    icon: <ProfileOutlined />,
-    message: '查看中转日志归并出的未完成任务'
-  },
-  agent,
-  software,
-  notice
-]
+/**
+ * 登录后导航：在「价格与充值」后面插入「使用记录」（刚花完钱最想核对账），
+ * 其余顺序与访客一致，减少切换身份后的认知跳变。
+ */
+const userNav = [home, experience, priceShop, usage, guide, projects, notice]
 
 const admin = {
   path: '/admin',
@@ -128,7 +124,9 @@ export default {
   home,
   experience,
   priceShop,
-  docs,
+  guide,
+  projects,
+  usage,
   notice,
   guestNav,
   userNav,

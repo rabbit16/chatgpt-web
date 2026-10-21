@@ -20,12 +20,21 @@
         &_persona{
             margin-right: auto;
             min-width: 100px;
-            padding: 4px 12px;
-            border: 1px solid #999;
-            border-radius: 50px;
-            background-color: #fff;
-            color: #999;
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            background-color: var(--surface);
+            color: var(--text-4);
             font-size: 12px;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+                background-color var(--dur) var(--ease);
+            &:hover{
+                color: var(--brand);
+                border-color: var(--brand-soft);
+                background: var(--tint-brand);
+            }
         }
         &_workspace{
             flex: 1;
@@ -49,6 +58,8 @@
             align-self: center;
             overflow: auto;
 
+            padding: 8px 24px 12px;
+
             &::-webkit-scrollbar {
                 display: none;
             }
@@ -62,16 +73,27 @@
 			align-items: center;
 			justify-content: center;
 			width: 100%;
-			background-color: #ffffff;
+			background-color: var(--surface);
+			border-top: 1px solid var(--border-soft);
 			position: absolute;
 			left: 50%;
 			transform: translateX(-50%);
 			bottom: 0;
 			box-sizing: border-box;
-            padding: 12px 12px 20px;
+            padding: 14px clamp(12px, 3vw, 40px) 20px;
             &_title{
                 width: 100%;
-                margin-bottom: 6px;
+                margin-bottom: 8px;
+            }
+
+            /* 输入区里的多行输入框：加高、统一圆角与描边 */
+            textarea{
+                border-radius: var(--radius-md) !important;
+                border-color: var(--border) !important;
+            }
+            textarea:focus{
+                border-color: var(--brand) !important;
+                box-shadow: 0 0 0 3px var(--tint-brand) !important;
             }
         }
     }

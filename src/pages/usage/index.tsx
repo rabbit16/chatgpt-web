@@ -3,7 +3,6 @@ import { Alert, Button, DatePicker, Input, Select, Space, Table, Tag, message } 
 import { CopyOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import HorizontalDrag from '@/components/HorizontalDrag'
-import Layout from '@/components/Layout'
 import {
   getRequestUsage,
   getUsageSummary,
@@ -90,7 +89,7 @@ function rangeToApi(range: [Dayjs, Dayjs] | null): Pick<UsageQueryFilters, 'from
   }
 }
 
-function UsagePage() {
+export function UsagePanel() {
   const { token, user_info, setLoginModal } = userStore()
   const userId = Number(user_info?.data?.bodyMessage?.userId)
   const hasUserId = Number.isFinite(userId) && userId > 0
@@ -204,14 +203,11 @@ function UsagePage() {
   const requestCount = summary?.request_count ?? total
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
+    <div className={styles.wrapPanel}>
           <header className={styles.pageHead}>
-            <div>
-              <h1>使用记录</h1>
-              <p>查看你账号下每次模型请求的 token、缓存、耗时、扣费和扣完后的余额</p>
-            </div>
+            <p className={styles.pageHeadNote}>
+              每次请求的 token、缓存、耗时、扣费与扣后余额，都能在这张表里查到。
+            </p>
             {token ? (
               <Button
                 icon={<ReloadOutlined />}
@@ -437,10 +433,7 @@ function UsagePage() {
               />
             </>
           ) : null}
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default UsagePage

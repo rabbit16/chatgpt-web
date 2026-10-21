@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, Tag, message } from 'antd'
 import { CheckOutlined, CopyOutlined } from '@ant-design/icons'
-import Layout from '@/components/Layout'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
 import { getUserPricing } from '@/request/api'
@@ -90,7 +89,7 @@ function FillCard({ rows, title }: { rows: FillRow[]; title?: string }) {
   )
 }
 
-function AgentPage() {
+export function AgentPanel() {
   const { token, llm_api_key } = userStore()
   const [apiKey, setApiKey] = useState(llm_api_key || '')
   const [appId, setAppId] = useState<AppId>('haha')
@@ -266,17 +265,7 @@ function AgentPage() {
     (appId === 'other' && jobId !== 'code-gpt')
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
-          <header className={styles.hero}>
-            <p className={styles.kicker}>给第一次用的人</p>
-            <h1>三步把软件接到本站</h1>
-            <p className={styles.lead}>
-              不用敲命令。生成一把 sk- 密钥 → 复制下面几行 → 对着软件里的框粘贴。
-            </p>
-          </header>
-
+    <div className={styles.wrapPanel}>
           <ApiKeyPanel onKeyChange={setApiKey} />
 
           <section className={styles.card}>
@@ -438,10 +427,7 @@ function AgentPage() {
               </article>
             </div>
           </section>
-        </div>
-      </Layout>
     </div>
   )
 }
 
-export default AgentPage

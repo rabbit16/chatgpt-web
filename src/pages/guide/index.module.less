@@ -1,0 +1,143 @@
+/**
+ * 接入指南（合并 docs + agent + software）
+ * 三步一屏看懂：地址、密钥、模型名；下面是分软件教程与下载。
+ */
+.page {
+	min-height: 100vh;
+	background: var(--canvas);
+
+	[class*='ant-pro-layout-content'] {
+		padding-block: 0;
+		background: var(--canvas) !important;
+	}
+}
+
+.wrap {
+	width: 100%;
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 24px var(--container-pad) 56px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.head {
+	h1 {
+		margin: 8px 0;
+		font-size: 28px;
+		line-height: 1.25;
+		letter-spacing: -0.02em;
+	}
+}
+
+.kicker {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 12px;
+	letter-spacing: 0.04em;
+	color: var(--brand);
+}
+
+.lead {
+	margin: 0;
+	max-width: 56em;
+	font-size: 14px;
+	line-height: 1.7;
+	color: var(--text-4);
+}
+
+/* 一屏看懂：地址 + 密钥 + 模型名 三个值 */
+.values {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.valueCard {
+	padding: 16px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+
+	h3 {
+		margin: 0 0 4px;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--text-2);
+	}
+
+	p {
+		margin: 0 0 10px;
+		font-size: 12px;
+		line-height: 1.6;
+		color: var(--text-5);
+	}
+}
+
+.valueText {
+	display: block;
+	padding: 8px 10px;
+	border-radius: var(--radius-xs);
+	background: var(--surface-muted);
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--text-2);
+	word-break: break-all;
+}
+
+/* 通用流程：4 步横排 */
+.flow {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.flowStep {
+	position: relative;
+	padding: 16px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+
+	h3 {
+		margin: 10px 0 4px;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	p {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.6;
+		color: var(--text-4);
+	}
+}
+
+.flowNo {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+@media (max-width: 900px) {
+	.values,
+	.flow {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 640px) {
+	.wrap {
+		padding: 18px var(--space-4) 40px;
+	}
+
+	.head h1 {
+		font-size: 22px;
+	}
+}

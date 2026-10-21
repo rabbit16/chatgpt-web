@@ -15,15 +15,13 @@ export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index
 }
 
 const HomePage = React.lazy(() => import('@/pages/home'))
+const ProjectsPage = React.lazy(() => import('@/pages/projects'))
 const ChatPage = React.lazy(() => import('@/pages/chat'))
-const UsagePage = React.lazy(() => import('@/pages/usage'))
-const TasksPage = React.lazy(() => import('@/pages/tasks'))
+const RecordsPage = React.lazy(() => import('@/pages/records'))
 const PricePage = React.lazy(() => import('@/pages/price'))
-const DocsPage = React.lazy(() => import('@/pages/docs'))
+const GuidePage = React.lazy(() => import('@/pages/guide'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const NoticePage = React.lazy(() => import('@/pages/notice'))
-const AgentPage = React.lazy(() => import('@/pages/agent'))
-const SoftwarePage = React.lazy(() => import('@/pages/software'))
 const ProfilePage = React.lazy(() => import('@/pages/profile'))
 const LoginPage = React.lazy(() => import('@/pages/login'))
 const ResultPage = React.lazy(() => import('@/pages/result'))
@@ -40,6 +38,18 @@ export const webRouter: RouteOptions[] = [
       verifToken: false,
       public: true,
       title: '一个地址接通主流大模型',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'ProjectsPage',
+    path: '/projects',
+    element: <ProjectsPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '开源项目',
       role: ['user', 'administrator']
     }
   },
@@ -66,24 +76,24 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'TasksPage',
+    id: 'TasksRedirect',
     path: '/tasks',
-    element: <TasksPage />,
+    element: <Navigate to="/usage?tab=tasks" replace />,
     children: [],
     configure: {
       verifToken: true,
-      title: '我的任务',
+      title: '用量与任务',
       role: ['user', 'administrator']
     }
   },
   {
-    id: 'UsagePage',
+    id: 'RecordsPage',
     path: '/usage',
-    element: <UsagePage />,
+    element: <RecordsPage />,
     children: [],
     configure: {
       verifToken: true,
-      title: '使用记录',
+      title: '用量与任务',
       role: ['user', 'administrator']
     }
   },
@@ -100,14 +110,26 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'DocsPage',
-    path: '/docs',
-    element: <DocsPage />,
+    id: 'GuidePage',
+    path: '/guide',
+    element: <GuidePage />,
     children: [],
     configure: {
       verifToken: false,
       public: true,
-      title: '接入文档',
+      title: '接入指南',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'DocsRedirect',
+    path: '/docs',
+    element: <Navigate to="/guide" replace />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '接入指南',
       role: ['user', 'administrator']
     }
   },
@@ -160,14 +182,14 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'AgentPage',
+    id: 'AgentRedirect',
     path: '/agent',
-    element: <AgentPage />,
+    element: <Navigate to="/guide?tab=client" replace />,
     children: [],
     configure: {
       verifToken: false,
       public: true,
-      title: 'Agent 接入',
+      title: '接入指南',
       role: ['user', 'administrator']
     }
   },
@@ -183,9 +205,9 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'SoftwarePage',
+    id: 'SoftwareRedirect',
     path: '/software',
-    element: <SoftwarePage />,
+    element: <Navigate to="/guide?tab=download" replace />,
     children: [],
     configure: {
       verifToken: false,
