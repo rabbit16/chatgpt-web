@@ -72,11 +72,11 @@ const faqs = [
   },
   {
     q: '为什么我看到的价和页面不一样？',
-    a: '价格页显示的是标准参考价，登录后按你的等级与折扣计算实际单价，以「使用记录」的扣费为准。'
+    a: '价格页展示标准参考价；登录后按账号等级与折扣计算实际单价，最终以「使用记录」中的扣费金额为准。'
   },
   {
     q: '余额不足会怎样？',
-    a: '请求会被拒绝并返回余额不足提示；在「商城」充值后立即生效，无需重启客户端。'
+    a: '请求会被拒绝并返回余额不足提示；在「余额与充值」完成充值后即时生效，无需重启客户端。'
   }
 ]
 
@@ -145,7 +145,7 @@ export function DocsPanel() {
               <IconBadge icon={<span className={styles.stepNumText}>3</span>} tone="mint" size="md" />
               <div>
                 <h3>发送第一条请求</h3>
-                <p>把下面的命令里的密钥换成你自己的，模型名换成本站价目表里的名称。</p>
+                <p>将下方命令中的密钥替换为你自己的 API Key，模型名替换为本站价目表中的名称。</p>
               </div>
             </div>
           </section>
@@ -193,7 +193,7 @@ export function DocsPanel() {
           <section className={styles.cta}>
             <div>
               <h2>还没账号？</h2>
-              <p>注册送体验额度，先跑通第一条请求再决定充多少。</p>
+              <p>注册即赠体验额度，建议先完成一次成功调用，再决定充值金额。</p>
             </div>
             <div className={styles.ctaActions}>
               <Button type="primary" size="large" icon={<RocketOutlined />} onClick={() => setLoginModal(true)}>

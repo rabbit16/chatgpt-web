@@ -1,121 +1,171 @@
-.chatMessage{
-    display: flex;
-    scroll-margin-top: 24px;
-    &[id='chat-search-target'] {
-        animation: searchTarget 1.8s ease-out;
-        outline: 2px solid #1677ff;
-        outline-offset: 6px;
-        border-radius: 8px;
-    }
-    margin-top: 12px;
-    &_avatarCard{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
-        img {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            box-shadow: 0 0 0 1px var(--border-soft);
-            background: var(--surface);
-        }
-        
-    }
-    &_content{
-        display: flex;
-        flex-direction: column;
-        width: calc(100% - 42px);
-        &_time{
-            margin: 6px 0;
-            font-size: 11px;
-            line-height: 1.4;
-            color: var(--text-5);
-            font-family: var(--font-mono);
-            font-variant-numeric: tabular-nums;
-        }
-        &_text{
-            max-width: min(calc(100% - 42px), 46em);
-            display: inline-block;
-            padding: 10px 14px;
-            line-height: 1.7;
-            position: relative;
-            overflow-x: auto;
-            overflow-y: hidden;
-            word-break: break-word;
-            :global {
-                .markdown-body {
-                    background: transparent;
-                    font-size: 14.5px;
-                    line-height: 1.75;
-                    color: var(--text-2);
-                    white-space: normal;
-                }
-                .katex,
-                .katex-html,
-                .katex-mathml {
-                    white-space: nowrap;
-                    word-break: normal;
-                    word-wrap: normal;
-                }
-                .katex-display,
-                .katex-block {
-                    display: block;
-                    max-width: 100%;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    padding: 4px 0;
-                }
-            }
-        }
-        &_operate{
-            position: absolute;
-            bottom: 2px;
-            // left: -20px;
-            // right: -20px;
-            cursor: pointer;
-            &_icon{
-                width: 22px;
-                height: 22px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 15px;
-                color: var(--text-5);
-                border-radius: var(--radius-xs);
-                transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-                &:hover{
-                    color: var(--brand);
-                    background: var(--surface-muted);
-                }
-            }
-        }
-        .left{
-            margin-right: auto;
-            background-color: var(--surface-muted);
-            border: 1px solid var(--border-soft);
-            border-radius: 14px 14px 14px 4px;
-            white-space: normal;
-            color: var(--text-2);
-        }
-        .right{
-            margin-left: auto;
-            background-color: var(--tint-brand);
-            border: 1px solid var(--brand-soft);
-            color: var(--text-1);
-            border-radius: 14px 14px 4px 14px;
-            white-space: pre-wrap;
-            :global {
-                .markdown-body {
-                    white-space: pre-wrap;
-                }
-            }
-        }
-    }
+/**
+ * 消息样式（现代化重做）
+ * ------------------------------------------------------------
+ * 旧版：左右两个大色块气泡 + 头像圆章，间距紧、颜色重，像三年前的聊天 UI。
+ * 新版：助手回复走「文档流」——无气泡、通栏正文，只在左侧放一个小品牌标；
+ *       用户消息保留右侧紧凑色块，用于区分"我说的"和"它说的"。
+ */
+.chatMessage {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin-top: 26px;
+	scroll-margin-top: 24px;
 
+	&[id='chat-search-target'] {
+		animation: searchTarget 1.8s ease-out;
+		outline: 2px solid var(--brand);
+		outline-offset: 8px;
+		border-radius: var(--radius-sm);
+	}
+
+	&_avatarCard {
+		flex: 0 0 auto;
+		padding-top: 2px;
+
+		img {
+			width: 24px;
+			height: 24px;
+			border-radius: 7px;
+			display: block;
+		}
+	}
+
+	&_content {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+
+		&_time {
+			margin: 0 0 6px;
+			font-size: 10.5px;
+			letter-spacing: 0.02em;
+			line-height: 1.4;
+			color: var(--text-5);
+			font-family: var(--font-mono);
+			font-variant-numeric: tabular-nums;
+			opacity: 0.9;
+		}
+
+		&_text {
+			position: relative;
+			max-width: min(100%, 48em);
+			line-height: 1.8;
+			word-break: break-word;
+			overflow-x: auto;
+			overflow-y: hidden;
+
+			:global {
+				.markdown-body {
+					background: transparent;
+					font-size: 15px;
+					line-height: 1.8;
+					letter-spacing: 0.002em;
+					color: var(--text-2);
+					white-space: normal;
+
+					p {
+						margin: 0 0 10px;
+					}
+
+					> :first-child {
+						margin-top: 0;
+					}
+
+					> :last-child {
+						margin-bottom: 0;
+					}
+
+					pre {
+						border-radius: var(--radius-md);
+					}
+				}
+
+				.katex,
+				.katex-html,
+				.katex-mathml {
+					white-space: nowrap;
+					word-break: normal;
+					word-wrap: normal;
+				}
+
+				.katex-display,
+				.katex-block {
+					display: block;
+					max-width: 100%;
+					overflow-x: auto;
+					overflow-y: hidden;
+					padding: 4px 0;
+				}
+			}
+		}
+
+		&_operate {
+			position: absolute;
+			bottom: 2px;
+			cursor: pointer;
+			opacity: 0;
+			transition: opacity var(--dur) var(--ease);
+
+			&_icon {
+				width: 24px;
+				height: 24px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 14px;
+				color: var(--text-5);
+				border-radius: var(--radius-xs);
+				transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+
+				&:hover {
+					color: var(--brand);
+					background: var(--surface-muted);
+				}
+			}
+		}
+
+		/* 助手：无气泡，读起来像一篇文章 */
+		.left {
+			white-space: normal;
+			color: var(--text-2);
+		}
+
+		/* 用户：紧凑色块，右对齐 */
+		.right {
+			margin-left: auto;
+			max-width: min(80%, 40em);
+			padding: 10px 14px;
+			background: var(--surface-muted);
+			border: 1px solid var(--border-soft);
+			border-radius: 14px 14px 4px 14px;
+			font-size: 14.5px;
+			color: var(--text-1);
+			white-space: pre-wrap;
+
+			:global {
+				.markdown-body {
+					white-space: pre-wrap;
+				}
+			}
+		}
+	}
+
+	/* 鼠标移到这条消息上才显示复制/重试/删除 */
+	&:hover {
+		.chatMessage_content_operate {
+			opacity: 1;
+		}
+	}
 }
 
 @keyframes searchTarget {
-    0%, 100% { background: transparent; }
-    35% { background: rgba(22, 119, 255, 0.12); }
+	0%,
+	100% {
+		background: transparent;
+	}
+	35% {
+		background: var(--tint-brand);
+	}
 }

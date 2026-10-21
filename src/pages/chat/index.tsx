@@ -1,6 +1,8 @@
 import {
   CommentOutlined,
+  DeleteOutlined,
   FileTextOutlined,
+  PlusOutlined,
   SearchOutlined
 } from '@ant-design/icons'
 import {
@@ -65,7 +67,8 @@ function CreateChat({ token }: { token?: string }) {
   return (
     <Button
       block
-      type="dashed"
+      className={styles.createChat}
+      icon={<PlusOutlined />}
       style={{
         marginBottom: 6,
         marginLeft: 0,
@@ -559,7 +562,7 @@ function ChatPage() {
                 okText="Yes"
                 cancelText="No"
               >
-                <Button block danger type="dashed" ghost>
+                <Button block type="text" danger icon={<DeleteOutlined />} className={styles.clearChat}>
                   清除所有对话
                 </Button>
               </Popconfirm>

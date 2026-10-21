@@ -7,9 +7,10 @@ import OpenAiLogo from '@/components/OpenAiLogo'
 import { Dropdown, message } from 'antd'
 import 'katex/dist/katex.min.css'
 import { CopyOutlined, DeleteOutlined, MoreOutlined, RedoOutlined } from '@ant-design/icons'
-import ai3Logo from '@/assets/openai/ai3.svg'
-import ai4Logo from '@/assets/openai/ai4.svg'
 import avatarIcon from '@/assets/avatar.png'
+
+/** 助手统一用本站品牌标，旧版 OpenAI 图标不再出现 */
+const ASSISTANT_MARK = '/logo-rabbit.svg'
 
 const dropdownItems = [
   {
@@ -181,7 +182,7 @@ function ChatMessage({
       {chatAvatar({
         style: { marginRight: 8 },
         isShow: position === 'left',
-        icon: model && model.indexOf('gpt-4') !== -1 ? ai4Logo : ai3Logo
+        icon: ASSISTANT_MARK
       })}
       <div className={styles.chatMessage_content}>
         <span

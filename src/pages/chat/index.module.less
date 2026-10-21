@@ -74,11 +74,12 @@
         &_one{
 			flex: 1 1;
             width: 100%;
-            max-width: 900px;
+            max-width: 860px;
             align-self: center;
             overflow: auto;
 
-            padding: 8px 24px 12px;
+            /* 底部留出输入卡的高度，最后一条消息不会被遮住 */
+            padding: 20px 28px 180px;
 
             &::-webkit-scrollbar {
                 display: none;
@@ -92,15 +93,15 @@
             flex-wrap: wrap;
 			align-items: center;
 			justify-content: center;
-			width: 100%;
-			background-color: var(--surface);
-			border-top: 1px solid var(--border-soft);
+			width: min(860px, 100%);
 			position: absolute;
 			left: 50%;
 			transform: translateX(-50%);
 			bottom: 0;
 			box-sizing: border-box;
-            padding: 14px clamp(12px, 3vw, 40px) 20px;
+            padding: 12px 28px 22px;
+            /* 悬浮输入区：上方渐隐，避免硬边框把对话切断 */
+            background: linear-gradient(to bottom, transparent, var(--canvas) 42%);
             &_title{
                 width: 100%;
                 margin-bottom: 8px;
@@ -164,4 +165,28 @@
 	[class*='ant-layout-header']{
 		// height: 0px !important;
 	}
+}
+
+
+/* 侧栏：新建对话用品牌浅底，清理历史用低调文字按钮 */
+.createChat {
+	height: 38px !important;
+	border-radius: var(--radius-md) !important;
+	border: 1px solid var(--brand-soft) !important;
+	background: var(--tint-brand) !important;
+	color: var(--brand) !important;
+	font-weight: 500 !important;
+	box-shadow: none !important;
+
+	&:hover {
+		border-color: var(--brand) !important;
+		background: var(--brand-soft) !important;
+		color: var(--brand-strong, var(--brand)) !important;
+	}
+}
+
+.clearChat {
+	height: 34px !important;
+	font-size: 12.5px !important;
+	color: var(--text-5) !important;
 }

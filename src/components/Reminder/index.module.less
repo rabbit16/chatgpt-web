@@ -1,72 +1,65 @@
-.reminder{
-    padding-top: 80px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+.reminder {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	&_logo{
-		width: 50px;
-		margin-bottom: 20px;
+	padding: 48px 24px 72px;
+	text-align: center;
+}
+
+.reminderLogo {
+	width: 44px;
+	height: 44px;
+	border-radius: var(--radius-md);
+	margin-bottom: 16px;
+}
+
+.reminderTitle {
+	margin: 0 0 8px;
+	font-size: 22px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: var(--text-1);
+}
+
+.reminderMessage {
+	margin: 0;
+	max-width: 46em;
+	font-size: 13.5px;
+	line-height: 1.8;
+	color: var(--text-4);
+}
+
+.reminderExamples {
+	margin-top: 22px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+
+	ul {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
-    &_title{
-        font-size: 32px;
-        color: #333;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        font-family: PingFang SC-Semibold,PingFang SC;
-    }
-    &_message{
-        font-size: 16px;
-        color: #26334b;
-        margin-top: 8px;
-		line-height: 1.5;
-        span{
-            padding: 2px 8px;
-            border: 1px solid #26334b;
-            border-radius: 4px;;
-        }
-    }
-    &_question{
-        margin-top: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        flex-flow: wrap;
-		// display: grid;
-		// grid-template-columns: repeat(3, 1fr);
-		// gap: 12px;
 
-        &_item{
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-            padding: 12px;
-            border-radius: 12px;
-            background-color: #f5f5f5;
-			border: 1px solid #f5f5f5;
-			transition: all 0.3s ease-in-out;
-			flex: 1;
-  			flex-basis: calc(33.33% - 20px);
-            h3{
-				margin-left: 4px;
-                font-size: 14px;
-                color: #26334b;
-                font-weight: 700;
-				text-overflow: ellipsis;
-				overflow: hidden;
-				white-space: nowrap;
-            }
+	li {
+		padding: 7px 14px;
+		border: 1px solid var(--border-soft);
+		border-radius: var(--radius-pill);
+		background: var(--surface-muted);
+		font-size: 12.5px;
+		color: var(--text-3);
+	}
+}
 
-			&:hover {
-				border-color: #1677ff;
-				h3{
-					color: #1677ff;
-				}
-			}
-        }
-    }
+.reminderExamplesLabel {
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	color: var(--text-5);
 }

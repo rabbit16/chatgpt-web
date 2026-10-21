@@ -124,7 +124,7 @@ export function AgentPanel() {
     return () => controller.abort()
   }, [token])
 
-  const key = apiKey.trim() || '先在上面生成并选中一把密钥'
+  const key = apiKey.trim() || '请先在上方生成并选择一把密钥'
   const usingPhone = /^1[3-9]\d{9}$/.test(key)
   const keyTip = usingPhone ? '旧账号仍可填手机号' : '填 sk- 开头的本站密钥，不是官方 Key'
   const gptModel = pickGptModel(chatModels)
@@ -381,8 +381,8 @@ export function AgentPanel() {
                 <h2>照着这张卡填两个框，再用第 4 步选模型</h2>
               </div>
               <p className={styles.cardLead}>
-                软件设置里通常只有两个空白要你操心：<b>API 地址</b>（填下面这行）和 <b>API Key</b>（填第 1 步生成的那串）。
-                其它开关保持默认即可。
+                软件设置中通常只需填写两处：<b>API 地址</b>（填入下方提供的那一行）与 <b>API Key</b>（第 1 步生成的那一串）。
+                其余开关保持默认值即可。
               </p>
               <ol className={styles.clickSteps}>
                 {clickSteps.map((item) => (
@@ -403,8 +403,8 @@ export function AgentPanel() {
                   <ol>
                     <li>先按「写代码（推荐）」加好 RabbitJ（OpenAI，地址带 /v1）。</li>
                     <li>同一条服务商里填图片模型 {imageModel}。</li>
-                    <li>新建聊天，输入「画一张坐在窗边的橘猫，写实」。等图片出来后立刻下载保存。</li>
-                    <li>不要把 gpt-image- 填进「主模型」，否则写代码和画图都会乱。</li>
+                    <li>新建对话，输入「画一张坐在窗边的橘猫，写实风格」。图片生成后请立即下载保存。</li>
+                    <li>请勿将 gpt-image- 开头的模型填入「主模型」，否则编码与绘图均会异常。</li>
                   </ol>
                 </div>
               ) : null}

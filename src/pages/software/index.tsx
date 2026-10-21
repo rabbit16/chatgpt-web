@@ -117,10 +117,9 @@ export function SoftwarePanel() {
             className={styles.notice}
             type="info"
             showIcon
-            message="下载前先看清自己电脑的系统"
-            description="下面的链接会跳到网盘。网盘里有各系统的安装包，按你电脑的系统挑：
-              Windows 选 x64（老电脑）或 ARM64（新笔记本），Mac 选 macOS，Linux 选 Linux。
-              不确定就搜一下「怎么查看我的电脑系统」——装错版本打不开，重新下一个就行，不会弄坏电脑。"
+            message="下载前请确认系统与芯片架构"
+            description="以下链接跳转至网盘，内含各平台安装包：Windows 请区分 x64（多数机型）与 ARM64（骁龙/部分新笔记本），
+              Mac 选 macOS，Linux 选对应发行版。版本装错只会无法启动，不会影响系统，重新下载即可；不确定时可先查阅「如何查看电脑系统类型」。"
           />
 
           <section className={styles.card}>
