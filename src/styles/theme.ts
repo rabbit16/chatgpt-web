@@ -29,10 +29,11 @@ export const antdTheme: ThemeConfig = {
     colorBgContainer: '#ffffff',
     colorFillAlter: '#f4f6fb',
 
-    borderRadius: 10,
-    borderRadiusLG: 12,
-    borderRadiusSM: 8,
-    borderRadiusXS: 6,
+    // 圆角只留 3 档：控件 12 / 卡片 16 / 药丸（借鉴模板站的克制）
+    borderRadius: 12,
+    borderRadiusLG: 16,
+    borderRadiusSM: 12,
+    borderRadiusXS: 8,
 
     fontFamily:
       "'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif",

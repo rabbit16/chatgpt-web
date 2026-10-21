@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Form } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
+import { ApiOutlined, CodeOutlined, WalletOutlined } from '@ant-design/icons'
 import styles from './index.module.less'
 import { LoginCard } from '@/components/LoginModal'
 import Brand from '@/components/Brand'
@@ -12,10 +13,26 @@ type Props = {
   description?: ReactNode
 }
 
+/**
+ * 借用模板站的"三条事实"写法：每条 = 图标方块 + 一句主张 + 一句可核对说明。
+ * 不写形容词，只写用户能验证的东西。
+ */
 const points = [
-  '一个账号，通用 GPT / Claude / Gemini 等主流模型',
-  '对话、绘图、用量与余额一站式查看',
-  '支持 Claude Code / Codex 等开发工具直连'
+  {
+    icon: <ApiOutlined />,
+    title: '一个入口，多种模型',
+    desc: 'OpenAI 兼容地址，GPT / Claude / Gemini 随选'
+  },
+  {
+    icon: <WalletOutlined />,
+    title: '按实际用量付费',
+    desc: '余额、用量与账单随时可查，不绑订阅'
+  },
+  {
+    icon: <CodeOutlined />,
+    title: '开发工具直连',
+    desc: 'Claude Code / Codex / Cherry Studio 填地址即用'
+  }
 ]
 
 /**
@@ -44,11 +61,18 @@ function LoginPage({
           </div>
 
           <div className={styles.login__pitch}>
+            <span className={styles.login__eyebrow}>统一 AI 接入，随时投入使用</span>
             <h2 className={styles.login__title}>{title}</h2>
             <p className={styles.login__desc}>{description}</p>
             <ul className={styles.login__points}>
               {points.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item.title}>
+                  <span className={styles.login__pointIcon}>{item.icon}</span>
+                  <span className={styles.login__pointText}>
+                    <strong>{item.title}</strong>
+                    <em>{item.desc}</em>
+                  </span>
+                </li>
               ))}
             </ul>
           </div>

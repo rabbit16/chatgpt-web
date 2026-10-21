@@ -42,18 +42,22 @@
   --warning-soft: #fffaeb;
   --danger-soft: #fef3f2;
 
-  /* ---------- 圆角 ---------- */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
+  /* ---------- 圆角 ----------
+   * 借鉴模板：整站只保留 3 档 —— 控件 12 / 卡片 16 / 药丸按钮全圆。
+   * 旧别名（xs/sm/xl）保留但指向同一批值，避免旧页面报错。 */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-xl: 16px;
   --radius-pill: 999px;
 
-  /* ---------- 阴影 ---------- */
+  /* ---------- 阴影 ----------
+   * 借鉴模板：层级靠「1px 描边 + 背景差」，阴影只给浮层用。
+   * --shadow-card 保留但调得很轻，卡片默认不投影。 */
   --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-card: 0 8px 24px rgba(16, 24, 40, 0.05);
-  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.1);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.03);
+  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.12);
   --shadow-focus: 0 0 0 3px rgba(24, 119, 255, 0.16);
 
   /* ---------- 尺寸栅格（8pt） ---------- */
@@ -68,7 +72,10 @@
   /* ---------- 外壳 ---------- */
   --header-h: 64px;
   --content-max: 1200px;
+  --container-pad: 32px;
+  --section-gap: 24px;
   --sider-w: 280px;
+  --divider: #f1f4f9; // 比 --border-soft 更淡的行分隔线
 
   /* ---------- 字体 ---------- */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',

@@ -79,9 +79,53 @@ samp {
   background-color: transparent !important;
 }
 
+/* ------------------------------------------------------------
+ * 借鉴模板站的"秩序层"（P0）
+ * 1) 容器：所有内容页统一 1200 宽，页边 32（移动端 16）
+ * 2) 微标签：11px / 大写 / 宽字距，用于语义标注而不是装饰
+ * 3) 等宽数字：金额、token、耗时对齐
+ * 4) 卡片去阴影：层级改用 1px 描边 + 背景差
+ * ------------------------------------------------------------ */
+
+.page-container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.micro-label {
+  font-size: var(--fs-12);
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-5);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* 卡片：模板站从不给卡片投影，靠描边分层 */
+.ant-card {
+  box-shadow: none !important;
+  border-color: var(--border-soft) !important;
+}
+
+/* 表头/分隔线统一用最淡的一档，避免页面被横线切碎 */
+.ant-divider {
+  border-color: var(--divider) !important;
+}
+
 /* 移动端：横向不出现意外滚动 */
 @media (max-width: 768px) {
   body {
     -webkit-text-size-adjust: 100%;
+  }
+
+  .page-container {
+    padding: 0 var(--space-4);
   }
 }
