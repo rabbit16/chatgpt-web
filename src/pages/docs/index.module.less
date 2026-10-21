@@ -86,6 +86,15 @@
 .step {
 	display: flex;
 	gap: 12px;
+	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+		border-color var(--dur) var(--ease);
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-hover);
+		border-color: var(--border);
+	}
+
 	padding: 16px;
 	background: var(--surface);
 	border: 1px solid var(--border-soft);
@@ -105,18 +114,10 @@
 	}
 }
 
-.stepNo {
-	flex: 0 0 24px;
-	width: 24px;
-	height: 24px;
-	border-radius: 50%;
-	background: var(--brand-soft);
-	color: var(--brand);
-	font-size: 13px;
+.stepNumText {
+	font-size: 14px;
 	font-weight: 600;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
+	line-height: 1;
 }
 
 .stepLink {
@@ -181,13 +182,20 @@
 }
 
 .clientCard {
+	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-hover);
+	}
+
 	padding: 16px;
 	background: var(--surface);
 	border: 1px solid var(--border-soft);
 	border-radius: var(--radius-lg);
 
 	h3 {
-		margin: 0 0 6px;
+		margin: 10px 0 6px;
 		font-size: 14px;
 		font-weight: 600;
 	}

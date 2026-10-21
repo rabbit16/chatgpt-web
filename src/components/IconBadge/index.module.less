@@ -1,0 +1,67 @@
+/**
+ * 图标徽章：全站图标统一进这个容器里。
+ * 颜色只做"底色+图标"同色系，饱和度压得比按钮低，避免页面变花。
+ */
+.badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	border-radius: var(--radius-md);
+	line-height: 1;
+	transition: transform var(--dur) var(--ease);
+}
+
+.sm {
+	width: 28px;
+	height: 28px;
+	font-size: 14px;
+	border-radius: var(--radius-xs);
+}
+
+.md {
+	width: 36px;
+	height: 36px;
+	font-size: 16px;
+}
+
+.lg {
+	width: 44px;
+	height: 44px;
+	font-size: 19px;
+	border-radius: var(--radius-lg);
+}
+
+.circle {
+	border-radius: 50%;
+}
+
+.brand {
+	background: var(--tint-brand);
+	color: var(--ink-brand);
+}
+
+.mint {
+	background: var(--tint-mint);
+	color: var(--ink-mint);
+}
+
+.amber {
+	background: var(--tint-amber);
+	color: var(--ink-amber);
+}
+
+.violet {
+	background: var(--tint-violet);
+	color: var(--ink-violet);
+}
+
+.rose {
+	background: var(--tint-rose);
+	color: var(--ink-rose);
+}
+
+.sky {
+	background: var(--tint-sky);
+	color: var(--ink-brand);
+}

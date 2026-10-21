@@ -5,6 +5,7 @@ import { ApiOutlined, CodeOutlined, WalletOutlined } from '@ant-design/icons'
 import styles from './index.module.less'
 import { LoginCard } from '@/components/LoginModal'
 import Brand from '@/components/Brand'
+import IconBadge from '@/components/IconBadge'
 
 type Props = {
   /** 左侧品牌面板标题 */
@@ -17,19 +18,22 @@ type Props = {
  * 借用模板站的"三条事实"写法：每条 = 图标方块 + 一句主张 + 一句可核对说明。
  * 不写形容词，只写用户能验证的东西。
  */
-const points = [
+const points: { icon: ReactNode; tone: 'brand' | 'mint' | 'violet'; title: string; desc: string }[] = [
   {
     icon: <ApiOutlined />,
+    tone: 'brand',
     title: '一个入口，多种模型',
     desc: 'OpenAI 兼容地址，GPT / Claude / Gemini 随选'
   },
   {
     icon: <WalletOutlined />,
+    tone: 'mint',
     title: '按实际用量付费',
     desc: '余额、用量与账单随时可查，不绑订阅'
   },
   {
     icon: <CodeOutlined />,
+    tone: 'violet',
     title: '开发工具直连',
     desc: 'Claude Code / Codex / Cherry Studio 填地址即用'
   }
@@ -53,6 +57,8 @@ function LoginPage({
     <div className={styles.login}>
       <aside className={styles.login__brand}>
         <div className={styles.login__brandInner}>
+          <span className={styles.login__glow} aria-hidden="true" />
+          <img className={styles.login__watermark} src="/logo.svg" alt="" aria-hidden="true" />
           <div className={styles.login__logo}>
             <Brand />
             <Link to="/" className={styles.login__back}>
@@ -67,7 +73,7 @@ function LoginPage({
             <ul className={styles.login__points}>
               {points.map((item) => (
                 <li key={item.title}>
-                  <span className={styles.login__pointIcon}>{item.icon}</span>
+                  <IconBadge icon={item.icon} tone={item.tone} size="md" />
                   <span className={styles.login__pointText}>
                     <strong>{item.title}</strong>
                     <em>{item.desc}</em>

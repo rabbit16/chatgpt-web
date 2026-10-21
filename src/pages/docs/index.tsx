@@ -3,13 +3,16 @@ import { Button, Tag, message } from 'antd'
 import { Link } from 'react-router-dom'
 import {
   ApiOutlined,
+  AppstoreOutlined,
   CheckOutlined,
+  CodeOutlined,
   CopyOutlined,
   KeyOutlined,
   RocketOutlined,
   ThunderboltOutlined
 } from '@ant-design/icons'
 import Layout from '@/components/Layout'
+import IconBadge, { type IconBadgeTone } from '@/components/IconBadge'
 import { userStore } from '@/store'
 import styles from './index.module.less'
 
@@ -38,16 +41,22 @@ resp = client.chat.completions.create(
 )
 print(resp.choices[0].message.content)`
 
-const clients = [
+const clients: { name: string; detail: string; icon: React.ReactNode; tone: IconBadgeTone }[] = [
   {
+    icon: <AppstoreOutlined />,
+    tone: 'rose',
     name: 'Cherry Studio',
     detail: '设置 → 模型服务 → 添加 OpenAI 兼容服务，API 地址填上面的 base_url，密钥填 sk- 开头的那串。'
   },
   {
+    icon: <CodeOutlined />,
+    tone: 'violet',
     name: 'Claude Code',
     detail: '导出 ANTHROPIC_BASE_URL 与 ANTHROPIC_AUTH_TOKEN 两个环境变量，模型名用本站价目表里的 Claude 型号。'
   },
   {
+    icon: <ApiOutlined />,
+    tone: 'mint',
     name: 'OpenAI SDK / 其他工具',
     detail: '任何支持自定义 base_url 的客户端都能接入：base_url 填 /v1 结尾的地址，协议选 OpenAI 兼容即可。'
   }
@@ -118,7 +127,7 @@ function DocsPage() {
 
           <section className={styles.steps}>
             <div className={styles.step}>
-              <span className={styles.stepNo}>1</span>
+              <IconBadge icon={<span className={styles.stepNumText}>1</span>} tone="brand" size="md" />
               <div>
                 <h3>创建 API 密钥</h3>
                 <p>注册后进入「API 密钥」页生成 sk- 开头的密钥，只显示一次，请立刻保存。</p>
@@ -133,7 +142,7 @@ function DocsPage() {
               </div>
             </div>
             <div className={styles.step}>
-              <span className={styles.stepNo}>2</span>
+              <IconBadge icon={<span className={styles.stepNumText}>2</span>} tone="amber" size="md" />
               <div>
                 <h3>选择协议</h3>
                 <p>
@@ -144,7 +153,7 @@ function DocsPage() {
               </div>
             </div>
             <div className={styles.step}>
-              <span className={styles.stepNo}>3</span>
+              <IconBadge icon={<span className={styles.stepNumText}>3</span>} tone="mint" size="md" />
               <div>
                 <h3>发送第一条请求</h3>
                 <p>把下面的命令里的密钥换成你自己的，模型名换成本站价目表里的名称。</p>
@@ -155,7 +164,7 @@ function DocsPage() {
           <section className={styles.panel}>
             <div className={styles.panelHead}>
               <span className={styles.panelTitle}>
-                <ThunderboltOutlined /> curl 示例
+                <IconBadge icon={<ThunderboltOutlined />} tone="amber" size="sm" /> curl 示例
               </span>
               <code className={styles.monoLabel}>POST /v1/chat/completions</code>
             </div>
@@ -165,7 +174,7 @@ function DocsPage() {
           <section className={styles.panel}>
             <div className={styles.panelHead}>
               <span className={styles.panelTitle}>
-                <KeyOutlined /> OpenAI SDK（Python）
+                <IconBadge icon={<KeyOutlined />} tone="violet" size="sm" /> OpenAI SDK（Python）
               </span>
               <code className={styles.monoLabel}>openai &gt;= 1.0</code>
             </div>
@@ -175,6 +184,7 @@ function DocsPage() {
           <section className={styles.clientGrid}>
             {clients.map((item) => (
               <div key={item.name} className={styles.clientCard}>
+                <IconBadge icon={item.icon} tone={item.tone} size="md" />
                 <h3>{item.name}</h3>
                 <p>{item.detail}</p>
               </div>

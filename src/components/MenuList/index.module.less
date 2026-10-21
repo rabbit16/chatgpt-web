@@ -26,17 +26,16 @@
 		gap: 2px;
 
 		.item {
-			padding: 0 10px;
+			/* 药丸式选中态（学模板站）：悬停浅底、选中品牌浅底，不用下划线 */
+			padding: 0 12px;
 			margin: 0 2px;
-			height: var(--header-h);
-			border-bottom-width: 2px;
-			border-bottom-style: solid;
-			border-bottom-color: transparent;
+			height: 36px;
+			border-radius: var(--radius-pill);
 			white-space: nowrap;
 
 			&:hover {
 				color: var(--text-1);
-				border-bottom-color: transparent;
+				background-color: var(--surface-muted);
 			}
 
 			&_icon {
@@ -63,7 +62,12 @@
 
 		.select_item {
 			color: var(--brand);
-			border-bottom-color: var(--brand);
+			background-color: var(--tint-brand);
+
+			&:hover {
+				color: var(--brand);
+				background-color: var(--tint-brand);
+			}
 		}
 	}
 

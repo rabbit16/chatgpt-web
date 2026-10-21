@@ -366,7 +366,8 @@ function ChatPage() {
     options?: { docMode?: 'append' | 'insert' | 'none' }
   ) {
     if (!token) {
-      setLoginModal(true)
+      // 不直接弹"登录"，而是引导匿名注册（不用手机号），保住体验连续性
+      userStore.getState().openAnonSignup()
       return false
     }
 

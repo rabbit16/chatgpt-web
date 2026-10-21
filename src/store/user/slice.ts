@@ -6,6 +6,10 @@ import { TableData } from '@/types/admin'
 export interface userState {
   // 登录弹窗开关
   loginModal: boolean
+  // 是否以「匿名体验」的引导态打开登录弹窗（未登录发消息时触发）
+  anonSignupHint: boolean
+  openAnonSignup: () => void
+  clearAnonSignupHint: () => void
   // 用户信息
   user_info: UserInfo | undefined
   // 登录Token
@@ -41,6 +45,9 @@ const userStore = create<userState>()(
   persist(
     (set) => ({
       loginModal: false,
+      anonSignupHint: false,
+      openAnonSignup: () => set({ loginModal: true, anonSignupHint: true }),
+      clearAnonSignupHint: () => set({ anonSignupHint: false }),
       user_info: undefined,
       token: undefined,
       token_expires_at: undefined,

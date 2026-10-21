@@ -11,10 +11,11 @@ import {
 } from '@ant-design/icons'
 import { LoginForm, ProFormCaptcha, ProFormText } from '@ant-design/pro-form'
 import { Alert, Button, Form, FormInstance, Modal, Space, Switch, Tabs, message } from 'antd'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { useNavigation, useLocation } from 'react-router-dom'
 import md5 from 'md5'
 import { copyToClipboard } from '@/utils'
+import { userStore } from '@/store'
 import styles from './index.module.less'
 
 const ANONYMOUS_NOTICE =
@@ -53,6 +54,7 @@ export function LoginCard(props: {
   const [anonymous, setAnonymous] = useState(false)
   const [generatedName, setGeneratedName] = useState('')
   const [generatingName, setGeneratingName] = useState(false)
+  const anonSignupHint = userStore((state) => state.anonSignupHint)
 
   const loadAnonymousName = async () => {
     setGeneratingName(true)
@@ -69,6 +71,20 @@ export function LoginCard(props: {
       setGeneratingName(false)
     }
   }
+
+  /**
+   * 未登录用户点了发送/新建对话时，直接把他带到「匿名注册」页：
+   * 打开开关、自动生成用户名，只剩输入密码一步，降低放弃率。
+   */
+  useEffect(() => {
+    if (!anonSignupHint) return
+    setLoginTabsValue('register')
+    setLoginType('register')
+    setAnonymous(true)
+    if (!generatedName && !generatingName) void loadAnonymousName()
+    // 只在引导态变化时触发一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anonSignupHint])
 
   const switchTab = (activeKey: string) => {
     props.form.resetFields()
@@ -255,6 +271,15 @@ export function LoginCard(props: {
       )}
       {loginTabsValue === 'register' ? (
         <div>
+          {anonSignupHint ? (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 12 }}
+              message="不用手机号，3 步开始体验"
+              description="系统已为你生成用户名；设一个密码就能开始。换浏览器或清缓存后，这个匿名账号会找不回来。"
+            />
+          ) : null}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <span>匿名注册</span>
             <Switch

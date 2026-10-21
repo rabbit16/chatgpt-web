@@ -57,6 +57,13 @@
 		border-radius: var(--radius-lg);
 	}
 
+	/* 匿名注册内容较高，超过 72vh 时内部滚动，避免按钮被截断 */
+	:global(.ant-modal-body) {
+		max-height: 72vh;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
 	:global(.ant-modal-close) {
 		top: 16px;
 		right: 16px;

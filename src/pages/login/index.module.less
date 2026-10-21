@@ -13,8 +13,34 @@
 		max-width: 620px;
 		position: relative;
 		overflow: hidden;
-		background: linear-gradient(160deg, #f2f7ff 0%, #e8f1ff 40%, #f7f9fd 100%);
+		background:
+			radial-gradient(circle at 1px 1px, rgba(24, 119, 255, 0.1) 1px, transparent 0) 0 0 / 22px 22px,
+			linear-gradient(160deg, #f4f8ff 0%, #e9f2ff 42%, #f8fbff 100%);
 		border-right: 1px solid var(--border-soft);
+	}
+
+	/* 右上角一团柔光，让大色块不死板 */
+	&__glow {
+		position: absolute;
+		top: -120px;
+		right: -80px;
+		width: 320px;
+		height: 320px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(24, 119, 255, 0.16) 0%, rgba(24, 119, 255, 0) 68%);
+		pointer-events: none;
+	}
+
+	/* 右下角的品牌水印：只做气氛，opacity 压很低 */
+	&__watermark {
+		position: absolute;
+		right: -40px;
+		bottom: -60px;
+		width: 260px;
+		height: 260px;
+		opacity: 0.06;
+		filter: grayscale(1);
+		pointer-events: none;
 	}
 
 	&__brandInner {
