@@ -9,11 +9,6 @@ import ShopPanel from '@/pages/shop'
 import { getUserPricing, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
-  resolveOfficialPrice,
-  savingRatio,
-  OFFICIAL_PRICING_UPDATED_AT
-} from '@/data/officialPricing'
-import {
   PUBLIC_IMAGE_MODELS,
   PUBLIC_MODEL_IDS,
   PUBLIC_MODELS,
@@ -228,23 +223,6 @@ function PricePage() {
   const write = billedRate ? estimate(billedRate.cache_write, cacheWriteTokens) : 0
   const output = billedRate ? estimate(billedRate.output, outputTokens) : 0
 
-  // 有没有可靠的官方价：决定是否显示「比官方价」列与汇总文案
-  const officialStats = useMemo(() => {
-    const rows: { id: string; ratio: number }[] = []
-    for (const item of models) {
-      const std = standardRate(item.rates)
-      const official = resolveOfficialPrice(item.id, {
-        input: (std as any)?.original_input,
-        output: (std as any)?.original_output
-      })
-      const ratio = savingRatio(std.input, official?.input)
-      if (ratio !== undefined) rows.push({ id: item.id, ratio })
-    }
-    const avg = rows.length ? rows.reduce((sum, item) => sum + item.ratio, 0) / rows.length : 0
-    return { count: rows.length, avg }
-  }, [models])
-  const hasOfficialPrice = officialStats.count > 0
-
   const columns = [
     {
       title: '模型',
@@ -307,33 +285,6 @@ function PricePage() {
         </span>
       )
     },
-    ...(hasOfficialPrice
-      ? [
-          {
-            title: '比官方价',
-            dataIndex: 'rates',
-            width: 132,
-            render: (rates: UserModelRate[], record: any) => {
-              const std = standardRate(rates)
-              const official = resolveOfficialPrice(record.id, {
-                input: (std as any)?.original_input,
-                output: (std as any)?.original_output
-              })
-              const ratio = savingRatio(std.input, official?.input)
-              if (!official || ratio === undefined) {
-                return <span className={styles.officialNone}>—</span>
-              }
-              const percent = Math.round(ratio * 100)
-              return (
-                <div className={styles.officialCell}>
-                  <Tag color={percent >= 20 ? 'green' : 'blue'}>省 {percent}%</Tag>
-                  <span className={styles.officialSub}>官方 {unit(official.input)}</span>
-                </div>
-              )
-            }
-          }
-        ]
-      : []),
     {
       title: '长上下文',
       dataIndex: 'rates',
@@ -402,14 +353,7 @@ function PricePage() {
             <div className={styles.publicNote}>
               <span className={styles.publicNoteText}>
                 {PUBLIC_PRICING_NOTE} · 更新于 {PUBLIC_PRICING_UPDATED_AT}
-                {hasOfficialPrice && (
-                  <>
-                    {' '}· 已收录 {officialStats.count} 个模型的官方直连价，标准价平均比官方低{' '}
-                    <b>{Math.round(officialStats.avg * 100)}%</b>
-                    {OFFICIAL_PRICING_UPDATED_AT ? `（核对于 ${OFFICIAL_PRICING_UPDATED_AT}）` : ''}
-                  </>
-                )}
-              </span>
+                              </span>
               <Button type="primary" onClick={() => setLoginModal(true)}>
                 登录 / 注册
               </Button>
