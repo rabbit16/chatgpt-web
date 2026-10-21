@@ -11,10 +11,11 @@ import {
 } from '@ant-design/icons'
 import { LoginForm, ProFormCaptcha, ProFormText } from '@ant-design/pro-form'
 import { Alert, Button, Form, FormInstance, Modal, Space, Switch, Tabs, message } from 'antd'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { useNavigation, useLocation } from 'react-router-dom'
 import md5 from 'md5'
 import { copyToClipboard } from '@/utils'
+import styles from './index.module.less'
 
 const ANONYMOUS_NOTICE =
   '匿名用户可以正常使用和充值，但请务必记住用户名和密码。忘记后无法自行找回，本站不承担任何责任。除非联系站长，否则无法找回账号。'
@@ -31,6 +32,9 @@ export function LoginCard(props: {
   form: FormInstance<RequestLoginParams>
   onSuccess: () => void
   type?: LoginType
+  /** 卡片标题：分屏登录页与弹窗各自传入 */
+  title?: ReactNode
+  subTitle?: ReactNode
 }) {
   const location = useLocation()
 
@@ -75,30 +79,23 @@ export function LoginCard(props: {
   return (
     <LoginForm<RequestLoginParams>
       form={props.form}
+      className={styles.card}
       // logo="https://u1.dl0.cn/icon/openailogo.svg"
-      title=""
-      subTitle="基于大语言模型的AI对话产品"
-      actions={(
-        <div
-          style={{
-            textAlign: 'center',
-            fontSize: 14
-          }}
-        >
-          {/* <p>
-            登录即代表你同意 <a href="https://www.baidu.com/">《平台协议》</a>和
-            <a href="https://www.baidu.com/">《隐私政策》</a>{' '}
-          </p> */}
-        </div>
-      )}
+      title={props.title ?? ''}
+      subTitle={props.subTitle ?? '基于大语言模型的AI对话产品'}
+      actions={null}
       contentStyle={{
         width: '100%',
-        maxWidth: '340px',
+        maxWidth: '360px',
         minWidth: '100px'
       }}
       submitter={{
         searchConfig: {
           submitText: loginType === 'register' ? '注册' : loginType === 'reset' ? '重置密码' : '登录'
+        },
+        submitButtonProps: {
+          block: true,
+          size: 'large'
         }
       }}
       onFinish={async (e:any) => {
@@ -480,8 +477,22 @@ function LoginModal(props: Props) {
   }
 
   return (
-    <Modal open={props.open} footer={null} destroyOnClose onCancel={onCancel}>
-      <LoginCard form={loginForm} onSuccess={onCancel} />
+    <Modal
+      open={props.open}
+      footer={null}
+      destroyOnClose
+      onCancel={onCancel}
+      width={460}
+      centered
+      className={styles.modal}
+      styles={{ body: { padding: '28px 28px 20px' } }}
+    >
+      <LoginCard
+        form={loginForm}
+        onSuccess={onCancel}
+        title="登录 anyGPT"
+        subTitle="登录后继续对话、查看用量与余额"
+      />
     </Modal>
   )
 }

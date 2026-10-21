@@ -1,0 +1,72 @@
+/**
+ * 登录卡片 / 弹窗样式（T3）
+ * 目标：卡片化、去背景图依赖、表单控件统一 44px 高。
+ */
+
+.card {
+	/* pro-form 自带容器默认有白底与大内边距，这里清掉，交给外层卡片控制 */
+	:global(.ant-pro-form-login-container) {
+		padding: 0;
+		background: transparent;
+		min-height: auto;
+	}
+
+	:global(.ant-pro-form-login-main) {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	:global(.ant-pro-form-login-header) {
+		margin-bottom: 4px;
+	}
+
+	:global(.ant-pro-form-login-title) {
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--text-1);
+	}
+
+	:global(.ant-pro-form-login-desc) {
+		font-size: 14px;
+		color: var(--text-4);
+		margin-top: 6px;
+	}
+
+	:global(.ant-tabs-nav) {
+		margin-bottom: 20px;
+	}
+
+	:global(.ant-tabs-tab) {
+		font-size: 14px;
+		padding: 8px 0;
+	}
+
+	:global(.ant-input-affix-wrapper-lg) {
+		padding-block: 10px;
+		border-radius: var(--radius-md);
+	}
+
+	:global(.ant-form-item) {
+		margin-bottom: 16px;
+	}
+}
+
+.modal {
+	:global(.ant-modal-content) {
+		border-radius: var(--radius-lg);
+	}
+
+	:global(.ant-modal-close) {
+		top: 16px;
+		right: 16px;
+	}
+}
+
+@media (max-width: 480px) {
+	.modal {
+		:global(.ant-modal-content) {
+			border-radius: var(--radius-md);
+		}
+	}
+}
