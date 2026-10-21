@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, Empty, Form, Input, Modal, Spin, Tag, message } from 'antd'
 import {
   AppleOutlined,
@@ -7,6 +8,7 @@ import {
   LinkOutlined,
   LinuxOutlined,
   ReloadOutlined,
+  RightOutlined,
   WindowsOutlined
 } from '@ant-design/icons'
 import Layout from '@/components/Layout'
@@ -50,6 +52,7 @@ type FormValues = {
  * 后端接口约定见 docs/后端接口-开源项目.md，未就绪前走本地兜底。
  */
 function ProjectsPage() {
+  const navigate = useNavigate()
   const token = userStore((state) => state.token)
   const setLoginModal = userStore((state) => state.setLoginModal)
 
@@ -79,9 +82,6 @@ function ProjectsPage() {
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
-
-  const official = useMemo(() => projects.find((item) => item.official), [projects])
-  const others = useMemo(() => projects.filter((item) => !item.official), [projects])
 
   const openUpload = () => {
     if (!token) {
@@ -156,47 +156,38 @@ function ProjectsPage() {
     )
   }
 
-  const renderProjectCard = (item: OpenSourceProject) => (
-    <article key={item.id} className={styles.card}>
-      <div className={styles.cardHead}>
-        <IconBadge icon={<span className={styles.bunny}>🐰</span>} tone="rose" size="lg" />
-        <div className={styles.cardTitle}>
-          <h3>
+  /** 列表行：图标 + 名称 + 一句介绍 + 可用平台，整行可点进详情页 */
+  const renderProjectRow = (item: OpenSourceProject) => {
+    const approved = item.releases.filter((r) => r.platform && r.status !== 'rejected')
+    const readyCount = approved.filter((r) => r.file_url).length
+    return (
+      <button
+        key={item.id}
+        type="button"
+        className={styles.row}
+        onClick={() => navigate(`/projects/${item.id}`)}
+      >
+        <IconBadge icon={<span className={styles.bunny}>🐰</span>} tone="rose" size="md" />
+        <span className={styles.rowMain}>
+          <span className={styles.rowTitle}>
             {item.name}
             {item.official && <Tag color="blue">官方</Tag>}
             {item.status === 'pending' && <Tag color="orange">待审核</Tag>}
-          </h3>
-          <p>{item.summary}</p>
-        </div>
-      </div>
-
-      {item.cover_url && (
-        <div className={styles.cardCover}>
-          <img src={item.cover_url} alt={`${item.name} 封面`} loading="lazy" />
-        </div>
-      )}
-
-      {item.description && <p className={styles.cardDesc}>{item.description}</p>}
-
-      <div className={styles.releaseList}>
-        {PLATFORMS.map((p) => {
-          const release = item.releases.find((r) => r.platform === p.key && r.status !== 'rejected')
-          return renderReleaseRow(release || ({ platform: p.key } as any), p.key)
-        })}
-      </div>
-
-      <div className={styles.cardFoot}>
-        <span>{item.author_name ? `作者：${item.author_name}` : '作者未署名'}</span>
-        {item.repo_url ? (
-          <a href={item.repo_url} target="_blank" rel="noreferrer">
-            <GithubOutlined /> 开源仓库
-          </a>
-        ) : (
-          <span className={styles.muted}>代码仓库待补充</span>
-        )}
-      </div>
-    </article>
-  )
+          </span>
+          <span className={styles.rowDesc}>{item.summary}</span>
+        </span>
+        <span className={styles.rowMeta}>
+          {PLATFORMS.filter((p) => approved.some((r) => r.platform === p.key)).map((p) => (
+            <span key={p.key} className={styles.rowPlatform}>
+              {p.icon}
+            </span>
+          ))}
+          <span className={styles.rowCount}>{readyCount ? `${readyCount} 个包` : '待上传'}</span>
+          <RightOutlined className={styles.rowArrow} />
+        </span>
+      </button>
+    )
+  }
 
   return (
     <div className={styles.page}>
@@ -234,16 +225,9 @@ function ProjectsPage() {
 
           <Spin spinning={loading}>
             {tab === 'all' ? (
-              <>
-                {official && renderProjectCard(official)}
-                {others.length ? (
-                  <div className={styles.grid}>{others.map(renderProjectCard)}</div>
-                ) : (
-                  <div className={styles.emptyCard}>
-                    <Empty description="还没有其他项目，第一个上传的会出现在这里" />
-                  </div>
-                )}
-              </>
+              <div className={styles.list}>
+                {projects.map(renderProjectRow)}
+              </div>
             ) : !token ? (
               <div className={styles.emptyCard}>
                 <Empty description="登录后可以查看自己提交的项目与审核状态" />
@@ -252,7 +236,7 @@ function ProjectsPage() {
                 </Button>
               </div>
             ) : mine.length ? (
-              <div className={styles.grid}>{mine.map(renderProjectCard)}</div>
+              <div className={styles.list}>{mine.map(renderProjectRow)}</div>
             ) : (
               <div className={styles.emptyCard}>
                 <Empty description="还没有提交过项目" />

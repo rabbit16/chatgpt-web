@@ -264,3 +264,81 @@
 		object-fit: cover;
 	}
 }
+
+
+/* ---------- 列表：一行一条 ---------- */
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: 14px 16px;
+	text-align: left;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	cursor: pointer;
+	transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease),
+		box-shadow var(--dur) var(--ease);
+
+	&:hover {
+		border-color: var(--brand-soft);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-hover);
+	}
+}
+
+.rowMain {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.rowTitle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14.5px;
+	font-weight: 600;
+	color: var(--text-1);
+}
+
+.rowDesc {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 12.5px;
+	color: var(--text-4);
+}
+
+.rowMeta {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 0 0 auto;
+	color: var(--text-5);
+	font-size: 12px;
+}
+
+.rowPlatform {
+	display: inline-flex;
+	font-size: 14px;
+	color: var(--text-4);
+}
+
+.rowCount {
+	font-family: var(--font-mono);
+}
+
+.rowArrow {
+	font-size: 11px;
+	color: var(--text-5);
+}

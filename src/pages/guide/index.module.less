@@ -55,111 +55,56 @@
 	}
 }
 
-/* ---------------- 三张插画 ---------------- */
-.steps {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 16px;
-}
-
-.stepCard {
-	display: flex;
-	flex-direction: column;
+/* ---------------- 主卡（模板站结构） ---------------- */
+.panel {
+	padding: 18px 20px 16px;
 	background: var(--surface);
 	border: 1px solid var(--border-soft);
 	border-radius: var(--radius-lg);
-	overflow: hidden;
-	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-
-	&:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-hover);
-	}
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
-.stepArt {
-	padding: 14px 14px 0;
-}
-
-/* 插画本身：铺满卡片宽度，圆角与卡片内边距对齐 */
-.art {
-	display: block;
-	width: 100%;
-	height: auto;
-	border-radius: var(--radius-md);
-}
-
-.stepBody {
-	padding: 14px 16px 18px;
+.panelHead {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
 
 	h2 {
-		margin: 6px 0 8px;
-		font-size: 16px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0 0 4px;
+		font-size: 17px;
 		font-weight: 600;
-		line-height: 1.4;
 		color: var(--text-1);
 	}
 
 	p {
-		margin: 0 0 8px;
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--text-4);
-	}
-
-	small {
-		font-size: 12px;
-		line-height: 1.6;
-		color: var(--text-5);
-	}
-}
-
-.stepNo {
-	font-size: 11px;
-	letter-spacing: 0.06em;
-	color: var(--brand);
-}
-
-/* ---------------- 两项值 ---------------- */
-.values {
-	padding: 20px 22px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-}
-
-.valuesHead {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	margin-bottom: 16px;
-
-	h2 {
-		margin: 0 0 4px;
-		font-size: 16px;
-		font-weight: 600;
-	}
-
-	p {
 		margin: 0;
-		font-size: 13px;
+		font-size: 12.5px;
 		line-height: 1.6;
 		color: var(--text-4);
 	}
+
+	:global(.ant-btn) {
+		flex: 0 0 auto;
+	}
 }
 
-.valueRows {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+.panelCheck {
+	color: var(--brand);
+	font-size: 15px;
 }
 
-.valueRow {
+.addrRow {
 	display: grid;
-	grid-template-columns: 240px minmax(0, 1fr) auto;
+	grid-template-columns: 132px minmax(0, 1fr) auto;
 	align-items: center;
-	gap: 12px;
-	padding: 10px 12px;
+	gap: 10px;
+	padding: 9px 12px;
 	border-radius: var(--radius-md);
 	background: var(--surface-muted);
 
@@ -171,16 +116,168 @@
 	}
 }
 
-.valueLabel {
+.addrLabel {
 	font-size: 12.5px;
 	color: var(--text-4);
 }
 
-.valuesFoot {
-	margin: 12px 0 0;
+.stepsRow {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+	padding: 14px 0 4px;
+	border-top: 1px dashed var(--divider);
+}
+
+.stepItem {
+	display: flex;
+	gap: 10px;
+
+	strong {
+		display: block;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--text-1);
+		margin-bottom: 2px;
+	}
+
+	span {
+		font-size: 12px;
+		color: var(--text-5);
+	}
+
+	button {
+		padding: 0;
+		border: 0;
+		background: none;
+		font-size: 12px;
+		color: var(--brand);
+		cursor: pointer;
+	}
+}
+
+.stepDot {
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--tint-brand);
+	color: var(--brand);
 	font-size: 12px;
-	line-height: 1.6;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.appRow {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding-top: 12px;
+	border-top: 1px dashed var(--divider);
+}
+
+.appTabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.appTab {
+	padding: 6px 14px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	font-size: 12.5px;
+	color: var(--text-4);
+	cursor: pointer;
+	transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+		background-color var(--dur) var(--ease);
+}
+
+.appTabOn {
+	border-color: var(--brand-soft);
+	background: var(--tint-brand);
+	color: var(--brand);
+}
+
+.appHint {
+	margin: 0;
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--text-4);
+}
+
+.modelRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+
+	code {
+		padding: 3px 8px;
+		border-radius: var(--radius-xs);
+		background: var(--surface-muted);
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--text-3);
+	}
+}
+
+.modelTip {
+	margin-left: auto;
+	font-size: 12px;
 	color: var(--text-5);
+}
+
+/* ---------------- 折叠区 ---------------- */
+.fold {
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+
+	summary {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 14px 18px;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--text-1);
+		cursor: pointer;
+		list-style: none;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+	}
+}
+
+.foldBody {
+	padding: 0 18px 18px;
+}
+
+.faq {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	li {
+		font-size: 12.5px;
+		line-height: 1.75;
+		color: var(--text-4);
+	}
+
+	strong {
+		display: block;
+		margin-bottom: 2px;
+		font-size: 13px;
+		color: var(--text-2);
+	}
 
 	code {
 		font-family: var(--font-mono);
@@ -188,6 +285,16 @@
 	}
 }
 
+.footerTip {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+/* ---------------- 各区块 ---------------- */
 /* ---------------- 各区块 ---------------- */
 .block {
 	display: flex;
@@ -219,13 +326,23 @@
 
 /* ---------------- 响应式 ---------------- */
 @media (max-width: 900px) {
-	.steps {
+	.stepsRow {
 		grid-template-columns: 1fr;
+		gap: 10px;
 	}
 
-	.valueRow {
+	.addrRow {
 		grid-template-columns: 1fr;
-		gap: 8px;
+		gap: 6px;
+	}
+
+	.panelHead {
+		flex-direction: column;
+
+		:global(.ant-btn) {
+			width: 100%;
+			justify-content: center;
+		}
 	}
 }
 

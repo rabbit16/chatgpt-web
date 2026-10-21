@@ -16,6 +16,7 @@ export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index
 
 const HomePage = React.lazy(() => import('@/pages/home'))
 const ProjectsPage = React.lazy(() => import('@/pages/projects'))
+const ProjectDetailPage = React.lazy(() => import('@/pages/projects/detail'))
 const ChatPage = React.lazy(() => import('@/pages/chat'))
 const RecordsPage = React.lazy(() => import('@/pages/records'))
 const PricePage = React.lazy(() => import('@/pages/price'))
@@ -50,6 +51,18 @@ export const webRouter: RouteOptions[] = [
       verifToken: false,
       public: true,
       title: '开源项目',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'ProjectDetailPage',
+    path: '/projects/:id',
+    element: <ProjectDetailPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '项目详情',
       role: ['user', 'administrator']
     }
   },
