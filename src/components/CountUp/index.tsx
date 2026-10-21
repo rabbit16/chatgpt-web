@@ -15,15 +15,19 @@ type Props = {
  */
 function CountUp({ value, duration = 1100, suffix = '', className }: Props) {
   const { ref, inView } = useInView<HTMLSpanElement>()
-  const [display, setDisplay] = useState(0)
+  // 初值直接给最终数字：如果用户没滚到这里（或截图时），也不会看到刺眼的 0
+  const [display, setDisplay] = useState(value)
+  const startedRef = useRef(false)
   const frameRef = useRef(0)
 
   useEffect(() => {
-    if (!inView) return
+    if (!inView || startedRef.current) return
+    startedRef.current = true
     if (prefersReducedMotion()) {
       setDisplay(value)
       return
     }
+    setDisplay(0)
     const start = performance.now()
     const tick = (now: number) => {
       const progress = Math.min(1, (now - start) / duration)

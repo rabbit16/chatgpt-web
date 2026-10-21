@@ -29,13 +29,13 @@ const points: { icon: ReactNode; tone: 'brand' | 'mint' | 'violet'; title: strin
     icon: <WalletOutlined />,
     tone: 'mint',
     title: '按实际用量付费',
-    desc: '余额、用量与账单随时可查，不绑订阅'
+    desc: '余额、用量与账单可随时核对，无需订阅'
   },
   {
     icon: <CodeOutlined />,
     tone: 'violet',
     title: '开发工具直连',
-    desc: 'Claude Code / Codex / Cherry Studio 填地址即用'
+    desc: 'Claude Code / Codex / Cherry Studio 填写地址即可接入'
   }
 ]
 

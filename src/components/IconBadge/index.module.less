@@ -3,13 +3,21 @@
  * 颜色只做"底色+图标"同色系，饱和度压得比按钮低，避免页面变花。
  */
 .badge {
-	display: inline-flex;
+	display: inline-flex !important;
+	text-align: center;
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
 	border-radius: var(--radius-md);
 	line-height: 1;
 	transition: transform var(--dur) var(--ease);
+
+	/* 图标本身也居中，避免 antd 图标的基线偏移 */
+	svg {
+		display: block;
+		margin: 0;
+		vertical-align: middle;
+	}
 }
 
 .sm {
@@ -22,7 +30,7 @@
 .md {
 	width: 36px;
 	height: 36px;
-	font-size: 16px;
+	font-size: 16px !important;
 }
 
 .lg {
