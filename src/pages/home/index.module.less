@@ -1,0 +1,604 @@
+/**
+ * 营销主页（S2 · 正式版）
+ * ------------------------------------------------------------
+ * 原则：一屏一个主张，每段都能跳到下一页（注册 / 价格 / 文档 / 体验）。
+ * 视觉：白底 + 发丝线 + 单品牌蓝；用点阵、柔光、等宽数字做质感，不用大动效。
+ */
+.home {
+	min-height: 100vh;
+	background: var(--canvas);
+	overflow-x: hidden;
+}
+
+/* ---------------- Hero ---------------- */
+.hero {
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+	padding: 56px 0 44px;
+	background:
+		radial-gradient(circle at 1px 1px, rgba(24, 119, 255, 0.08) 1px, transparent 0) 0 0 / 24px 24px,
+		linear-gradient(180deg, #f7faff 0%, var(--canvas) 100%);
+	border-bottom: 1px solid var(--border-soft);
+}
+
+.heroGlow {
+	position: absolute;
+	top: -140px;
+	right: -60px;
+	width: 420px;
+	height: 420px;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(24, 119, 255, 0.14) 0%, rgba(24, 119, 255, 0) 68%);
+	pointer-events: none;
+}
+
+.heroInner {
+	position: relative;
+	max-width: var(--content-max);
+	margin: 0 auto;
+	padding: 0 var(--container-pad);
+	display: grid;
+	grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+	gap: 40px;
+	align-items: center;
+}
+
+.eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: var(--radius-pill);
+	background: var(--tint-brand);
+	color: var(--ink-brand);
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.title {
+	margin: 16px 0 14px;
+	font-size: 44px;
+	line-height: 1.16;
+	letter-spacing: -0.03em;
+	font-weight: 700;
+	color: var(--text-1);
+}
+
+.subtitle {
+	margin: 0 0 24px;
+	max-width: 30em;
+	font-size: 15px;
+	line-height: 1.75;
+	color: var(--text-4);
+}
+
+.ctas {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.heroMeta {
+	display: flex;
+	gap: 18px;
+	flex-wrap: wrap;
+	margin-top: 18px;
+	font-size: 13px;
+	color: var(--text-4);
+
+	span {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+
+		:global(.anticon) {
+			color: var(--success);
+			font-size: 12px;
+		}
+	}
+}
+
+/* 代码卡片 */
+.codeCard {
+	min-width: 0;
+	max-width: 100%;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-card);
+	overflow: hidden;
+}
+
+.codeHead {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	border-bottom: 1px solid var(--divider);
+	background: var(--surface-muted);
+}
+
+.codeDots {
+	display: inline-flex;
+	gap: 5px;
+
+	i {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: #dbe2ec;
+	}
+}
+
+.codeTitle {
+	flex: 1 1 auto;
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	color: var(--text-4);
+	letter-spacing: 0.02em;
+}
+
+.code {
+	margin: 0;
+	padding: 16px;
+	background: #0f172a;
+	color: #e6edf7;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	line-height: 1.75;
+	overflow-x: auto;
+}
+
+.codeNarrow {
+	display: none;
+}
+
+.codeFoot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+.codeLink {
+	color: var(--brand);
+	font-weight: 500;
+
+	&:hover {
+		color: var(--brand-hover);
+	}
+}
+
+/* ---------------- 数据条 ---------------- */
+.statsBar {
+	width: 100%;
+	box-sizing: border-box;
+	max-width: var(--content-max);
+	margin: 0 auto;
+	padding: 0 var(--container-pad);
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	border-bottom: 1px solid var(--border-soft);
+
+	.stat {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 18px 18px 18px 0;
+
+		& + .stat {
+			padding-left: 18px;
+			border-left: 1px solid var(--divider);
+		}
+
+		b {
+			font-size: 24px;
+			line-height: 1.2;
+			letter-spacing: -0.02em;
+			color: var(--text-1);
+		}
+
+		span {
+			font-size: 12px;
+			color: var(--text-5);
+		}
+	}
+}
+
+/* ---------------- 通用段落 ---------------- */
+.section {
+	width: 100%;
+	box-sizing: border-box;
+	max-width: var(--content-max);
+	margin: 0 auto;
+	padding: 44px var(--container-pad) 8px;
+}
+
+.sectionHead {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 20px;
+
+	h2 {
+		margin: 0 0 6px;
+		font-size: 22px;
+		letter-spacing: -0.02em;
+	}
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		color: var(--text-4);
+	}
+}
+
+.moreLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: var(--brand);
+	white-space: nowrap;
+
+	&:hover {
+		color: var(--brand-hover);
+	}
+}
+
+/* 价格卡 */
+.priceGrid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 14px;
+}
+
+.priceCard {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+		border-color var(--dur) var(--ease);
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-hover);
+		border-color: var(--border);
+	}
+}
+
+.priceProvider {
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	color: var(--text-5);
+}
+
+.priceName {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--text-1);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.priceRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	font-size: 12px;
+	color: var(--text-5);
+
+	b {
+		font-size: 14px;
+		color: var(--text-2);
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+/* 步骤 */
+.stepGrid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+}
+
+.stepCard {
+	padding: 20px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-hover);
+	}
+
+	h3 {
+		margin: 14px 0 6px;
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+
+	code {
+		font-family: var(--font-mono);
+		font-size: 12px;
+	}
+}
+
+.stepNo {
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* 特性 */
+.featureGrid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+}
+
+.featureCard {
+	padding: 20px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+
+	h3 {
+		margin: 14px 0 6px;
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+/* 体验入口 */
+.experience {
+	width: 100%;
+	box-sizing: border-box;
+	max-width: var(--content-max);
+	margin: 40px auto 0;
+	padding: 24px var(--container-pad);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	flex-wrap: wrap;
+	border-top: 1px solid var(--border-soft);
+	border-bottom: 1px solid var(--border-soft);
+
+	h2 {
+		margin: 0 0 6px;
+		font-size: 20px;
+	}
+
+	p {
+		margin: 0;
+		max-width: 46em;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+.experienceActions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+/* 底部 CTA */
+.finalCta {
+	width: 100%;
+	box-sizing: border-box;
+	position: relative;
+	max-width: var(--content-max);
+	margin: 44px auto 0;
+	padding: 44px 32px;
+	text-align: center;
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	background:
+		radial-gradient(circle at 1px 1px, rgba(24, 119, 255, 0.07) 1px, transparent 0) 0 0 / 22px 22px,
+		linear-gradient(180deg, #f8fbff 0%, var(--surface) 100%);
+	overflow: hidden;
+
+	h2 {
+		margin: 0 0 8px;
+		font-size: 26px;
+		letter-spacing: -0.02em;
+	}
+
+	p {
+		margin: 0 0 22px;
+		font-size: 14px;
+		color: var(--text-4);
+	}
+}
+
+.finalGlow {
+	position: absolute;
+	left: 50%;
+	top: -120px;
+	width: 380px;
+	height: 380px;
+	transform: translateX(-50%);
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(24, 119, 255, 0.12) 0%, rgba(24, 119, 255, 0) 70%);
+	pointer-events: none;
+}
+
+.finalActions {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+}
+
+.finalSecondary {
+	font-size: 14px;
+	color: var(--brand);
+
+	&:hover {
+		color: var(--brand-hover);
+	}
+}
+
+/* 页脚 */
+.footer {
+	width: 100%;
+	box-sizing: border-box;
+	max-width: var(--content-max);
+	margin: 0 auto;
+	padding: 24px var(--container-pad) 40px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+.footerLinks {
+	display: inline-flex;
+	gap: 18px;
+	flex-wrap: wrap;
+
+	a {
+		color: var(--text-4);
+
+		&:hover {
+			color: var(--brand);
+		}
+	}
+}
+
+/* ---------------- 响应式 ---------------- */
+@media (max-width: 1080px) {
+	.heroInner {
+		grid-template-columns: 1fr;
+		gap: 28px;
+	}
+
+	.title {
+		font-size: 36px;
+	}
+
+	.priceGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.stepGrid,
+	.featureGrid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 640px) {
+	.hero {
+		padding: 28px 0 32px;
+	}
+
+	.title {
+		font-size: 28px;
+	}
+
+	.subtitle {
+		font-size: 14px;
+	}
+
+	.statsBar {
+		grid-template-columns: repeat(2, 1fr);
+		padding: 0 var(--space-4);
+
+		.stat {
+			padding: 14px 12px 14px 0;
+
+			& + .stat {
+				padding-left: 12px;
+			}
+
+			&:nth-child(3) {
+				border-left: none;
+				padding-left: 0;
+			}
+
+			&:nth-child(n + 3) {
+				border-top: 1px solid var(--divider);
+			}
+		}
+	}
+
+	.codeHead {
+		padding: 8px 12px;
+	}
+
+	.codeTitle {
+		font-size: 10.5px;
+	}
+
+	.code {
+		display: none;
+		padding: 12px;
+		font-size: 11px;
+		line-height: 1.6;
+	}
+
+	.codeNarrow {
+		display: block;
+	}
+
+	.section {
+		padding: 28px var(--space-4) 4px;
+	}
+
+	.sectionHead {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.priceGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.experience {
+		padding: 20px var(--space-4);
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.finalCta {
+		margin: 28px var(--space-4) 0;
+		padding: 28px 18px;
+	}
+
+	.footer {
+		padding: 20px var(--space-4) 32px;
+	}
+}

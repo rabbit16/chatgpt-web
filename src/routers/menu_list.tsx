@@ -34,7 +34,7 @@ import {
  * 模型体验：对话与绘图合并成一个入口（页内用页签切换），菜单只占一格。
  */
 const experience = {
-  path: '/',
+  path: '/chat',
   name: '模型体验',
   icon: <ExperimentOutlined />,
   message: '对话与绘图，登录后保存历史'

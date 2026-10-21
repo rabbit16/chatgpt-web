@@ -22,7 +22,7 @@ function AuthRouter(props: AuthRouterProps) {
       document.title = title
     }
     if(token && user_info && location.pathname.includes('/login')){
-      navigate('/')
+      navigate('/chat')
       return 
     }
     const userRole = isAdmin(user_info) ? 'administrator' : (user_info?.role || 'user')

@@ -95,7 +95,7 @@ function LoginPage({
             subTitle="登录后继续对话、查看用量与余额"
             onSuccess={() => {
               loginForm.resetFields()
-              navigate('/')
+              navigate('/chat')
             }}
           />
         </div>

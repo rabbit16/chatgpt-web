@@ -15,7 +15,7 @@ function ExperienceTabs() {
   return (
     <div className={styles.tabs} role="tablist" aria-label="模型体验">
       <Link
-        to="/"
+        to="/chat"
         role="tab"
         aria-selected={!isDraw}
         className={[styles.tab, !isDraw ? styles.active : ''].join(' ')}

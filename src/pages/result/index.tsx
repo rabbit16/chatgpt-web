@@ -12,7 +12,7 @@ function ResultPage() {
         <Button
           key="home"
           onClick={() => {
-            navigate('/')
+            navigate('/chat')
           }}
         >
           返回首页

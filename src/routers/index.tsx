@@ -14,6 +14,7 @@ export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index
   configure?: ConfigureType
 }
 
+const HomePage = React.lazy(() => import('@/pages/home'))
 const ChatPage = React.lazy(() => import('@/pages/chat'))
 const ShopPage = React.lazy(() => import('@/pages/shop'))
 const UsagePage = React.lazy(() => import('@/pages/usage'))
@@ -33,12 +34,25 @@ const AdminPage = React.lazy(() => import('@/pages/admin'))
 
 export const webRouter: RouteOptions[] = [
   {
-    id: 'ChatPage',
+    id: 'HomePage',
     path: '/',
+    element: <HomePage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '一个地址接通主流大模型',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'ChatPage',
+    path: '/chat',
     element: <ChatPage />,
     children: [],
     configure: {
       verifToken: false,
+      title: '模型体验',
       role: ['user', 'administrator']
     }
   },
