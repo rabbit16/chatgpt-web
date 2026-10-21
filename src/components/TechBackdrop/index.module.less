@@ -1,0 +1,73 @@
+.backdrop {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.hero {
+	opacity: 0.9;
+}
+
+.soft {
+	opacity: 0.55;
+}
+
+.art {
+	position: absolute;
+	inset: -8% -2% -8% -2%;
+	width: 106%;
+	height: 116%;
+	transition: transform 120ms linear;
+
+	:global(svg) {
+		overflow: visible;
+	}
+}
+
+.fade {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, transparent 0%, transparent 62%, var(--canvas) 100%);
+}
+
+/* 轨道缓慢自转（视觉上几乎察觉不到，但页面"活着"） */
+.orbitSlow {
+	transform-origin: 1040px 360px;
+	animation: orbitSpin 90s linear infinite;
+}
+
+.orbitFast {
+	transform-origin: 1040px 360px;
+	animation: orbitSpin 46s linear infinite reverse;
+}
+
+.dots {
+	animation: dotDrift 24s ease-in-out infinite alternate;
+}
+
+@keyframes orbitSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes dotDrift {
+	from {
+		transform: translate3d(0, 0, 0);
+		opacity: 0.28;
+	}
+	to {
+		transform: translate3d(-10px, 8px, 0);
+		opacity: 0.5;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.orbitSlow,
+	.orbitFast,
+	.dots {
+		animation: none;
+	}
+}

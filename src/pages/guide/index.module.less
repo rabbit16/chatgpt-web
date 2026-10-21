@@ -141,3 +141,105 @@
 		font-size: 22px;
 	}
 }
+
+/* ---------- 软件设置界面示意 ---------- */
+.mock {
+	width: 100%;
+	max-width: 720px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(16, 32, 64, 0.06);
+}
+
+.mockBar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 14px;
+	background: var(--surface-muted);
+	border-bottom: 1px solid var(--divider);
+}
+
+.mockDot {
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--border);
+}
+
+.mockTitle {
+	margin-left: 8px;
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+.mockBody {
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.mockRow {
+	position: relative;
+	display: grid;
+	grid-template-columns: 168px minmax(0, 1fr);
+	align-items: center;
+	gap: 12px;
+
+	label {
+		font-size: 12.5px;
+		color: var(--text-4);
+	}
+}
+
+.mockInput {
+	padding: 8px 10px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xs);
+	background: var(--surface-muted);
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--text-3);
+	word-break: break-all;
+}
+
+/* 需要动手填的格子：品牌浅底 + 序号角标 */
+.mockKey {
+	.mockInput {
+		background: var(--tint-brand);
+		border-color: var(--brand-soft);
+		color: var(--text-2);
+	}
+}
+
+.mockNo {
+	position: absolute;
+	right: -8px;
+	top: -8px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--brand);
+	color: #fff;
+	font-size: 11px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mockFoot {
+	margin: 0;
+	padding: 10px 16px 14px;
+	font-size: 12px;
+	color: var(--text-5);
+}
+
+@media (max-width: 640px) {
+	.mockRow {
+		grid-template-columns: 1fr;
+		gap: 6px;
+	}
+}

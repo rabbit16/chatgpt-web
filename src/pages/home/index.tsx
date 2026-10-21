@@ -13,6 +13,9 @@ import {
   WalletOutlined
 } from '@ant-design/icons'
 import IconBadge from '@/components/IconBadge'
+import TechBackdrop from '@/components/TechBackdrop'
+import Reveal from '@/components/Reveal'
+import CountUp from '@/components/CountUp'
 import Layout from '@/components/Layout'
 import { userStore } from '@/store'
 import { PUBLIC_MODELS } from '@/data/publicPricing'
@@ -120,6 +123,7 @@ function HomePage() {
       <Layout>
         {/* ---------- Hero：一屏一主张 ---------- */}
         <section className={styles.hero}>
+          <TechBackdrop variant="hero" parallax={0.35} />
           <span className={styles.heroGlow} aria-hidden="true" />
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
@@ -205,15 +209,21 @@ function HomePage() {
         {/* ---------- 数据条：可核对的事实 ---------- */}
         <section className={styles.statsBar}>
           <div className={styles.stat}>
-            <b className="num">{stats.models}</b>
+            <b className="num">
+              <CountUp value={stats.models} />
+            </b>
             <span>个可用模型</span>
           </div>
           <div className={styles.stat}>
-            <b className="num">{stats.providers}</b>
+            <b className="num">
+              <CountUp value={stats.providers} duration={900} />
+            </b>
             <span>家上游供应商</span>
           </div>
           <div className={styles.stat}>
-            <b>3</b>
+            <b className="num">
+              <CountUp value={3} duration={700} />
+            </b>
             <span>种协议兼容</span>
           </div>
           <div className={styles.stat}>
@@ -223,7 +233,7 @@ function HomePage() {
         </section>
 
         {/* ---------- 价格预览 ---------- */}
-        <section id="pricing" className={styles.section}>
+        <Reveal as="section" id="pricing" className={styles.section}>
           <div className={styles.sectionHead}>
             <div>
               <h2>常用模型价格</h2>
@@ -249,10 +259,10 @@ function HomePage() {
               </Link>
             ))}
           </div>
-        </section>
+        </Reveal>
 
         {/* ---------- 三步接入 ---------- */}
-        <section id="how" className={styles.section}>
+        <Reveal as="section" id="how" className={styles.section}>
           <div className={styles.sectionHead}>
             <div>
               <h2>三步接入</h2>
@@ -271,10 +281,10 @@ function HomePage() {
               </div>
             ))}
           </div>
-        </section>
+        </Reveal>
 
         {/* ---------- 为什么是这里 ---------- */}
-        <section id="why" className={styles.section}>
+        <Reveal as="section" id="why" className={styles.section}>
           <div className={styles.sectionHead}>
             <div>
               <h2>为什么用兔子网站</h2>
@@ -290,10 +300,10 @@ function HomePage() {
               </div>
             ))}
           </div>
-        </section>
+        </Reveal>
 
         {/* ---------- 体验入口 ---------- */}
-        <section className={styles.experience}>
+        <Reveal as="section" className={styles.experience}>
           <div>
             <h2>先试试再说</h2>
             <p>不注册也能直接对话和绘图，只是历史不会保存；满意了再拿密钥接入自己的工具。</p>
@@ -308,10 +318,10 @@ function HomePage() {
               </Button>
             )}
           </div>
-        </section>
+        </Reveal>
 
         {/* ---------- 底部 CTA ---------- */}
-        <section className={styles.finalCta}>
+        <Reveal as="section" className={styles.finalCta}>
           <span className={styles.finalGlow} aria-hidden="true" />
           <h2>把模型接进你的工作流</h2>
           <p>注册后创建密钥，5 分钟跑通第一条请求。</p>
@@ -328,7 +338,7 @@ function HomePage() {
               先看看价格
             </Link>
           </div>
-        </section>
+        </Reveal>
 
         <footer className={styles.footer}>
           <span>© {new Date().getFullYear()} anyGPT · 中转服务</span>

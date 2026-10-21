@@ -212,3 +212,13 @@ samp {
   background: var(--brand-soft);
   color: var(--text-1);
 }
+
+/* 顶栏常驻：pro-layout 默认把 header 放流里，滚动会一起走掉；
+   改成 sticky 后，滚动时顶栏留在顶部并收成胶囊（样式在 HeaderRender）。 */
+.ant-pro-layout .ant-layout-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-h);
+  line-height: normal;
+}

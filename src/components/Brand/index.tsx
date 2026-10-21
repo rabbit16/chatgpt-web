@@ -11,8 +11,8 @@ type Props = {
   compact?: boolean
 }
 
-const DEFAULT_TITLE = 'anyGPT'
-const DEFAULT_LOGO = '/logo.svg'
+const DEFAULT_TITLE = 'rabbitJ'
+const DEFAULT_LOGO = '/logo-rabbit.svg'
 
 /**
  * 品牌区（T2）
@@ -24,8 +24,10 @@ function Brand({ title, logo, compact = false }: Props) {
   const storeLogo = configStore((state) => state.website_logo)
   const storeTitle = configStore((state) => state.website_title)
 
-  const finalLogo = storeLogo || logo || DEFAULT_LOGO
-  const finalTitle = storeTitle || title || DEFAULT_TITLE
+  // 后台配置里如果还是旧的 ChatGPT 标识，就换成本站自己的兔子标
+  const isLegacyBrand = (value?: string) => !value || /anygpt|chatgpt|logo\.svg/i.test(value)
+  const finalLogo = isLegacyBrand(storeLogo) ? DEFAULT_LOGO : storeLogo
+  const finalTitle = isLegacyBrand(storeTitle) ? DEFAULT_TITLE : (storeTitle as string)
 
   return (
     <Link to="/" className={styles.brand} aria-label={`${finalTitle} 首页`}>

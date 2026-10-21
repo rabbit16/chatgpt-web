@@ -271,9 +271,12 @@ export function AgentPanel() {
           <section className={styles.card}>
             <div className={styles.stepHead}>
               <span>第 2 步</span>
-              <h2>选你在用的软件</h2>
+              <h2>先选软件，再选用途</h2>
             </div>
-            <p>不会选就用第一个。Claude-haha 是带窗口的桌面软件，写代码和画图都能做。</p>
+            <p>
+              两个问题：<b>你电脑上装的是哪个软件</b>、<b>你想让它干什么</b>。下面先选软件；选完后一组按钮就是用途。
+              不确定选哪个就用第一个——Claude-haha 是带窗口的桌面软件，写代码和画图都能做。
+            </p>
             <div className={styles.choiceGrid}>
               <button
                 className={appId === 'haha' ? styles.choiceActive : styles.choice}
@@ -331,9 +334,10 @@ export function AgentPanel() {
 
           <section className={styles.card}>
             <div className={styles.stepHead}>
-              <span>第 3 步</span>
-              <h2>你想用它干什么</h2>
+              <span>还是第 2 步</span>
+              <h2>你想让它干什么</h2>
             </div>
+            <p>同一个软件，想干的事不同，要填的模型名也不同。选一个用途，下面会给出对应的填法。</p>
             <div className={styles.jobRow}>
               <button
                 className={jobId === 'code-gpt' ? styles.jobActive : styles.job}
@@ -373,9 +377,13 @@ export function AgentPanel() {
           {!mismatch ? (
             <section className={styles.card}>
               <div className={styles.stepHead}>
-                <span>对着软件点</span>
-                <h2>{job.title}</h2>
+                <span>第 3 步</span>
+                <h2>照着这张卡填两个框，再用第 4 步选模型</h2>
               </div>
+              <p className={styles.cardLead}>
+                软件设置里通常只有两个空白要你操心：<b>API 地址</b>（填下面这行）和 <b>API Key</b>（填第 1 步生成的那串）。
+                其它开关保持默认即可。
+              </p>
               <ol className={styles.clickSteps}>
                 {clickSteps.map((item) => (
                   <li key={item.n}>
@@ -404,8 +412,11 @@ export function AgentPanel() {
           ) : null}
 
           <section className={styles.card}>
-            <h2>记这一张表就够</h2>
-            <p>名字不同，但只要看「模型名字长什么样」。</p>
+            <h2>第 4 步：模型名怎么选</h2>
+            <p>
+              不同软件的"模型"输入框长得不一样，但判断方法只有一条：
+              <b>看模型名的前缀</b>。前缀决定它属于哪一家、走哪种协议。
+            </p>
             <div className={styles.memory}>
               <article>
                 <strong>gpt- 开头</strong>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { notification } from 'antd'
 import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
@@ -30,6 +30,31 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   const notice = billingNoticeStore((state) => state.notice)
   const hide = billingNoticeStore((state) => state.hide)
 
+  // 滚动状态：滚过 12px 后顶栏收窄成悬浮胶囊，回到顶部再展开（纯视觉，不影响布局高度）
+  const [scrolled, setScrolled] = useState(false)
+  const progressRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = window.requestAnimationFrame(() => {
+        raf = 0
+        const top = window.scrollY || document.documentElement.scrollTop || 0
+        setScrolled(top > 12)
+        const max = document.documentElement.scrollHeight - window.innerHeight
+        const ratio = max > 0 ? Math.min(1, top / max) : 0
+        if (progressRef.current) progressRef.current.style.transform = `scaleX(${ratio})`
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (raf) window.cancelAnimationFrame(raf)
+    }
+  }, [])
+
   useEffect(() => {
     if (!notice) return
     const timer = window.setTimeout(() => hide(), 4200)
@@ -44,7 +69,8 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   }
 
   return (
-    <div className={styles.header}>
+    <div className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
+      <div ref={progressRef} className={styles.progress} aria-hidden />
       {notice
         ? createPortal(
             <div className={styles.billingToast} role="status">
@@ -56,6 +82,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
             document.body
           )
         : null}
+      <div className={styles.header__inner}>
       {props.isMobile && props.hasSiderMenu && (
         <MenuUnfoldOutlined
           className={styles.header__menuIcon}
@@ -171,6 +198,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
             </div>
           </Dropdown>
         )}
+      </div>
       </div>
     </div>
   )

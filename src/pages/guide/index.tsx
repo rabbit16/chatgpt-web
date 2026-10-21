@@ -51,6 +51,45 @@ const FLOW = [
  * 现在一页三页签：先看懂（快速开始）→ 对着软件填（各软件怎么填）→ 下客户端（软件下载）。
  * 页面顶部固定给出「三个值」和「四步流程」，任何一个小白都能照着做。
  */
+
+/** 软件设置界面示意图：让"填哪两个框"有画面感，不用真的截图也能看懂 */
+function SettingsMock() {
+  return (
+    <div className={styles.mock} aria-label="软件设置界面示意">
+      <div className={styles.mockBar}>
+        <span className={styles.mockDot} />
+        <span className={styles.mockDot} />
+        <span className={styles.mockDot} />
+        <span className={styles.mockTitle}>软件设置 · 添加服务商</span>
+      </div>
+      <div className={styles.mockBody}>
+        <div className={styles.mockRow}>
+          <label>服务商类型</label>
+          <div className={styles.mockInput}>OpenAI 兼容 / Custom</div>
+        </div>
+        <div className={`${styles.mockRow} ${styles.mockKey}`}>
+          <label>API 地址（Base URL）</label>
+          <div className={styles.mockInput}>{RELAY_URL}</div>
+          <span className={styles.mockNo}>②</span>
+        </div>
+        <div className={`${styles.mockRow} ${styles.mockKey}`}>
+          <label>API Key</label>
+          <div className={styles.mockInput}>sk-••••••••••••••••</div>
+          <span className={styles.mockNo}>①③</span>
+        </div>
+        <div className={`${styles.mockRow} ${styles.mockKey}`}>
+          <label>模型</label>
+          <div className={styles.mockInput}>gpt-5.4（写代码） / gpt-image-…（画图）</div>
+          <span className={styles.mockNo}>④</span>
+        </div>
+      </div>
+      <p className={styles.mockFoot}>
+        图里高亮的三个框，就是第 1–4 步要动的地方；其它选项保持默认。
+      </p>
+    </div>
+  )
+}
+
 function GuidePage() {
   const [params, setParams] = useSearchParams()
   const raw = params.get('tab')
@@ -127,6 +166,7 @@ function GuidePage() {
             items={TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
           />
 
+          {tab === 'client' && <SettingsMock />}
           {tab === 'start' ? <DocsPanel /> : tab === 'client' ? <AgentPanel /> : <SoftwarePanel />}
         </div>
       </Layout>

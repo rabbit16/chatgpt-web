@@ -16,10 +16,14 @@
 	box-sizing: border-box;
 	position: relative;
 	padding: 56px 0 44px;
-	background:
-		radial-gradient(circle at 1px 1px, rgba(24, 119, 255, 0.08) 1px, transparent 0) 0 0 / 24px 24px,
-		linear-gradient(180deg, #f7faff 0%, var(--canvas) 100%);
+	overflow: hidden;
+	background: linear-gradient(180deg, #f7faff 0%, var(--canvas) 100%);
 	border-bottom: 1px solid var(--border-soft);
+
+	> * {
+		position: relative;
+		z-index: 1;
+	}
 }
 
 .heroGlow {
@@ -35,6 +39,7 @@
 
 .heroInner {
 	position: relative;
+	z-index: 1;
 	max-width: var(--content-max);
 	margin: 0 auto;
 	padding: 0 var(--container-pad);

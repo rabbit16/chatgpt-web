@@ -117,8 +117,10 @@ export function SoftwarePanel() {
             className={styles.notice}
             type="info"
             showIcon
-            message="下载前请看"
-            description="链接是网盘链接，打开后到网盘下载。网盘里包含主流系统的安装包，请按自己电脑的系统和架构选择：Windows x64、Windows ARM64、macOS、Linux。"
+            message="下载前先看清自己电脑的系统"
+            description="下面的链接会跳到网盘。网盘里有各系统的安装包，按你电脑的系统挑：
+              Windows 选 x64（老电脑）或 ARM64（新笔记本），Mac 选 macOS，Linux 选 Linux。
+              不确定就搜一下「怎么查看我的电脑系统」——装错版本打不开，重新下一个就行，不会弄坏电脑。"
           />
 
           <section className={styles.card}>
