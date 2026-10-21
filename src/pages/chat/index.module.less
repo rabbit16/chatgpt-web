@@ -17,6 +17,26 @@
             min-height: 40px;
             flex-shrink: 0;
         }
+
+        /* 窄屏：对话/文稿 切换做成紧凑胶囊，别像个浮层压在消息上 */
+        @media (max-width: 900px){
+            &_toolbar{
+                justify-content: flex-start;
+                padding: 8px 12px 6px;
+                min-height: auto;
+
+                :global(.ant-btn-group .ant-btn){
+                    height: 30px;
+                    padding: 0 12px;
+                    font-size: 13px;
+                    border-color: var(--border);
+                }
+                :global(.ant-btn-group .ant-btn-primary){
+                    border-color: var(--brand);
+                    background: var(--brand);
+                }
+            }
+        }
         &_persona{
             margin-right: auto;
             min-width: 100px;
