@@ -7,11 +7,37 @@
 }
 
 .hero {
-	opacity: 0.9;
+	opacity: 1;
 }
 
 .soft {
-	opacity: 0.55;
+	opacity: 0.6;
+}
+
+/* 两团柔光：让"未来感"来自光而不是噪点 */
+.backdrop::before,
+.backdrop::after {
+	content: '';
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(40px);
+	pointer-events: none;
+}
+
+.backdrop::before {
+	width: 520px;
+	height: 520px;
+	right: -80px;
+	top: -140px;
+	background: radial-gradient(circle, rgba(43, 127, 255, 0.22), transparent 70%);
+}
+
+.backdrop::after {
+	width: 420px;
+	height: 420px;
+	right: 220px;
+	bottom: -180px;
+	background: radial-gradient(circle, rgba(111, 92, 255, 0.16), transparent 70%);
 }
 
 .art {
@@ -34,12 +60,12 @@
 
 /* 轨道缓慢自转（视觉上几乎察觉不到，但页面"活着"） */
 .orbitSlow {
-	transform-origin: 1040px 360px;
+	transform-origin: 470px 300px;
 	animation: orbitSpin 90s linear infinite;
 }
 
 .orbitFast {
-	transform-origin: 1040px 360px;
+	transform-origin: 470px 300px;
 	animation: orbitSpin 46s linear infinite reverse;
 }
 

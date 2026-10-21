@@ -48,19 +48,19 @@ function TechBackdrop({ variant = 'soft', parallax = 0 }: Props) {
       <svg ref={artRef} className={styles.art} viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice">
         <defs>
           <radialGradient id="tb-glow" cx="50%" cy="42%" r="55%">
-            <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.16" />
+            <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.22" />
             <stop offset="65%" stopColor="var(--brand)" stopOpacity="0.04" />
             <stop offset="100%" stopColor="var(--brand)" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="tb-line" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.05" />
-            <stop offset="50%" stopColor="var(--brand)" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="var(--brand)" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.12" />
+            <stop offset="50%" stopColor="var(--brand)" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="var(--brand)" stopOpacity="0.12" />
           </linearGradient>
           <linearGradient id="tb-line-2" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6f5cff" stopOpacity="0.04" />
-            <stop offset="50%" stopColor="#6f5cff" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#6f5cff" stopOpacity="0.04" />
+            <stop offset="0%" stopColor="#6f5cff" stopOpacity="0.1" />
+            <stop offset="50%" stopColor="#6f5cff" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#6f5cff" stopOpacity="0.1" />
           </linearGradient>
         </defs>
 
@@ -68,24 +68,24 @@ function TechBackdrop({ variant = 'soft', parallax = 0 }: Props) {
 
         {/* 三层椭圆轨道，粗细递减 */}
         <g className={styles.orbitSlow} fill="none" stroke="url(#tb-line)">
-          <ellipse cx="1040" cy="360" rx="430" ry="150" strokeWidth="1" transform="rotate(-16 1040 360)" />
-          <ellipse cx="1040" cy="360" rx="330" ry="112" strokeWidth="1" transform="rotate(10 1040 360)" />
-          <ellipse cx="1040" cy="360" rx="230" ry="74" strokeWidth="1.2" transform="rotate(-4 1040 360)" />
+          <ellipse cx="470" cy="300" rx="430" ry="150" strokeWidth="1" transform="rotate(-18 470 300)" />
+          <ellipse cx="470" cy="300" rx="330" ry="112" strokeWidth="1" transform="rotate(12 470 300)" />
+          <ellipse cx="470" cy="300" rx="230" ry="74" strokeWidth="1.2" transform="rotate(-5 470 300)" />
         </g>
 
         <g className={styles.orbitFast} fill="none" stroke="url(#tb-line-2)">
-          <ellipse cx="1040" cy="360" rx="160" ry="160" strokeWidth="1" strokeDasharray="3 14" />
-          <circle cx="1040" cy="360" r="86" strokeWidth="1" strokeDasharray="2 10" />
+          <ellipse cx="470" cy="300" rx="160" ry="160" strokeWidth="1" strokeDasharray="3 14" />
+          <circle cx="470" cy="300" r="86" strokeWidth="1" strokeDasharray="2 10" />
         </g>
 
         {/* 光点：轨道交点上的“模型” */}
         <g>
-          <circle cx="716" cy="286" r="4" fill="var(--brand)" opacity="0.85" />
-          <circle cx="716" cy="286" r="10" fill="var(--brand)" opacity="0.12" />
-          <circle cx="1298" cy="430" r="3.5" fill="#6f5cff" opacity="0.8" />
-          <circle cx="1298" cy="430" r="9" fill="#6f5cff" opacity="0.1" />
-          <circle cx="1008" cy="556" r="3" fill="var(--brand)" opacity="0.7" />
-          <circle cx="1008" cy="556" r="8" fill="var(--brand)" opacity="0.1" />
+          <circle cx="250" cy="212" r="4" fill="var(--brand)" opacity="0.85" />
+          <circle cx="250" cy="212" r="10" fill="var(--brand)" opacity="0.12" />
+          <circle cx="742" cy="392" r="3.5" fill="#6f5cff" opacity="0.8" />
+          <circle cx="742" cy="392" r="9" fill="#6f5cff" opacity="0.1" />
+          <circle cx="452" cy="520" r="3" fill="var(--brand)" opacity="0.7" />
+          <circle cx="452" cy="520" r="8" fill="var(--brand)" opacity="0.1" />
         </g>
 
         {/* 点阵网格，只在右上角淡出，避免整页花 */}
