@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { notification } from 'antd'
 import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
@@ -12,9 +12,9 @@ import {
   UserOutlined
 } from '@ant-design/icons'
 import { chatStore, userStore, billingNoticeStore } from '@/store'
-import { Avatar, Button, Dropdown } from 'antd'
-import { getEmailPre } from '@/utils'
+import { Button, Dropdown } from 'antd'
 import MenuList from '../MenuList'
+import Brand from '../Brand'
 import { useNavigate } from 'react-router-dom'
 import { isAdmin } from '@/utils/isAdmin'
 
@@ -43,11 +43,6 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
     return `¥${value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`
   }
 
-  const renderLogo = useMemo(() => {
-    if (typeof props.logo === 'string') return <img src={props.logo} />
-    return <>{props.logo}</>
-  }, [props.logo])
-
   return (
     <div className={styles.header}>
       {notice
@@ -67,9 +62,12 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
           onClick={() => props.onCollapse?.(!props.collapsed)}
         />
       )}
-      <div className={styles.header__logo}>
-
-        {!props.isMobile && <h1>{props.title}</h1>}
+      <div className={styles.header__brand}>
+        <Brand
+          title={props.title as string}
+          logo={typeof props.logo === 'string' ? props.logo : ''}
+          compact={Boolean(props.isMobile)}
+        />
       </div>
       {!props.isMobile && <MenuList />}
       <div className={styles.header__actives}>

@@ -59,6 +59,7 @@ function Layout(props: Props) {
       contentWidth="Fluid"
       fixedHeader
       fixSiderbar
+      headerHeight={64}
       headerRender={HeaderRender}
       contentStyle={{
         background: '#fff'
@@ -73,7 +74,7 @@ function Layout(props: Props) {
         collapsedShowGroupTitle: false
       }}
       suppressSiderWhenMenuEmpty={!props.keepSiderWhenMenuEmpty}
-      siderWidth={300}
+      siderWidth={280}
       menuExtraRender={menuExtraRender}
       menuItemRender={menuItemRender}
       route={props.route}

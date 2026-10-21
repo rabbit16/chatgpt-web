@@ -1,0 +1,107 @@
+/**
+ * 设计 token 层（T1）
+ * ------------------------------------------------------------
+ * 全站唯一的颜色/圆角/阴影/字号来源。
+ * 改这里，全站跟着变；不要在页面里再写死 #1877ff 这类色值。
+ *
+ * 视觉方向：A 精炼 SaaS（Refined SaaS）
+ * 取值来源：design/directions.html 方向 A 色板
+ */
+
+:root {
+  /* ---------- 品牌 ---------- */
+  --brand: #1877ff;
+  --brand-hover: #0b63e5;
+  --brand-active: #0a55c4;
+  --brand-soft: #e8f1ff;
+  --brand-softer: #f2f7ff;
+
+  /* ---------- 文字 ---------- */
+  --text-1: #101828; // 标题
+  --text-2: #344054; // 正文强调
+  --text-3: #475467; // 正文
+  --text-4: #667085; // 次要说明
+  --text-5: #98a2b3; // 占位、弱提示
+  --text-inverse: #ffffff;
+
+  /* ---------- 线条与背景 ---------- */
+  --border: #e4e9f2;
+  --border-strong: #d0d5dd;
+  --border-soft: #eef2f7;
+  --surface: #ffffff;
+  --surface-muted: #f4f6fb;
+  --surface-sunken: #f8fafc;
+  --canvas: #f7f9fd;
+  --ink-deep: #0f172a;
+
+  /* ---------- 语义色 ---------- */
+  --success: #12b76a;
+  --warning: #f79009;
+  --danger: #f04438;
+  --success-soft: #ecfdf3;
+  --warning-soft: #fffaeb;
+  --danger-soft: #fef3f2;
+
+  /* ---------- 圆角 ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-card: 0 8px 24px rgba(16, 24, 40, 0.05);
+  --shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(24, 119, 255, 0.16);
+
+  /* ---------- 尺寸栅格（8pt） ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* ---------- 外壳 ---------- */
+  --header-h: 64px;
+  --content-max: 1200px;
+  --sider-w: 280px;
+
+  /* ---------- 字体 ---------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei',
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* ---------- 字号（14px 基准） ---------- */
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-28: 28px;
+  --fs-36: 36px;
+
+  /* ---------- 过渡 ---------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+}
+
+/**
+ * Less 变量层：给还在用 less 变量/老写法的样式复用。
+ * 注意：Less 变量在编译期展开，CSS 变量在浏览器运行期生效，
+ * 所以这里保持与 :root 一一对应，改值只改上面。
+ */
+@brand: #1877ff;
+@text-1: #101828;
+@text-3: #475467;
+@text-4: #667085;
+@border: #e4e9f2;
+@surface: #ffffff;
+@surface-muted: #f4f6fb;
+@radius-sm: 8px;
+@radius-md: 12px;
+@shadow-card: 0 8px 24px rgba(16, 24, 40, 0.05);

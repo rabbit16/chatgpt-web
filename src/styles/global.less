@@ -1,22 +1,87 @@
+/**
+ * 全局基础样式（T1）
+ * ------------------------------------------------------------
+ * 只放"全站都适用"的地基：字体、颜色继承、滚动条、焦点环。
+ * 页面级样式仍放各自的 *.module.less，不要往这里堆。
+ */
+
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
-*,body,html{
-	margin: 0;
-	padding: 0;
+
+*,
+body,
+html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-body{
-	padding-bottom: constant(safe-area-inset-bottom);
-	padding-bottom: env(safe-area-inset-bottom);
+
+body {
+  background: var(--surface);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  line-height: 1.6;
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* 滚动条默认隐藏（沿用旧版行为，避免布局跳动） */
 *::-webkit-scrollbar {
-	display: none;
+  display: none;
 }
 
 a {
-	text-decoration: none;
+  text-decoration: none;
+  color: inherit;
 }
 
-[class*='ant-pro-sider']{
-	background-color: transparent !important;
+/* 键盘可达性：只在键盘聚焦时出现焦点环，鼠标点击不出现 */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* 标题统一字重与字距，方向 A 的克制感 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  color: var(--text-1);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* 代码/等宽场景 */
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono);
+}
+
+/* 选中文本用品牌色浅底 */
+::selection {
+  background: var(--brand-soft);
+  color: var(--text-1);
+}
+
+[class*='ant-pro-sider'] {
+  background-color: transparent !important;
+}
+
+/* 移动端：横向不出现意外滚动 */
+@media (max-width: 768px) {
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
 }

@@ -19,7 +19,18 @@ import {
   UserOutlined
 } from '@ant-design/icons'
 
-const web = [
+/**
+ * 导航数据（T2 · IA-2 极简顶栏 + 更多）
+ * ------------------------------------------------------------
+ * 原来 11 项平铺挤一行，1366 宽会贴边。
+ * 现在分三层：
+ *   primary —— 顶栏常驻 5 项（高频）
+ *   more    —— 收进「更多」下拉（低频）
+ *   web     —— 完整列表，保留给移动端抽屉与旧调用方
+ * 账号相关（个人资料/钱包/后台）在头像菜单里，不占顶栏。
+ */
+
+const primary = [
   {
     path: '/',
     name: '对话',
@@ -39,34 +50,25 @@ const web = [
     message: '账户余额和充值套餐记录'
   },
   {
-    path: '/tasks',
-    name: '任务',
-    icon: <ProfileOutlined />,
-    message: '查看中转日志归并出的未完成任务'
-  },
-  {
-    path: '/usage',
-    name: '使用记录',
-    icon: <HistoryOutlined />,
-    message: '查看本账号请求用量与扣费'
-  },
-  {
     path: '/price',
     name: '模型价格',
     icon: <MoneyCollectFilled />,
     message: '查看当前账号美元价目'
   },
   {
-    path: '/announcement',
-    name: '公告',
-    icon: <NotificationOutlined />,
-    message: '查看站点公告与历史通知'
-  },
+    path: '/usage',
+    name: '使用记录',
+    icon: <HistoryOutlined />,
+    message: '查看本账号请求用量与扣费'
+  }
+]
+
+const more = [
   {
-    path: '/feedback',
-    name: '留言',
-    icon: <FormOutlined />,
-    message: '可匿名留言，不留名就不记身份'
+    path: '/tasks',
+    name: '任务',
+    icon: <ProfileOutlined />,
+    message: '查看中转日志归并出的未完成任务'
   },
   {
     path: '/agent',
@@ -81,12 +83,27 @@ const web = [
     message: '按分类浏览软件，跳转网盘下载'
   },
   {
+    path: '/announcement',
+    name: '公告',
+    icon: <NotificationOutlined />,
+    message: '查看站点公告与历史通知'
+  },
+  {
+    path: '/feedback',
+    name: '留言',
+    icon: <FormOutlined />,
+    message: '可匿名留言，不留名就不记身份'
+  },
+  {
     path: '/profile',
     name: '个人资料',
     icon: <UserOutlined />,
     message: '修改名称、手机号、邮箱和密码'
   }
 ]
+
+// 完整列表：顶栏常驻 + 更多，供移动端与既有调用方使用
+const web = [...primary, ...more]
 
 const admin = {
   path: '/admin',
@@ -151,5 +168,7 @@ const admin = {
 
 export default {
   web,
+  primary,
+  more,
   admin
 }
