@@ -46,7 +46,14 @@ function applyCredential(userInfo: any, allowPhoneKey: boolean, keys: UserApiKey
   return nextKey
 }
 
-export default function ApiKeyPanel({ onKeyChange }: { onKeyChange: (key: string) => void }) {
+export default function ApiKeyPanel({
+  onKeyChange,
+  embedded = false
+}: {
+  onKeyChange: (key: string) => void
+  /** 嵌进接入指南时用：去掉外层卡片和「第 1 步」标题，只留新建/管理密钥的操作 */
+  embedded?: boolean
+}) {
   const { token, user_info, setLoginModal, llm_api_key, allow_phone_key } = userStore()
   const userId = readUserId(user_info)
   const phone = readPhone(user_info)
@@ -158,12 +165,16 @@ export default function ApiKeyPanel({ onKeyChange }: { onKeyChange: (key: string
   }
 
   return (
-    <section className={styles.card}>
-      <div className={styles.stepHead}>
-        <span>第 1 步</span>
-        <h2>创建并选择密钥</h2>
-      </div>
-      <p>软件里的 API Key 填 sk- 开头的密钥。每把密钥旁边都有复制按钮，下次打开本页还可以再复制。禁用后可以再启用；删除后这把密钥立即失效。</p>
+    <section className={embedded ? styles.embedded : styles.card}>
+      {!embedded ? (
+        <>
+          <div className={styles.stepHead}>
+            <span>第 1 步</span>
+            <h2>创建并选择密钥</h2>
+          </div>
+          <p>软件里的 API Key 填 sk- 开头的密钥。每把密钥旁边都有复制按钮，下次打开本页还可以再复制。禁用后可以再启用；删除后这把密钥立即失效。</p>
+        </>
+      ) : null}
       {!token ? (
         <p className={styles.hint}>
           还没账号？
@@ -181,7 +192,7 @@ export default function ApiKeyPanel({ onKeyChange }: { onKeyChange: (key: string
               message="手机号暂时还能请求模型"
               description="这是 2026年10月1日前注册、且还没生成过 sk- 密钥的账号。一旦生成密钥，手机号就不能再请求模型，删掉密钥也不会恢复。价目、用量和其他功能一直可用。"
             />
-          ) : (
+          ) : embedded ? null : (
             <Alert
               showIcon
               type="warning"
