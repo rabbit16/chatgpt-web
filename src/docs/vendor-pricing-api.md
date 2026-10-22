@@ -74,8 +74,8 @@ Content-Type: application/json
 {
   "code": "teamo",
   "name": "TeamoRouter",
-  "base_url": "https://api.teamorouter.com",
-  "pricing_url": "https://teamorouter.com/v1/models/pricing",
+  "base_url": "https://api.example-vendor.com",
+  "pricing_url": "https://example-vendor.com/v1/models/pricing",
   "is_active": true,
   "is_default": true
 }
@@ -131,8 +131,8 @@ const data = await res.json();
       "id": 1,
       "code": "teamo",
       "name": "TeamoRouter",
-      "base_url": "https://api.teamorouter.com",
-      "pricing_url": "https://teamorouter.com/v1/models/pricing",
+      "base_url": "https://api.example-vendor.com",
+      "pricing_url": "https://example-vendor.com/v1/models/pricing",
       "is_default": true,
       "is_current": true,
       "model_count": 42,
@@ -187,7 +187,7 @@ const pricing = await res.json();
   "vendor": {
     "code": "teamo",
     "name": "TeamoRouter",
-    "base_url": "https://api.teamorouter.com",
+    "base_url": "https://api.example-vendor.com",
     "is_current": true,
     "last_synced_at": "2026-09-28T14:00:00"
   },
@@ -249,7 +249,7 @@ Content-Type: application/json
 }
 ```
 
-有 `pricing_url` 时（如 Teamo 的 `https://teamorouter.com/v1/models/pricing`），服务会约每 5 分钟自动拉取并更新该供应商价目。
+有 `pricing_url` 时（如供应商提供的 `https://example-vendor.com/v1/models/pricing`），服务会约每 5 分钟自动拉取并更新该供应商价目。
 
 ### 管理端价目 CRUD（后台必用）
 
