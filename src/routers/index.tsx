@@ -298,6 +298,17 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
+    id: 'AdminPayChannelPage',
+    path: '/admin/paychannel',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '支付方式',
+      role: ['administrator']
+    }
+  },
+  {
     id: 'Page404',
     path: '/404',
     element: <Page404 />,

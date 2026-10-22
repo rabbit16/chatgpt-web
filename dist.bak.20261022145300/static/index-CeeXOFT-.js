@@ -1,0 +1,1 @@
+import{F as e,j as s}from"./antd-Bz01Kcq-.js";import{w as i,al as t}from"./index-L3N2t9Fv.js";const a="_login_1jhhh_1",r={login:a};function m(){const[o]=e.useForm(),n=i();return s.jsx("div",{className:r.login,children:s.jsx(t,{form:o,onSuccess:()=>{o.resetFields(),n("/")}})})}export{m as default};
