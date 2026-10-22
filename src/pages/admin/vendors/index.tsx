@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   InputNumber,
+  Drawer,
   Modal,
   Popconfirm,
   Radio,
@@ -44,11 +45,15 @@ import {
   getAdminVendors,
   getGlobalPricing,
   getOfficialPricingCatalog,
+  createVendorKey,
+  deleteVendorKey,
   getVendorBalance,
+  getVendorKeys,
   reapplyVendorCatalog,
   refreshVendorPricing,
   replaceAdminModelRouteKeys,
   updateAdminVendorModel,
+  updateVendorKey,
   upsertAdminModelAlias,
   upsertAdminModelProtocol,
   upsertAdminModelRewrite,
@@ -62,6 +67,7 @@ import {
   type CatalogPolicy,
   type UpstreamVendor,
   type VendorBalance,
+  type VendorKeyInfo,
   type VendorModelCost,
   type VendorUpsertPayload
 } from '@/request/api'
@@ -237,6 +243,7 @@ function AdminVendors() {
     model: string
     match_prefix?: boolean
     vendor_code: string
+    api_key_id?: number | null
     is_active: boolean
     note?: string
     api_key?: string
@@ -244,6 +251,21 @@ function AdminVendors() {
     user_ids?: number[]
   }>()
   const matchPrefix = Form.useWatch('match_prefix', routeForm)
+  const routeVendorCode = Form.useWatch('vendor_code', routeForm)
+  const [keyDrawer, setKeyDrawer] = useState<{ open: boolean; vendor: UpstreamVendor | null }>({
+    open: false,
+    vendor: null
+  })
+  const [keyRows, setKeyRows] = useState<VendorKeyInfo[]>([])
+  const [keyLoading, setKeyLoading] = useState(false)
+  const [keySaving, setKeySaving] = useState(false)
+  const [editingKey, setEditingKey] = useState<VendorKeyInfo | null>(null)
+  const [keyForm] = Form.useForm<{
+    name: string
+    api_key?: string
+    note?: string
+    is_active?: boolean
+  }>()
   const [rewrites, setRewrites] = useState<ModelRewriteRule[]>([])
   const [rewriteOpen, setRewriteOpen] = useState(false)
   const [editingRewrite, setEditingRewrite] = useState<ModelRewriteRule | null>(null)
@@ -464,6 +486,113 @@ function AdminVendors() {
     } finally {
       setActingCode('')
     }
+  }
+
+  const openKeyDrawer = async (vendor: UpstreamVendor) => {
+    setKeyDrawer({ open: true, vendor })
+    setEditingKey(null)
+    keyForm.resetFields()
+    setKeyLoading(true)
+    try {
+      const data = await getVendorKeys(vendor.code)
+      setKeyRows(data.keys || [])
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '读取 Key 失败')
+    } finally {
+      setKeyLoading(false)
+    }
+  }
+
+  const refreshKeys = async (code: string, keys: VendorKeyInfo[]) => {
+    setKeyRows(keys || [])
+    setVendors((prev) =>
+      prev.map((item) => (item.code === code ? { ...item, keys: keys || [] } : item))
+    )
+  }
+
+  const startEditKey = (key: VendorKeyInfo) => {
+    setEditingKey(key)
+    keyForm.setFieldsValue({
+      name: key.name,
+      api_key: '',
+      note: key.note || '',
+      is_active: key.is_active
+    })
+  }
+
+  const resetKeyForm = () => {
+    setEditingKey(null)
+    keyForm.resetFields()
+  }
+
+  const saveKey = async () => {
+    const vendor = keyDrawer.vendor
+    if (!vendor) return
+    const values = await keyForm.validateFields()
+    setKeySaving(true)
+    try {
+      if (editingKey) {
+        const typed = (values.api_key || '').trim()
+        const data = await updateVendorKey(vendor.code, editingKey.id, {
+          name: values.name.trim(),
+          note: values.note || '',
+          is_active: values.is_active !== false,
+          ...(typed ? { api_key: typed } : {})
+        })
+        await refreshKeys(vendor.code, data.keys)
+        message.success('Key 已更新')
+      } else {
+        const data = await createVendorKey(vendor.code, {
+          name: values.name.trim(),
+          api_key: (values.api_key || '').trim(),
+          note: values.note || ''
+        })
+        await refreshKeys(vendor.code, data.keys)
+        message.success('Key 已新增')
+      }
+      resetKeyForm()
+      await load()
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '保存 Key 失败')
+    } finally {
+      setKeySaving(false)
+    }
+  }
+
+  const setDefaultKey = async (key: VendorKeyInfo) => {
+    const vendor = keyDrawer.vendor
+    if (!vendor) return
+    try {
+      const data = await updateVendorKey(vendor.code, key.id, { is_default: true })
+      await refreshKeys(vendor.code, data.keys)
+      message.success(`已把「${key.name || key.api_key_hint}」设为默认 Key`)
+      await load()
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '设置默认失败')
+    }
+  }
+
+  const removeKey = async (key: VendorKeyInfo) => {
+    const vendor = keyDrawer.vendor
+    if (!vendor) return
+    try {
+      const data = await deleteVendorKey(vendor.code, key.id)
+      await refreshKeys(vendor.code, data.keys)
+      if (editingKey?.id === key.id) resetKeyForm()
+      message.success('Key 已删除')
+      await load()
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '删除失败')
+    }
+  }
+
+  const keyOptionsFor = (code?: string) => {
+    if (!code) return []
+    const vendor = vendors.find((item) => item.code === code)
+    return (vendor?.keys || []).map((key) => ({
+      value: key.id,
+      label: `${key.name || '(未命名)'}  ${key.api_key_hint}${key.is_default ? '  [默认]' : ''}${key.is_active ? '' : '  [停用]'}`
+    }))
   }
 
   const onActivate = async (code: string) => {
@@ -715,13 +844,26 @@ function AdminVendors() {
       {
         title: '号商 Key',
         key: 'api_key',
-        width: 140,
-        render: (_: unknown, record: UpstreamVendor) =>
-          record.has_api_key ? (
-            <Tag color="green">{record.api_key_hint || '已设置'}</Tag>
-          ) : (
-            <span className={styles.muted}>未设置</span>
-          )
+        width: 200,
+        render: (_: unknown, record: UpstreamVendor) => (
+          <Space direction="vertical" size={2}>
+            {record.keys?.length ? (
+              <Space size={4} wrap>
+                <Tag color="blue">{record.keys.length} 把</Tag>
+                {record.keys.find((item) => item.is_default) ? (
+                  <Tag color="green">默认 {record.keys.find((item) => item.is_default)?.name}</Tag>
+                ) : null}
+              </Space>
+            ) : record.has_api_key ? (
+              <Tag color="green">{record.api_key_hint || '已设置'}</Tag>
+            ) : (
+              <span className={styles.muted}>未设置</span>
+            )}
+            <Button size="small" type="link" onClick={() => void openKeyDrawer(record)}>
+              管理 Key
+            </Button>
+          </Space>
+        )
       },
       {
         title: '加价',
@@ -1052,6 +1194,7 @@ function AdminVendors() {
       model: prefix ? wildcardPrefix(row.model) : row.model,
       match_prefix: prefix,
       vendor_code: row.vendor_code,
+      api_key_id: row.api_key_id ?? undefined,
       is_active: row.is_active,
       note: row.note || '',
       api_key: '',
@@ -1080,6 +1223,7 @@ function AdminVendors() {
         is_active: values.is_active,
         note: values.note,
         user_ids: values.user_ids || [],
+        api_key_id: values.api_key_id || 0,
         ...(typedKey ? { api_key: typedKey } : values.clear_api_key ? { api_key: '' } : {})
       })
       setRoutes(data.routes || [])
@@ -1513,9 +1657,12 @@ function AdminVendors() {
             {
               title: '上游 Key',
               dataIndex: 'has_api_key',
-              width: 140,
-              render: (hasKey: boolean, row: ModelRouteRule) =>
-                hasKey ? <Tag color="green">{row.api_key_hint || '已覆盖'}</Tag> : <Tag>沿用供应商</Tag>
+              width: 160,
+              render: (hasKey: boolean, row: ModelRouteRule) => {
+                if (hasKey) return <Tag color="green">{row.api_key_hint || '已覆盖'}</Tag>
+                if (row.api_key_id) return <Tag color="blue">{row.key_name || `Key #${row.api_key_id}`}</Tag>
+                return <Tag>用供应商默认</Tag>
+              }
             },
             {
               title: '生效',
@@ -1800,6 +1947,21 @@ function AdminVendors() {
                 value: item.code,
                 label: `${item.name || item.code}  ${item.base_url || ''}`
               }))}
+              onChange={() => routeForm.setFieldValue('api_key_id', undefined)}
+            />
+          </Form.Item>
+          <Form.Item
+            name="api_key_id"
+            label="使用哪把 Key"
+            extra="留空则用该供应商的默认 Key（或供应商兜底 Key）。先在供应商列表的「管理 Key」里录入多把 Key，换 Key 时只改这里，不用重建路由。"
+          >
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="留空 = 用供应商默认 Key"
+              options={keyOptionsFor(routeVendorCode)}
+              notFoundContent="该供应商还没有命名 Key"
             />
           </Form.Item>
           <Form.Item
@@ -2010,6 +2172,116 @@ function AdminVendors() {
         </Form>
       </Modal>
 
+      <Drawer
+        title={`管理 Key · ${keyDrawer.vendor?.name || keyDrawer.vendor?.code || ''}`}
+        open={keyDrawer.open}
+        width={720}
+        onClose={() => {
+          setKeyDrawer({ open: false, vendor: null })
+          resetKeyForm()
+        }}
+      >
+        <Alert
+          showIcon
+          type="info"
+          style={{ marginBottom: 16 }}
+          message="一个供应商可以保存多把命名 Key"
+          description="模型路由里直接选「用哪把 Key」，换 Key 时只在这里改，不用重建路由。Key 只显示掩码，想换只能重新输入。"
+        />
+        <Table
+          rowKey="id"
+          size="small"
+          loading={keyLoading}
+          pagination={false}
+          dataSource={keyRows}
+          locale={{ emptyText: '还没有命名 Key，下面新增一条' }}
+          columns={[
+            {
+              title: '名称',
+              dataIndex: 'name',
+              render: (value: string, row: VendorKeyInfo) => (
+                <Space size={6}>
+                  <strong>{value || '(未命名)'}</strong>
+                  {row.is_default ? <Tag color="green">默认</Tag> : null}
+                  {!row.is_active ? <Tag>停用</Tag> : null}
+                </Space>
+              )
+            },
+            {
+              title: 'Key',
+              dataIndex: 'api_key_hint',
+              render: (value: string) => <code className={styles.code}>{value || '—'}</code>
+            },
+            { title: '备注', dataIndex: 'note', render: (value?: string) => value || <span className={styles.muted}>—</span> },
+            {
+              title: '操作',
+              key: 'actions',
+              width: 240,
+              render: (_: unknown, row: VendorKeyInfo) => (
+                <Space size={4} wrap>
+                  <Button size="small" onClick={() => startEditKey(row)}>
+                    编辑
+                  </Button>
+                  <Button size="small" disabled={row.is_default} onClick={() => void setDefaultKey(row)}>
+                    设为默认
+                  </Button>
+                  <Popconfirm
+                    title={`删除 Key「${row.name || row.api_key_hint}」？`}
+                    description="被模型路由引用的 Key 不能删，需要先改掉那些路由。"
+                    okText="删除"
+                    cancelText="取消"
+                    onConfirm={() => void removeKey(row)}
+                  >
+                    <Button size="small" danger>
+                      删除
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              )
+            }
+          ]}
+        />
+        <div style={{ marginTop: 24 }}>
+          <h3 style={{ marginBottom: 8 }}>{editingKey ? `编辑「${editingKey.name}」` : '新增 Key'}</h3>
+          <Form form={keyForm} layout="vertical">
+            <Form.Item
+              name="name"
+              label="名称"
+              rules={[{ required: true, message: '请输入名称，便于路由里选择' }]}
+            >
+              <Input placeholder="例如：主力、备用、测试额度" maxLength={128} />
+            </Form.Item>
+            <Form.Item
+              name="api_key"
+              label="API Key"
+              rules={editingKey ? [] : [{ required: true, message: '请输入 API Key' }]}
+              extra={editingKey ? '留空保持原 Key 不变；填写则替换。' : '保存后只显示掩码，明文不会再出站。'}
+            >
+              <Input.Password placeholder="sk-..." autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item name="note" label="备注">
+              <Input placeholder="可选" maxLength={200} />
+            </Form.Item>
+            {editingKey ? (
+              <Form.Item
+                name="is_active"
+                label="启用"
+                valuePropName="checked"
+                extra="被模型路由引用的 Key 不能停用，需要先改掉那些路由。"
+              >
+                <Switch />
+              </Form.Item>
+            ) : null}
+            <Space>
+              <Button type="primary" loading={keySaving} onClick={() => void saveKey()}>
+                {editingKey ? '保存' : '新增'}
+              </Button>
+              {editingKey ? <Button onClick={resetKeyForm}>取消编辑</Button> : null}
+            </Space>
+          </Form>
+        </div>
+      </Drawer>
+
       <Modal
         title={editing ? `编辑供应商 · ${editing.code}` : '新增供应商'}
         open={editorOpen}
@@ -2050,17 +2322,17 @@ function AdminVendors() {
           </Form.Item>
           <Form.Item
             name="api_key"
-            label="号商 API Key"
+            label="号商兜底 API Key"
             extra={
               editing?.has_api_key
                 ? `已保存 ${editing.api_key_hint || ''}。留空保持不变；填写后，转发到这家号商的请求会带上这个 key。`
-                : '留空则继续用服务全局密钥。保存后，转发到这家号商的请求会带上这个 key。'
+                : '留空则继续用服务全局密钥。这是兜底 Key：路由没指定命名 Key 时才会用它；需要多把 Key 请用列表里的「管理 Key」。'
             }
           >
             <Input.Password placeholder="sk-..." autoComplete="new-password" />
           </Form.Item>
           {editing?.has_api_key ? (
-            <Form.Item name="clear_api_key" label="清除已保存的 Key" valuePropName="checked">
+            <Form.Item name="clear_api_key" label="清除兜底 Key" valuePropName="checked">
               <Switch />
             </Form.Item>
           ) : null}

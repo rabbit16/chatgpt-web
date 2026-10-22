@@ -679,6 +679,15 @@ export type CatalogPolicy = {
   providers: Record<string, CatalogKindPolicy>
 }
 
+export type VendorKeyInfo = {
+  id: number
+  name: string
+  api_key_hint: string
+  is_default: boolean
+  is_active: boolean
+  note?: string
+}
+
 export type UpstreamVendor = {
   id?: number
   code: string
@@ -686,6 +695,8 @@ export type UpstreamVendor = {
   base_url: string
   has_api_key?: boolean
   api_key_hint?: string
+  /** 该供应商下可命名的多把 Key，只回掩码 */
+  keys?: VendorKeyInfo[]
   pricing_url?: string | null
   pricing_mode?: 'manual' | 'catalog_rate' | string
   cost_rate?: number | null
@@ -808,6 +819,61 @@ export async function upsertVendor(payload: VendorUpsertPayload): Promise<Upstre
 
 export async function activateVendor(code: string): Promise<void> {
   await llmFetch(`/admin/vendors/${encodeURIComponent(code)}/activate`, { method: 'POST' }, '切换当前供应商')
+}
+
+function vendorKeyPath(code: string, keyId?: number): string {
+  const base = `/admin/vendors/${encodeURIComponent(code)}/keys`
+  return keyId == null ? base : `${base}/${keyId}`
+}
+
+export async function getVendorKeys(code: string): Promise<{ keys: VendorKeyInfo[] }> {
+  const response = await llmFetch(vendorKeyPath(code), { method: 'GET' }, '读取供应商 Key')
+  return response.json()
+}
+
+export async function createVendorKey(
+  code: string,
+  payload: { name: string; api_key: string; note?: string }
+): Promise<{ key: VendorKeyInfo; keys: VendorKeyInfo[] }> {
+  const response = await llmFetch(
+    vendorKeyPath(code),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    '新增供应商 Key'
+  )
+  return response.json()
+}
+
+export async function updateVendorKey(
+  code: string,
+  keyId: number,
+  payload: {
+    name?: string
+    /** 不传表示保持原密钥 */
+    api_key?: string
+    note?: string
+    is_active?: boolean
+    is_default?: boolean
+  }
+): Promise<{ key: VendorKeyInfo; keys: VendorKeyInfo[] }> {
+  const response = await llmFetch(
+    vendorKeyPath(code, keyId),
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    '保存供应商 Key'
+  )
+  return response.json()
+}
+
+export async function deleteVendorKey(code: string, keyId: number): Promise<{ keys: VendorKeyInfo[] }> {
+  const response = await llmFetch(vendorKeyPath(code, keyId), { method: 'DELETE' }, '删除供应商 Key')
+  return response.json()
 }
 
 export async function refreshVendorPricing(code: string): Promise<{ ok: boolean; updated?: boolean; count?: number; error?: string }> {
@@ -1015,6 +1081,10 @@ export type ModelRouteRule = {
   is_active: boolean
   has_api_key?: boolean
   api_key_hint?: string
+  /** 指定该供应商下的某把命名 Key */
+  api_key_id?: number | null
+  /** 后端回传的 Key 名称，便于列表展示 */
+  key_name?: string
   /** 空数组表示全部用户 */
   user_ids?: number[]
   users?: ModelRouteUser[]
@@ -1039,6 +1109,8 @@ export async function upsertAdminModelRoute(payload: {
   note?: string
   /** 不传表示保持原密钥；空字符串表示清除覆盖，改回供应商密钥 */
   api_key?: string
+  /** 使用该供应商下的哪把命名 Key；0 表示清除 */
+  api_key_id?: number
   /** 不传表示保持原名单；空数组表示全部用户 */
   user_ids?: number[]
 }): Promise<{ ok: boolean; route: ModelRouteRule; routes: ModelRouteRule[] }> {
