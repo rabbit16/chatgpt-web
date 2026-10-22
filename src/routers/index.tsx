@@ -24,6 +24,7 @@ const GuidePage = React.lazy(() => import('@/pages/guide'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const NoticePage = React.lazy(() => import('@/pages/notice'))
 const ProfilePage = React.lazy(() => import('@/pages/profile'))
+const InvoicePage = React.lazy(() => import('@/pages/invoice'))
 const LoginPage = React.lazy(() => import('@/pages/login'))
 const ResultPage = React.lazy(() => import('@/pages/result'))
 const Page404 = React.lazy(() => import('@/pages/404'))
@@ -218,6 +219,17 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
+    id: 'InvoicePage',
+    path: '/invoice',
+    element: <InvoicePage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '开发票',
+      role: ['user', 'administrator']
+    }
+  },
+  {
     id: 'SoftwareRedirect',
     path: '/software',
     element: <Navigate to="/guide?tab=download" replace />,
@@ -302,6 +314,17 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: true,
       title: '订单管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminInvoicePage',
+    path: '/admin/invoices',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '开票审核',
       role: ['administrator']
     }
   },

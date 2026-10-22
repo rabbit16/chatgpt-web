@@ -2,8 +2,9 @@ import menuList from '@/routers/menu_list'
 import styles from './index.module.less'
 import { joinTrim } from '@/utils'
 import { Link, useLocation } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { userStore } from '@/store'
+import { announcementStore, useAnnouncementUnread } from '@/store/announcement'
 
 type Props = {
   mode?: 'vertical' | 'horizontal' | 'inline'
@@ -21,6 +22,13 @@ function MenuList(props: Props) {
   const location = useLocation()
   const { mode = 'horizontal' } = props
   const token = userStore((state) => state.token)
+  const loadAnnouncement = announcementStore((state) => state.load)
+  const hasNewAnnouncement = useAnnouncementUnread()
+
+  // 导航第一次出现时问一次「有没有新公告」，失败就算了，不打扰
+  useEffect(() => {
+    void loadAnnouncement()
+  }, [loadAnnouncement])
 
   const pathname = useMemo(() => location.pathname, [location])
 
@@ -33,7 +41,12 @@ function MenuList(props: Props) {
     return (
       <Link key={item.path} to={item.path} target={isExternal ? '_blank' : '_self'}>
         <div className={joinTrim([styles.item, active ? styles.select_item : ''])}>
-          <span className={styles.item_icon}>{item.icon}</span>
+          <span className={styles.item_icon}>
+            {item.icon}
+            {item.path === '/notice' && hasNewAnnouncement ? (
+              <i className={styles.item_dot} aria-label="有新公告" />
+            ) : null}
+          </span>
           <div className={styles.item_text}>
             <p className={styles.item_title}>{item.name}</p>
             {mode !== 'horizontal' && <span className={styles.item_message}>{item.message}</span>}

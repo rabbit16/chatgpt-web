@@ -1,12 +1,12 @@
 .menuItem{
-    color: #333;
+    color: var(--text-1);
     padding: 12px;
     border-radius: 4px;
     height: 40px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
-    border-color: #e5e7eb;
+    border-color: var(--border);
     &:hover{
         background-color:#f5f5f5;
     }
@@ -14,8 +14,8 @@
     transition: all 0.3s ease-in-out;
 
     &_action{
-        border-color: #1677ff;
-        color: #1677ff;
+        border-color: var(--brand);
+        color: var(--brand);
 
         .menuItem_options{
             display: inline-block;

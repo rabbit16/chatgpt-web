@@ -2,10 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './pages/App'
 import { BrowserRouter } from 'react-router-dom'
-import { ConfigProvider } from 'antd'
-import zhCN from 'antd/locale/zh_CN'
 import AuthRouter from './routers/auth_router'
 import Global from './components/Global'
+import ThemeProvider from './components/ThemeProvider'
 import OpenAiLogo from './components/OpenAiLogo'
 
 // 顺序很重要：设计 token 先定义，后面的样式与组件才能引用
@@ -14,10 +13,8 @@ import '@/styles/global.less'
 import '@/styles/markdown.less'
 import '@/styles/highlight.less'
 
-import antdTheme from '@/styles/theme'
-
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <ConfigProvider theme={antdTheme} locale={zhCN}>
+  <ThemeProvider>
     <BrowserRouter>
       <AuthRouter>
         <Global>
@@ -41,5 +38,5 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         </Global>
       </AuthRouter>
     </BrowserRouter>
-  </ConfigProvider>
+  </ThemeProvider>
 )

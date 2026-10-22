@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Empty, Pagination, Spin, Tag } from 'antd'
-import { NotificationOutlined } from '@ant-design/icons'
 import { getAnnouncementList, type AnnouncementItem } from '@/request/api'
+import { announcementStore } from '@/store/announcement'
 import styles from './index.module.less'
 
 const PAGE_SIZE = 10
@@ -28,6 +28,19 @@ export function AnnouncementPanel() {
   useEffect(() => {
     loadList(1)
   }, [loadList])
+
+  // 进到公告页 = 已读：等最新公告真正拿到（可能别的组件正在请求），再标记
+  useEffect(() => {
+    const store = announcementStore
+    const markWhenReady = () => {
+      const { latest, seenId, markSeen } = store.getState()
+      if (latest && String(latest.id) !== seenId) markSeen()
+    }
+    void store.getState().load()
+    const unsubscribe = store.subscribe(markWhenReady)
+    markWhenReady()
+    return unsubscribe
+  }, [])
 
   return (
     <div className={styles.panel}>

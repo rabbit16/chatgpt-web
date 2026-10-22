@@ -149,13 +149,13 @@ samp {
 }
 
 .ant-btn-dangerous.ant-btn-dashed {
-  border-color: #fecdc9 !important;
+  border-color: var(--danger-soft) !important;
   background: var(--danger-soft) !important;
   color: var(--danger) !important;
 
   &:hover {
     border-color: var(--danger) !important;
-    background: #fde4e1 !important;
+    background: var(--danger-soft) !important;
   }
 }
 
@@ -188,7 +188,7 @@ samp {
 /* 滚动条：细、浅，悬停才明显 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #d3d9e4 transparent;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -197,14 +197,14 @@ samp {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #d3d9e4;
+  background: var(--border-strong);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #b6c0d0;
+  background: var(--text-5);
   background-clip: content-box;
 }
 
@@ -221,4 +221,45 @@ samp {
   z-index: 100;
   height: var(--header-h);
   line-height: normal;
+}
+
+
+/* ------------------------------------------------------------
+ * 第三方组件：富文本编辑器（Quill）深色适配
+ * 它自带的 quill.snow.css 写死了浅色，这里只改"皮肤"，不改功能。
+ * 颜色一律走 token，所以浅色主题下看起来和原来一样。
+ * ------------------------------------------------------------ */
+.ql-editor {
+  color: var(--text-2) !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--text-5) !important;
+}
+
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+  border-color: var(--border-soft) !important;
+}
+
+.ql-snow .ql-stroke {
+  stroke: var(--text-4) !important;
+}
+
+.ql-snow .ql-fill {
+  fill: var(--text-4) !important;
+}
+
+.ql-snow .ql-picker {
+  color: var(--text-4) !important;
+}
+
+.ql-snow .ql-picker-options {
+  background: var(--surface) !important;
+  border-color: var(--border-soft) !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--brand) !important;
 }

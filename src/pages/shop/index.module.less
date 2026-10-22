@@ -16,14 +16,14 @@
 	}
 
 	&_card {
-		background-color: #f8f9fa;
+		background-color: var(--surface-sunken);
 		padding: 12px 20px;
 		border-radius: 12px;
 
 		h4 {
 			font-size: 16px;
 			margin-bottom: 12px;
-			color: #444;
+			color: var(--text-2);
 			cursor: pointer;
 		}
 
@@ -46,13 +46,13 @@
 			&Item {
 				padding: 14px;
 				border-radius: 12px;
-				background: #fff;
+				background: var(--surface);
 				border: 1px solid #edf0f5;
 				cursor: pointer;
 				transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
 				&:hover {
-					border-color: #1877ff;
+					border-color: var(--brand);
 					box-shadow: 0 8px 20px rgba(24, 119, 255, 0.08);
 				}
 
@@ -64,12 +64,12 @@
 
 				p {
 					margin: 0 0 10px;
-					color: #98a2b3;
+					color: var(--text-5);
 					font-size: 12px;
 				}
 
 				div {
-					color: #344054;
+					color: var(--text-2);
 					font-size: 13px;
 					line-height: 1.7;
 				}
@@ -81,7 +81,7 @@
 			padding: 2px 8px;
 			border-radius: 999px;
 			background: #eef4ff;
-			color: #1877ff;
+			color: var(--brand);
 			font-size: 12px;
 		}
 
@@ -92,28 +92,28 @@
 			.item {
 				min-width: 120px;
 				// height: 40px;
-				background-color: #fff;
+				background-color: var(--surface);
 				border-radius: 4px;
 				padding: 12px;
 				margin: 6px;
 				box-sizing: border-box;
 				border: 1px solid #00000000 ;
 				&:active,&:hover{
-					border: 1px solid #1877ff;
+					border: 1px solid var(--brand);
 				}
 				.days {
 					font-size: 24px;
-					color: #1877ff;
+					color: var(--brand);
 				}
 
 				.money_box {
 					font-size: 16px;
 					font-weight: 500;
-					color: #333;
+					color: var(--text-1);
 
 					.old_money {
 						font-size: 12px;
-						color: #999;
+						color: var(--text-5);
 						text-decoration: line-through;
 						margin-bottom: 2px;
 						margin-left: 4px;
@@ -132,18 +132,18 @@
 			margin-top: 12px;
 			padding: 14px 16px;
 			border-radius: 12px;
-			background: #fff;
+			background: var(--surface);
 			border: 1px dashed #b7d2ff;
 
 			strong {
 				display: block;
 				margin-bottom: 4px;
-				color: #101828;
+				color: var(--text-1);
 			}
 
 			p {
 				margin: 0;
-				color: #667085;
+				color: var(--text-4);
 				font-size: 12px;
 			}
 
@@ -177,8 +177,8 @@
 		margin-top: 20px;
 
 		&_type {
-			background-color: #fff;
-			border: 1px solid #999;
+			background-color: var(--surface);
+			border: 1px solid var(--text-5);
 			border-radius: 8px;
 			display: flex;
 			padding-left: 12px;
@@ -190,11 +190,11 @@
 			}
 
 			&:hover {
-				border-color: #1677ff;
+				border-color: var(--brand);
 			}
 
 			&_select {
-				border-color: #1677ff;
+				border-color: var(--brand);
 			}
 		}
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
-import { useSearchParams } from 'react-router-dom'
-import { ExportOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ExportOutlined, FileTextOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
@@ -338,7 +338,19 @@ function PricePage() {
 
           {viewTab === 'shop' ? (
             token ? (
-              <ShopPanel />
+              <>
+                <ShopPanel />
+                <section className={styles.invoiceEntry}>
+                  <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
+                  <div>
+                    <strong>充值后要开发票？</strong>
+                    <span>填好抬头、税号和邮箱，站长审核后开票，电子发票发到邮箱。</span>
+                  </div>
+                  <Link to="/invoice">
+                    <Button>去开发票</Button>
+                  </Link>
+                </section>
+              </>
             ) : (
               <div className={styles.publicNote}>
                 <span className={styles.publicNoteText}>登录后可以查看余额、选择套餐充值</span>

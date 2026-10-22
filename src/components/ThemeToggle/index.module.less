@@ -1,0 +1,37 @@
+.btn {
+	width: 34px;
+	height: 34px;
+	min-width: 34px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-pill);
+	color: var(--text-3);
+	font-size: 16px;
+	transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+
+	&:hover {
+		color: var(--text-1) !important;
+		background-color: var(--surface-muted) !important;
+	}
+}
+
+.label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 86px;
+
+	em {
+		font-style: normal;
+		font-size: 11px;
+		color: var(--text-5);
+	}
+
+	.check {
+		margin-left: auto;
+		font-size: 11px;
+		color: var(--brand);
+	}
+}

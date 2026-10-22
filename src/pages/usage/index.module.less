@@ -6,11 +6,11 @@
 
 .page {
   min-height: 100%;
-  background: #f4f6fb;
+  background: var(--surface-muted);
 
   [class*='ant-pro-layout-content'] {
     padding-block: 0;
-    background: #f4f6fb !important;
+    background: var(--surface-muted) !important;
   }
 }
 
@@ -37,7 +37,7 @@
 
   p {
     margin: 0;
-    color: #667085;
+    color: var(--text-4);
     font-size: 13px;
   }
 }
@@ -49,8 +49,8 @@
   align-items: center;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #fff;
-  border: 1px solid #e8edf5;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .stats {
@@ -62,46 +62,46 @@
 .stat {
   padding: 16px 18px;
   border-radius: 14px;
-  background: #fff;
-  border: 1px solid #e8edf5;
+  background: var(--surface);
+  border: 1px solid var(--border);
 
   label {
     display: block;
     margin-bottom: 8px;
-    color: #667085;
+    color: var(--text-4);
     font-size: 13px;
   }
 
   b {
     font-size: 24px;
-    color: #101828;
+    color: var(--text-1);
   }
 }
 
 .statPrimary {
-  border-color: #b7eb8f;
-  background: linear-gradient(180deg, #f6ffed 0%, #fff 100%);
+  border-color: var(--success);
+  background: linear-gradient(180deg, var(--tint-mint) 0%, var(--surface) 100%);
 
   label {
-    color: #389e0d;
+    color: var(--ink-mint);
   }
 
   b {
-    color: #237804;
+    color: var(--success);
   }
 }
 
 .card {
   padding: 12px;
   border-radius: 16px;
-  background: #fff;
-  border: 1px solid #e8edf5;
+  background: var(--surface);
+  border: 1px solid var(--border);
   overflow: hidden;
 
   :global(.ant-table-content),
   :global(.ant-table-body) {
     scrollbar-width: thin;
-    scrollbar-color: #98a2b3 #f2f4f7;
+    scrollbar-color: var(--text-5) var(--border-soft);
 
     &::-webkit-scrollbar {
       display: block;
@@ -109,12 +109,12 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: #98a2b3;
+      background: var(--text-5);
       border-radius: 999px;
     }
 
     &::-webkit-scrollbar-track {
-      background: #f2f4f7;
+      background: var(--border-soft);
     }
   }
 }

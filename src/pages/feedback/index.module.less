@@ -1,10 +1,10 @@
 .page {
   min-height: 100%;
-  background: #f4f6fb;
+  background: var(--surface-muted);
 
   [class*='ant-pro-layout-content'] {
     padding-block: 0;
-    background: #f4f6fb !important;
+    background: var(--surface-muted) !important;
   }
 }
 
@@ -30,7 +30,7 @@
   padding: 28px;
   border-radius: 20px;
   color: #fff;
-  background: linear-gradient(135deg, #0f172a 0%, #1877ff 58%, #22c1c3 120%);
+  background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
   box-shadow: 0 16px 40px rgba(24, 119, 255, 0.18);
 
   h1 {
@@ -59,19 +59,19 @@
 .card {
   padding: 24px;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
 
   h2 {
     margin: 0 0 16px;
     font-size: 18px;
-    color: #101828;
+    color: var(--text-1);
   }
 }
 
 .hint {
   margin: -8px 0 16px;
-  color: #667085;
+  color: var(--text-4);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -88,7 +88,7 @@
   }
 
   span {
-    color: #98a2b3;
+    color: var(--text-5);
     font-size: 13px;
   }
 }
@@ -122,11 +122,11 @@
 .item {
   padding: 14px 16px;
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--surface-sunken);
 
   p {
     margin: 8px 0 0;
-    color: #344054;
+    color: var(--text-2);
     font-size: 14px;
     line-height: 1.7;
     white-space: pre-wrap;
@@ -139,7 +139,7 @@
   padding: 10px 12px;
   border-radius: 10px;
   background: #eef4ff;
-  border-left: 3px solid #1877ff;
+  border-left: 3px solid var(--brand);
 
   p {
     margin: 6px 0 0;
@@ -159,7 +159,7 @@
 
   time {
     margin-left: auto;
-    color: #98a2b3;
+    color: var(--text-5);
     font-size: 12px;
   }
 }
@@ -171,12 +171,12 @@
   gap: 8px;
 
   strong {
-    color: #101828;
+    color: var(--text-1);
   }
 
   time {
     margin-left: auto;
-    color: #98a2b3;
+    color: var(--text-5);
     font-size: 12px;
   }
 }

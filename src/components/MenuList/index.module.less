@@ -40,6 +40,7 @@
 			}
 
 			&_icon {
+				position: relative;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
@@ -47,6 +48,19 @@
 				height: 16px;
 				font-size: 15px;
 				line-height: 1;
+			}
+
+			/* 有新公告的小红点：像消息未读，只用 7px，不抢导航 */
+			&_dot {
+				position: absolute;
+				top: -2px;
+				right: -3px;
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				background: var(--danger);
+				box-shadow: 0 0 0 2px var(--surface);
+				pointer-events: none;
 			}
 
 			&_title {

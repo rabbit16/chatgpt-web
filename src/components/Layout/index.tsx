@@ -62,11 +62,11 @@ function Layout(props: Props) {
       headerHeight={56}
       headerRender={HeaderRender}
       contentStyle={{
-        background: '#fff'
+        background: 'var(--surface)'
       }}
       siderMenuType="group"
       style={{
-        background: '#fff'
+        background: 'var(--surface)'
       }}
       menu={{
         hideMenuWhenCollapsed: true,

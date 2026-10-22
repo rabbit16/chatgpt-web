@@ -6,11 +6,11 @@
 
 .page {
   min-height: 100%;
-  background: #f4f6fb;
+  background: var(--surface-muted);
 
   [class*='ant-pro-layout-content'] {
     padding-block: 0;
-    background: #f4f6fb !important;
+    background: var(--surface-muted) !important;
   }
 }
 
@@ -28,7 +28,7 @@
   padding: 28px 26px;
   border-radius: 20px;
   color: #fff;
-  background: linear-gradient(135deg, #0f172a 0%, #1877ff 58%, #22c1c3 120%);
+  background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
 
   h1 {
     margin: 8px 0 10px;
@@ -58,8 +58,8 @@
 .card {
   padding: 22px;
   border-radius: 16px;
-  background: #fff;
-  border: 1px solid #e8edf5;
+  background: var(--surface);
+  border: 1px solid var(--border);
 
   h2 {
     margin: 0;
@@ -68,7 +68,7 @@
 
   > p {
     margin: 8px 0 16px;
-    color: #667085;
+    color: var(--text-4);
     line-height: 1.7;
   }
 }
@@ -80,7 +80,7 @@
   margin-bottom: 4px;
 
   span {
-    color: #1877ff;
+    color: var(--brand);
     font-size: 13px;
     font-weight: 700;
   }
@@ -101,8 +101,8 @@
   code {
     padding: 4px 8px;
     border-radius: 8px;
-    background: #f2f4f7;
-    color: #101828;
+    background: var(--border-soft);
+    color: var(--text-1);
     font-size: 13px;
     word-break: break-all;
   }
@@ -122,7 +122,7 @@
   align-items: center;
   padding: 12px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface);
 
   strong {
     margin-right: 8px;
@@ -131,19 +131,19 @@
   span,
   em {
     display: block;
-    color: #667085;
+    color: var(--text-4);
     font-style: normal;
     font-size: 12px;
   }
 }
 
 .keyRow {
-  border: 1px solid #e8edf5;
+  border: 1px solid var(--border);
 }
 
 .keyRowActive {
-  border: 2px solid #1877ff;
-  background: #f5f9ff;
+  border: 2px solid var(--brand);
+  background: var(--brand-softer);
 }
 
 .keyActions {
@@ -175,30 +175,30 @@
   border-radius: 14px;
   padding: 14px;
   cursor: pointer;
-  background: #fff;
+  background: var(--surface);
 
   strong {
     display: block;
     margin: 8px 0 6px;
-    color: #101828;
+    color: var(--text-1);
     font-size: 16px;
   }
 
   span {
     display: block;
-    color: #667085;
+    color: var(--text-4);
     font-size: 13px;
     line-height: 1.6;
   }
 }
 
 .choice {
-  border: 1px solid #e8edf5;
+  border: 1px solid var(--border);
 }
 
 .choiceActive {
-  border: 2px solid #1877ff;
-  background: #f5f9ff;
+  border: 2px solid var(--brand);
+  background: var(--brand-softer);
 }
 
 .moreApps {
@@ -232,14 +232,14 @@
 }
 
 .job {
-  border: 1px solid #e8edf5;
-  background: #fff;
-  color: #475467;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-3);
 }
 
 .jobActive {
-  border: 1px solid #1877ff;
-  background: #1877ff;
+  border: 1px solid var(--brand);
+  background: var(--brand);
   color: #fff;
 }
 
@@ -261,7 +261,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #1877ff;
+    background: var(--brand);
     color: #fff;
     font-style: normal;
     font-weight: 700;
@@ -271,19 +271,19 @@
 
   strong {
     display: block;
-    color: #101828;
+    color: var(--text-1);
   }
 
   p {
     margin: 4px 0 0;
-    color: #667085;
+    color: var(--text-4);
     line-height: 1.6;
   }
 }
 
 .fillCard {
   border: 1px solid #dbe7ff;
-  background: #f8fbff;
+  background: var(--brand-softer);
   border-radius: 14px;
   padding: 16px;
 
@@ -294,7 +294,7 @@
 
 .fillLead {
   margin: 0 0 12px;
-  color: #475467;
+  color: var(--text-3);
 }
 
 .fillList {
@@ -310,8 +310,8 @@
     gap: 12px;
     padding: 12px;
     border-radius: 12px;
-    background: #fff;
-    border: 1px solid #eef2f7;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
   }
 }
 
@@ -321,12 +321,12 @@
   gap: 4px;
 
   strong {
-    color: #101828;
+    color: var(--text-1);
     font-size: 15px;
   }
 
   em {
-    color: #667085;
+    color: var(--text-4);
     font-style: normal;
     font-size: 12px;
     line-height: 1.5;
@@ -334,7 +334,7 @@
 }
 
 .fillLabel {
-  color: #1877ff;
+  color: var(--brand);
   font-size: 12px;
   font-weight: 600;
 }
@@ -350,7 +350,7 @@
     min-width: 0;
     padding: 10px 12px;
     border-radius: 10px;
-    background: #0f172a;
+    background: var(--ink-deep);
     color: #e2e8f0;
     font-size: 13px;
     word-break: break-all;
@@ -366,7 +366,7 @@
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 12px;
-  background: #fff7ed;
+  background: var(--warning-soft);
   color: #7a2e0e;
 
   h3 {
@@ -389,8 +389,8 @@
   article {
     padding: 14px;
     border-radius: 14px;
-    background: #f8fafc;
-    border: 1px solid #eef2f7;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-soft);
     display: grid;
     gap: 6px;
   }
@@ -400,18 +400,18 @@
   }
 
   span {
-    color: #1877ff;
+    color: var(--brand);
     font-size: 13px;
   }
 
   code {
     font-size: 12px;
     word-break: break-all;
-    color: #101828;
+    color: var(--text-1);
   }
 
   small {
-    color: #667085;
+    color: var(--text-4);
   }
 }
 

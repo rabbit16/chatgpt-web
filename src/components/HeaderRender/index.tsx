@@ -6,6 +6,7 @@ import styles from './index.module.less'
 import {
   AppstoreOutlined,
   ControlOutlined,
+  FileTextOutlined,
   LogoutOutlined,
   MenuUnfoldOutlined,
   PayCircleOutlined,
@@ -14,6 +15,7 @@ import {
 import { chatStore, userStore, billingNoticeStore } from '@/store'
 import { Button, Dropdown } from 'antd'
 import MenuList from '../MenuList'
+import ThemeToggle from '../ThemeToggle'
 import Brand from '../Brand'
 import { useNavigate } from 'react-router-dom'
 import { isAdmin } from '@/utils/isAdmin'
@@ -98,6 +100,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
       </div>
       {!props.isMobile && <MenuList />}
       <div className={styles.header__actives}>
+        <ThemeToggle />
         {token ? (
           <div
             style={{
@@ -135,6 +138,14 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                     label: '个人资料',
                     onClick: () => {
                       navigate('/profile')
+                    }
+                  },
+                  {
+                    key: 'invoice',
+                    icon: <FileTextOutlined />,
+                    label: '开发票',
+                    onClick: () => {
+                      navigate('/invoice')
                     }
                   },
                   {
