@@ -8,6 +8,7 @@ import {
   KeyOutlined,
   LinkOutlined,
   MessageOutlined,
+  PictureOutlined,
   SettingOutlined
 } from '@ant-design/icons'
 import { Button, message } from 'antd'
@@ -33,7 +34,13 @@ import styles from './index.module.less'
  * 其他客户端不逐一展开：同样三样值填进去即可，统一说「参照执行」。
  */
 
-const EXAMPLE_MODEL = PUBLIC_MODEL_IDS.includes('gpt-6.1-sol') ? 'gpt-6.1-sol' : PUBLIC_MODEL_IDS[0] || 'gpt-6.1-sol'
+const GPT_MODEL = PUBLIC_MODEL_IDS.includes('gpt-6.1-sol') ? 'gpt-6.1-sol' : PUBLIC_MODEL_IDS[0] || 'gpt-6.1-sol'
+/** Claude-haha 默认走 Anthropic 原生格式，主模型要填 claude- 开头 */
+const CLAUDE_MODEL = PUBLIC_MODEL_IDS.includes('claude-sonnet-5')
+  ? 'claude-sonnet-5'
+  : PUBLIC_MODEL_IDS.find((id) => /^claude-sonnet/i.test(id)) || 'claude-sonnet-5'
+/** cc-haha 自带的图片生成走 OpenAI 兼容 Images，用本站的 gpt-image 模型 */
+const IMAGE_MODEL = 'gpt-image-2'
 
 /** 密钥在页面上只显示打码版，复制时才给全文 */
 function maskKey(key: string) {
@@ -146,7 +153,7 @@ function HahaMock() {
     <div className={styles.mock} aria-label="Claude-haha 添加模型界面示意">
       <div className={styles.mockBar}>
         <strong>添加模型</strong>
-        <span>Claude-haha</span>
+        <span>Claude-haha 0.7.x</span>
       </div>
       <div className={styles.mockBody}>
         <div className={styles.mockRow}>
@@ -159,10 +166,18 @@ function HahaMock() {
           </div>
         </div>
         <MockField no={2} label="配置名称" value="RabbitJ" />
-        <MockField no={3} label="接口地址" value={RELAY_URL} mono />
+        <MockField no={3} label="接口地址" value={RELAY_HOST} mono />
         <MockField no={4} label="API 密钥" value="sk-••••••••••••" mono />
-        <MockField no={5} label="主模型" value={EXAMPLE_MODEL} mono />
-        <p className={styles.mockNote}>Fable / Haiku / Sonnet 模型留空；填完点「获取模型」可直接从列表里选。</p>
+        <MockField no={5} label="主模型" value={CLAUDE_MODEL} mono />
+        <div className={styles.mockDefault}>
+          <span>模型映射</span>
+          <em>Fable 留空 · Haiku / Sonnet / Opus 保持「与主模型相同」</em>
+        </div>
+        <div className={styles.mockDefault}>
+          <span>下方默认项</span>
+          <em>API 格式 Anthropic Messages（原生）· 认证变量 Bearer Token · 其余不动</em>
+        </div>
+        <p className={styles.mockNote}>填完点「获取模型」可直接从列表里选，再点「添加」。</p>
         <div className={styles.mockActions}>
           <span className={styles.mockGhost}>取消</span>
           <span className={styles.mockPrimary}>添加</span>
@@ -216,7 +231,13 @@ function GuidePage() {
         tip: '不要点官方 Claude 登录，选最右边这个'
       },
       { no: 2, label: '配置名称', display: 'RabbitJ', copy: 'RabbitJ', tip: '随便起，认得是本站就行' },
-      { no: 3, label: '接口地址', display: RELAY_URL, copy: RELAY_URL, tip: '整条复制，不要自己加路径' },
+      {
+        no: 3,
+        label: '接口地址',
+        display: RELAY_HOST,
+        copy: RELAY_HOST,
+        tip: 'Claude-haha 用这条，不要带 /v1'
+      },
       {
         no: 4,
         label: 'API 密钥',
@@ -227,9 +248,16 @@ function GuidePage() {
       {
         no: 5,
         label: '主模型',
-        display: EXAMPLE_MODEL,
-        copy: EXAMPLE_MODEL,
-        tip: '写代码用 gpt- 开头；模型名见「价格与充值」'
+        display: CLAUDE_MODEL,
+        copy: CLAUDE_MODEL,
+        tip: 'claude- 开头；点「获取模型」也能从列表里选'
+      },
+      {
+        no: 6,
+        label: '其余模型映射',
+        display: 'Fable 留空 · Haiku / Sonnet / Opus 保持默认',
+        copy: '',
+        tip: '默认就是「与主模型相同」，不用改'
       }
     ],
     [key]
@@ -277,7 +305,7 @@ function GuidePage() {
                 <div className={styles.addrRow}>
                   <div className={styles.addrMeta}>
                     <strong>OpenAI 兼容</strong>
-                    <span>绝大多数客户端填这条</span>
+                    <span>Codex、Cursor、ChatBox 等填这条</span>
                   </div>
                   <code>{RELAY_URL}</code>
                   <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(RELAY_URL, '接口地址')}>
@@ -287,14 +315,14 @@ function GuidePage() {
                 <div className={styles.addrRow}>
                   <div className={styles.addrMeta}>
                     <strong>Anthropic 原生</strong>
-                    <span>只认 Claude 格式的客户端用</span>
+                    <span>Claude-haha 默认用这条，不带 /v1</span>
                   </div>
                   <code>{RELAY_HOST}</code>
                   <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(RELAY_HOST, 'Claude 地址')}>
                     复制
                   </Button>
                 </div>
-                <p className={styles.colHint}>拿不准就填第一条。提示「格式不对」时再换第二条。</p>
+                <p className={styles.colHint}>Claude-haha 照第 3 步填第二条；其他客户端大多填第一条。</p>
               </div>
 
               <div className={styles.colBlock}>
@@ -351,7 +379,10 @@ function GuidePage() {
               <span className={styles.stepNo}>3</span>
               <div>
                 <h2>照着这张界面填 4 个框</h2>
-                <p>Claude-haha 里打开「添加模型」，左边是软件窗口示意，右边是对照表，一行对一个框。</p>
+                <p>
+                  Claude-haha 里打开「添加模型」，左边是窗口示意，右边是对照表。弹窗下面还有一长串默认项，<b>不用改</b>，只
+                  在要画图时补一组。
+                </p>
               </div>
             </div>
 
@@ -378,6 +409,58 @@ function GuidePage() {
                 ))}
               </ol>
             </div>
+
+            <div className={styles.defaultStrip}>
+              <span className={styles.defaultLead}>下面这些保持默认，不要动</span>
+              <span>API 格式 · Anthropic Messages（原生）</span>
+              <span>认证变量 · Bearer Token</span>
+              <span>回复输出预算 · 自动</span>
+              <span>备注 · 可空</span>
+              <span>上下文与自动压缩 · 高级里别碰</span>
+            </div>
+
+            <div className={styles.drawBlock}>
+              <div className={styles.drawHead}>
+                <IconBadge icon={<PictureOutlined />} tone="violet" size="sm" />
+                <strong>还要在 Claude-haha 里画图？把这组补上</strong>
+              </div>
+              <p>
+                图片不走 Anthropic 协议，要单独告诉它走 OpenAI 兼容 Images，地址带 <code>/v1</code>；不填也能聊天，只是画不了图。
+              </p>
+              <div className={styles.drawGrid}>
+                <div className={styles.drawItem}>
+                  <span>启用图片生成</span>
+                  <b>打开</b>
+                </div>
+                <div className={styles.drawItem}>
+                  <span>图片 API 协议</span>
+                  <b>OpenAI 兼容 Images</b>
+                </div>
+                <div className={styles.drawItem}>
+                  <span>生图模型</span>
+                  <b className={styles.mono}>{IMAGE_MODEL}</b>
+                  <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(IMAGE_MODEL, '生图模型')}>
+                    复制
+                  </Button>
+                </div>
+                <div className={styles.drawItem}>
+                  <span>生图 API 地址</span>
+                  <b className={styles.mono}>{RELAY_URL}</b>
+                  <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(RELAY_URL, '生图地址')}>
+                    复制
+                  </Button>
+                </div>
+                <div className={styles.drawItem}>
+                  <span>生图 API Key</span>
+                  <b>留空，自动复用上面的聊天密钥</b>
+                </div>
+              </div>
+            </div>
+
+            <p className={styles.altNote}>
+              想用 GPT 系模型写代码？把「API 格式」换成 OpenAI 兼容，接口地址改填 <code>{RELAY_URL}</code>，主模型填{' '}
+              <code>{GPT_MODEL}</code>，其他不用动。
+            </p>
 
             <div className={styles.otherNote}>
               <div className={styles.otherHead}>
@@ -437,8 +520,8 @@ function GuidePage() {
                   模型名要和「价格与充值」页完全一致，大小写、后缀都算。
                 </li>
                 <li>
-                  <strong>连接超时 / 格式不对</strong>
-                  先确认地址带 <code>/v1</code>；客户端只认 Claude 格式时，改填不带 <code>/v1</code> 的那条。
+                  <strong>连接超时 / 提示 404</strong>
+                  两个地址各试一次：Claude-haha 的 Anthropic 格式用不带 <code>/v1</code> 的那条；OpenAI 兼容格式用带 <code>/v1</code> 的那条，两者别混。
                 </li>
                 <li>
                   <strong>Claude-haha 里「获取模型」是空的</strong>
