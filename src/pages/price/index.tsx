@@ -343,11 +343,11 @@ function PricePage() {
                 <section className={styles.invoiceEntry}>
                   <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
                   <div>
-                    <strong>充值后要开发票？</strong>
-                    <span>填好抬头、税号和邮箱，站长审核后开票，电子发票发到邮箱。</span>
+                    <strong>发票按订单开</strong>
+                    <span>在下方「支付记录」里选一笔已支付充值申请；一单一票，已开票的不能重复开。</span>
                   </div>
                   <Link to="/invoice">
-                    <Button>去开发票</Button>
+                    <Button>我的发票</Button>
                   </Link>
                 </section>
               </>

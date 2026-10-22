@@ -1,10 +1,11 @@
 import request from '.'
 
 /**
- * 开发票（前端契约，后端由站长实现）
+ * 开发票（按充值订单开，前端契约，后端由站长实现）
  * ------------------------------------------------------------
- * 契约文档：docs/后端接口-发票.md
+ * 契约文档：chatgpt-web/docs/api/invoice.md
  * 只开「电子普通发票」，不办增值税专用发票（站长确认）。
+ * 入口：支付记录里对某一笔已支付充值点「开发票」；一单一票，已开票不能重复开。
  * 状态流转：pending（待审核）→ issuing（开票中）→ issued（已开票）
  *           pending / issuing 可以被驳回 rejected（带原因）
  * 后端未部署时，列表接口会失败，页面会展示空态而不是报错刷屏。
@@ -15,12 +16,15 @@ export type InvoiceTitleType = 'company' | 'personal'
 
 export interface InvoiceRecord {
   id: number
+  /** 对应的充值订单号（新契约；旧数据可能只有 order_no） */
+  bill_id?: string
   amount: number
   title_type: InvoiceTitleType
   title: string
   tax_no?: string
   email: string
   remark?: string
+  /** @deprecated 旧字段，等价于 bill_id */
   order_no?: string
   status: InvoiceStatus
   invoice_no?: string
@@ -32,22 +36,26 @@ export interface InvoiceRecord {
 }
 
 export interface InvoiceSummary {
-  /** 累计已充值金额（可开票上限） */
+  /** 累计已支付充值金额 */
   recharge_total: number
   /** 已开票金额 */
   issued_amount: number
   /** 审核中金额 */
   pending_amount: number
-  /** 还能开的金额 = 充值 - 已开票 - 审核中 */
+  /** 还能开的金额 = 累计充值 - 已开票 - 审核中 */
   invoiceable_amount: number
 }
 
 export interface InvoiceFormPayload {
-  amount: number
+  /** 必填：要开票的那笔充值订单号（bill_id） */
+  bill_id: string
+  /** 旧后端兼容字段，金额以后端按订单核验为准 */
+  amount?: number
   title_type: InvoiceTitleType
   title: string
   tax_no?: string
   email: string
+  /** @deprecated 旧字段，新代码用 bill_id */
   order_no?: string
   remark?: string
 }

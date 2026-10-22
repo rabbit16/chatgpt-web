@@ -1,11 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Empty, Form, Input, InputNumber, Pagination, Radio, Select, Spin, Tag, message } from 'antd'
-import { FileTextOutlined, HistoryOutlined, ReconciliationOutlined, ReloadOutlined } from '@ant-design/icons'
+import { useCallback, useEffect, useState } from 'react'
+import { Button, Empty, Pagination, Select, Spin, Tag, message } from 'antd'
+import {
+  ArrowRightOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  ReconciliationOutlined,
+  ReloadOutlined,
+  WalletOutlined
+} from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import IconBadge from '@/components/IconBadge'
 import {
   cancelInvoice,
-  createInvoice,
   getInvoiceList,
   getInvoiceSummary,
   type InvoiceRecord,
@@ -15,12 +22,11 @@ import {
 import styles from './index.module.less'
 
 /**
- * 开发票（用户端）
+ * 我的发票（用户端）
  * ------------------------------------------------------------
- * 为什么放在这里：开票只和「充值」有关，所以入口放在「价格与充值」页和
- * 顶栏用户菜单里；页面本身独立 /invoice，方便收藏、也方便后台对账。
- *
- * 交互顺序刻意和现实一致：先看到「还能开多少」，再填抬头，最后查记录。
+ * 站长要求：发票必须对应「某一笔已支付的充值」，不能在任意页面随手开。
+ * 所以这里只展示记录，不再提供自由填金额的表单；
+ * 申请入口统一在「价格与充值 → 余额与充值 → 支付记录」里，一单一票。
  */
 
 const STATUS_META: Record<InvoiceStatus, { label: string; color: string }> = {
@@ -44,16 +50,13 @@ function money(value?: number | null) {
 }
 
 function InvoicePage() {
-  const [form] = Form.useForm()
   const [summary, setSummary] = useState<InvoiceSummary>(EMPTY_SUMMARY)
   const [records, setRecords] = useState<InvoiceRecord[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<InvoiceStatus | 'all'>('all')
   const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
   const [backendReady, setBackendReady] = useState(true)
-  const [titleType, setTitleType] = useState<'company' | 'personal'>('company')
 
   const loadAll = useCallback(
     async (nextPage = 1, nextStatus: InvoiceStatus | 'all' = status) => {
@@ -87,36 +90,6 @@ function InvoicePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  const maxAmount = Number(summary.invoiceable_amount || 0)
-
-  const submit = async () => {
-    try {
-      const values = await form.validateFields()
-      setSubmitting(true)
-      const res: any = await createInvoice({
-        amount: Number(values.amount),
-        title_type: values.title_type,
-        title: String(values.title || '').trim(),
-        tax_no: values.title_type === 'company' ? String(values.tax_no || '').trim() : undefined,
-        email: String(values.email || '').trim(),
-        order_no: values.order_no ? String(values.order_no).trim() : undefined,
-        remark: values.remark ? String(values.remark).trim() : undefined
-      })
-      if (res && res.code !== undefined && String(res.code) !== '0') {
-        message.error(res.codeMsg || '提交失败，请稍后再试')
-        return
-      }
-      message.success('已提交，审核通过后会把电子发票发到邮箱')
-      form.resetFields(['amount', 'order_no', 'remark'])
-      void loadAll(1, status)
-    } catch (error: any) {
-      if (error?.errorFields) return
-      message.error('提交失败：开票接口暂时不可用，请稍后再试')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   const cancel = async (record: InvoiceRecord) => {
     try {
       await cancelInvoice(record.id)
@@ -127,14 +100,23 @@ function InvoicePage() {
     }
   }
 
-  const summaryCards = useMemo(
-    () => [
-      { label: '还能开票', value: money(summary.invoiceable_amount), hint: `累计充值 ${money(summary.recharge_total)}` },
-      { label: '审核中', value: money(summary.pending_amount), hint: '等站长处理，不用重复提交' },
-      { label: '已开票', value: money(summary.issued_amount), hint: '电子发票会发到你的邮箱' }
-    ],
-    [summary]
-  )
+  const summaryCards = [
+    {
+      label: '已开票',
+      value: money(summary.issued_amount),
+      hint: '电子发票会发到你填的邮箱'
+    },
+    {
+      label: '审核中',
+      value: money(summary.pending_amount),
+      hint: '等站长处理，不用重复提交'
+    },
+    {
+      label: '还能开',
+      value: money(summary.invoiceable_amount),
+      hint: `累计充值 ${money(summary.recharge_total)}`
+    }
+  ]
 
   const handleTab = (next: InvoiceStatus | 'all') => {
     setStatus(next)
@@ -149,10 +131,18 @@ function InvoicePage() {
             <p className={styles.kicker}>
               <ReconciliationOutlined /> 财务管理
             </p>
-            <h1>开发票</h1>
+            <h1>我的发票</h1>
             <p className={styles.lead}>
-              只对<b>已支付的充值订单</b>开票。填好抬头和邮箱提交，站长审核后开票（一般 1–3 个工作日），电子发票直接发邮箱。
+              发票按<b>充值订单</b>开：到「价格与充值 → 余额与充值 → 支付记录」里，对某一笔已支付充值点「开发票」。
+              一单一票，已开票的订单不能重复申请。
             </p>
+            <div className={styles.headActions}>
+              <Link to="/price?tab=shop">
+                <Button type="primary" icon={<WalletOutlined />}>
+                  去支付记录开发票
+                </Button>
+              </Link>
+            </div>
           </header>
 
           <section className={styles.summary}>
@@ -170,122 +160,43 @@ function InvoicePage() {
               <div className={styles.cardHead}>
                 <IconBadge icon={<FileTextOutlined />} tone="brand" size="sm" />
                 <div>
-                  <h2>申请开票</h2>
-                  <p>一次申请一张电子普通发票；抬头信息按营业执照原样填，开错要作废重开。</p>
+                  <h2>怎么开发票</h2>
+                  <p>不用单独填金额，选哪笔充值就开哪笔，金额自动带出来。</p>
                 </div>
               </div>
-
-              <Form form={form} layout="vertical" requiredMark="optional" initialValues={{ title_type: 'company' }}>
-                <Form.Item
-                  name="amount"
-                  label="开票金额"
-                  extra={maxAmount > 0 ? `最多可开 ${money(maxAmount)}` : '暂无可开票金额，先完成一次充值'}
-                  rules={[
-                    { required: true, message: '请填写开票金额' },
-                    {
-                      validator: (_, value) => {
-                        const amount = Number(value || 0)
-                        if (amount <= 0) return Promise.reject(new Error('金额要大于 0'))
-                        if (maxAmount > 0 && amount > maxAmount + 0.001) {
-                          return Promise.reject(new Error('不能超过可开票金额'))
-                        }
-                        return Promise.resolve()
-                      }
-                    }
-                  ]}
-                >
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    min={0}
-                    max={maxAmount || undefined}
-                    precision={2}
-                    addonBefore="¥"
-                    placeholder="例如 100.00"
-                  />
-                </Form.Item>
-
-                <Form.Item name="title_type" label="抬头类型" rules={[{ required: true }]}>
-                  <Radio.Group
-                    className={styles.radioRow}
-                    onChange={(event) => setTitleType(event.target.value)}
-                    optionType="button"
-                    buttonStyle="solid"
-                  >
-                    <Radio.Button value="company">企业</Radio.Button>
-                    <Radio.Button value="personal">个人</Radio.Button>
-                  </Radio.Group>
-                </Form.Item>
-
-                <Form.Item
-                  name="title"
-                  label={titleType === 'company' ? '公司名称' : '个人姓名'}
-                  rules={[{ required: true, message: '请填写发票抬头' }]}
-                >
-                  <Input maxLength={60} placeholder={titleType === 'company' ? '营业执照上的全称' : '与身份证一致'} />
-                </Form.Item>
-
-                {titleType === 'company' ? (
-                  <Form.Item
-                    name="tax_no"
-                    label="纳税人识别号"
-                    rules={[{ required: true, message: '企业抬头必须填税号' }]}
-                  >
-                    <Input maxLength={30} placeholder="15 / 18 / 20 位，字母数字" />
-                  </Form.Item>
-                ) : null}
-
-                <Form.Item
-                  name="email"
-                  label="接收邮箱"
-                  rules={[
-                    { required: true, message: '请填写接收电子发票的邮箱' },
-                    { type: 'email', message: '邮箱格式不对' }
-                  ]}
-                >
-                  <Input maxLength={80} placeholder="发票 PDF 会发到这里" />
-                </Form.Item>
-
-                <Form.Item name="order_no" label="充值订单号">
-                  <Input maxLength={60} placeholder="在「价格与充值 → 余额与充值」里能查到" />
-                </Form.Item>
-
-                <Form.Item name="remark" label="备注">
-                  <Input.TextArea maxLength={200} rows={2} placeholder="比如：请合并开一张" />
-                </Form.Item>
-
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  loading={submitting}
-                  disabled={!backendReady}
-                  onClick={() => void submit()}
-                >
-                  提交申请
-                </Button>
-                {!backendReady ? (
-                  <p className={styles.backendHint}>
-                    开票服务还没开通（等站长配置后端接口）；页面可以先看着。
-                  </p>
-                ) : null}
-              </Form>
+              <ol className={styles.steps}>
+                <li>
+                  <b>打开支付记录</b>
+                  <span>价格与充值 → 余额与充值 → 往下找到「支付记录」。</span>
+                </li>
+                <li>
+                  <b>找到要开票的那笔充值</b>
+                  <span>点右侧「开发票」，填抬头、税号和邮箱。</span>
+                </li>
+                <li>
+                  <b>等站长审核</b>
+                  <span>1–3 个工作日开出，电子发票发到邮箱；审核中可撤销。</span>
+                </li>
+              </ol>
+              <Link to="/price?tab=shop">
+                <Button icon={<ArrowRightOutlined />}>去支付记录</Button>
+              </Link>
             </section>
 
             <aside className={styles.side}>
               <section className={styles.sideCard}>
-                <h2>开票说明</h2>
+                <h2>开票规则</h2>
                 <ul>
                   <li>只对<b>已支付</b>的充值订单开票，余额消费不开票。</li>
+                  <li>一笔订单只能开一张发票，已开过的不能再开。</li>
                   <li>抬头、税号按营业执照填；个人抬头填姓名即可。</li>
-                  <li>审核通过后 1–3 个工作日开出，电子发票发到你填的邮箱。</li>
                   <li>本站只开电子普通发票，不办增值税专用发票。</li>
-                  <li>开错了要作废重开，所以提交前多看一眼税号。</li>
                 </ul>
               </section>
 
               <section className={styles.sideCard}>
                 <h2>记录在哪</h2>
-                <p>提交后在本页下方「开票记录」里能看状态；审核中还能撤销，已开票就不能改了。</p>
+                <p>提交后在本页下方「开票记录」里看状态；审核中还能撤销，已开票不能改。</p>
               </section>
             </aside>
           </div>
@@ -323,6 +234,7 @@ function InvoicePage() {
                 <div className={styles.records}>
                   {records.map((record) => {
                     const meta = STATUS_META[record.status] || STATUS_META.pending
+                    const billId = record.bill_id || record.order_no
                     return (
                       <article key={record.id} className={styles.record}>
                         <div className={styles.recordTop}>
@@ -333,6 +245,7 @@ function InvoicePage() {
                         </div>
                         <div className={styles.recordMeta}>
                           <span>电子普通发票</span>
+                          {billId ? <span>订单号 {billId}</span> : null}
                           <span>{record.email}</span>
                           {record.tax_no ? <span>税号 {record.tax_no}</span> : null}
                           {record.invoice_no ? <span>发票号 {record.invoice_no}</span> : null}
@@ -366,7 +279,7 @@ function InvoicePage() {
           </section>
 
           <p className={styles.footerTip}>
-            发票问题也可以在「公告留言」里给站长留言，附上邮箱和金额，处理更快。
+            发票问题也可以在「公告留言」里给站长留言，附上订单号和邮箱，处理更快。
           </p>
         </div>
       </Layout>

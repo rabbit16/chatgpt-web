@@ -143,7 +143,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                   {
                     key: 'invoice',
                     icon: <FileTextOutlined />,
-                    label: '开发票',
+                    label: '我的发票',
                     onClick: () => {
                       navigate('/invoice')
                     }

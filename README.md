@@ -82,3 +82,7 @@ npm run preview
 - 已接入 **OpenAI**（GPT-5.6 / GPT-6 等）和 **xAI Grok 4.6** 及相关模型
 - 价格与费用估算只展示**美元（USD）**，不含人民币
 - 调整价格后重新编译 / 刷新开发页即可生效
+
+## 功能文档
+
+- 发票（按充值订单开、一单一票）：[docs/发票功能.md](docs/发票功能.md) / [接口契约](docs/api/invoice.md)

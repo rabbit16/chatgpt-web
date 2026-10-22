@@ -126,7 +126,7 @@ function AdminInvoices() {
       item.title,
       item.tax_no,
       item.email,
-      item.order_no,
+      item.bill_id || item.order_no,
       STATUS[item.status]?.label || item.status,
       item.invoice_no,
       item.reject_reason,
@@ -174,14 +174,14 @@ function AdminInvoices() {
         <Button icon={<DownloadOutlined />} onClick={exportCsv}>
           导出 CSV
         </Button>
-        <span className={styles.toolbarHint}>导出的是当前页筛选结果，可直接给财务。</span>
+        <span className={styles.toolbarHint}>一单一票：同一订单只能通过一张发票；导出的是当前页筛选结果。</span>
       </div>
 
       <Table
         rowKey="id"
         loading={loading}
         dataSource={list}
-        scroll={{ x: 1080 }}
+        scroll={{ x: 1240 }}
         pagination={{
           current: page,
           total,
@@ -191,6 +191,14 @@ function AdminInvoices() {
         columns={[
           { title: 'ID', dataIndex: 'id', width: 70 },
           { title: '用户', dataIndex: 'user_id', width: 90 },
+          {
+            title: '订单号',
+            dataIndex: 'bill_id',
+            width: 160,
+            render: (value: string, record: InvoiceRecord) => (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{value || record.order_no || '-'}</span>
+            )
+          },
           {
             title: '金额',
             dataIndex: 'amount',
@@ -261,7 +269,9 @@ function AdminInvoices() {
               <div>抬头：{reviewing.title}</div>
               {reviewing.tax_no ? <div>税号：{reviewing.tax_no}</div> : null}
               <div>邮箱：{reviewing.email}</div>
-              {reviewing.order_no ? <div>订单号：{reviewing.order_no}</div> : null}
+              {reviewing.bill_id || reviewing.order_no ? (
+                <div>订单号：{reviewing.bill_id || reviewing.order_no}</div>
+              ) : null}
               {reviewing.remark ? <div>备注：{reviewing.remark}</div> : null}
             </div>
             <Input

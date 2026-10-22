@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import UserInfoCard from '@/components/UserInfoCard'
 import styles from './index.module.less'
 import { userStore, paymentStore } from '@/store'
-import {Image,Spin, Button, InputNumber, Modal, Pagination, Space, Table, message } from 'antd'
-import { SyncOutlined } from '@ant-design/icons'
+import {Image,Spin, Button, InputNumber, Modal, Pagination, Space, Table, Tag, message } from 'antd'
 import {
   userBillList,
   userBillInfo,
@@ -13,6 +12,8 @@ import {
   type UserModelRate
 } from '@/request/api'
 import OpenAiLogo from '@/components/OpenAiLogo'
+import InvoiceApplyModal, { type InvoiceBill } from '@/components/InvoiceApplyModal'
+import { getInvoiceList, type InvoiceRecord, type InvoiceStatus } from '@/request/invoice'
 import { useNavigate } from 'react-router-dom'
 import {getAliPayPage,payVerify}from '../../request/api'
 import {
@@ -41,6 +42,31 @@ type FeaturedCard = {
 }
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || ''
+
+type BillRow = {
+  bill_id: string
+  generate_time: string
+  pay: number
+  function_name: string
+  /** 后端若在账单里直接带开票状态，前端优先用它 */
+  invoice_status?: InvoiceStatus | 'none'
+  invoice_id?: number
+}
+
+function formatBillTime(value?: string) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+const INVOICE_STATUS_META: Record<InvoiceStatus, { label: string; color: string }> = {
+  pending: { label: '待审核', color: 'gold' },
+  issuing: { label: '开票中', color: 'blue' },
+  issued: { label: '已开票', color: 'green' },
+  rejected: { label: '已驳回', color: 'red' }
+}
 
 type PayModalState = {
   loading: boolean
@@ -74,7 +100,7 @@ export function ShopPanel() {
       : phone
   const [featuredPrices, setFeaturedPrices] = useState<FeaturedCard[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(false)
-  const [billList,setBillList] = useState([]);
+  const [billList,setBillList] = useState<BillRow[]>([]);
   const [tableObj,setTableObj] = useState({
     current:1,
     pageSize:5,
@@ -86,7 +112,13 @@ export function ShopPanel() {
   const [updata,setUpdata] = useState({});
   const [customAmount, setCustomAmount] = useState<number | null>(null)
   const paymentChannel = paymentStore((state) => state.channel)
-  const [payOrder, setPayOrder] = useState<{ outTradeNo: string; payType: string } | null>(null)
+  const [payOrder, setPayOrder] = useState<{ outTradeNo: string; payType: string; amount: number } | null>(null)
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([])
+  const [invoiceReady, setInvoiceReady] = useState(true)
+  const [invoiceTarget, setInvoiceTarget] = useState<InvoiceBill | null>(null)
+  const [paySuccess, setPaySuccess] = useState<{ amount: number } | null>(null)
+  const recordsRef = useRef<HTMLDivElement | null>(null)
+  const [isNarrow, setIsNarrow] = useState(false)
   const getPostMoney = async (value: number) => {
     if (!Number.isInteger(value) || value <= 0) {
       message.warning('充值金额必须是大于 0 的整数')
@@ -121,7 +153,7 @@ export function ShopPanel() {
           window.location.href = data.payUrl
           return
         }
-        setPayOrder({ outTradeNo: data.outTradeNo, payType: data.payType })
+        setPayOrder({ outTradeNo: data.outTradeNo, payType: data.payType, amount: value })
         setMoneyObj({
           loading: false,
           visiblePop: true,
@@ -157,12 +189,13 @@ export function ShopPanel() {
       setMoneyObj(emptyPayModal())
     }
   }
-  const finishPaid = (tip: string) => {
+  const finishPaid = (tip: string, amount?: number) => {
     message.success(tip)
     clearPendingOrder()
     setPayOrder(null)
     setMoneyObj(emptyPayModal())
     setUpdata({})
+    if (amount && amount > 0) setPaySuccess({ amount })
   }
   const handleOk = async () => {
     if (paymentChannel === 'xunhupay') {
@@ -170,7 +203,7 @@ export function ShopPanel() {
       try {
         const res: any = await queryXuHuPayOrder(payOrder.outTradeNo)
         if (normalizePayload<any>(res).paid) {
-          finishPaid('支付成功，余额已到账')
+          finishPaid('支付成功，余额已到账', payOrder.amount)
         } else {
           message.info('还没收到支付结果，完成支付后会自动到账')
         }
@@ -182,7 +215,7 @@ export function ShopPanel() {
     try {
       const res: any = await payVerify({ codeNum: moneyObj.code_num })
       if (isPayOk(res)) {
-        finishPaid('支付成功')
+        finishPaid('支付成功', moneyObj.amount)
       } else {
         message.info('还没收到支付结果，完成支付后会自动到账')
       }
@@ -211,7 +244,7 @@ export function ShopPanel() {
           if (normalizePayload<any>(res).paid) {
             stopped = true
             clearInterval(timer)
-            finishPaid('支付成功，余额已到账')
+            finishPaid('支付成功，余额已到账', payOrder.amount)
           }
         })
         .catch(() => null)
@@ -274,9 +307,7 @@ export function ShopPanel() {
           if (normalizePayload<any>(res).paid) {
             stopped = true
             if (timer) clearInterval(timer)
-            clearPendingOrder()
-            message.success('支付成功，余额已到账')
-            setUpdata({})
+            finishPaid('支付成功，余额已到账', pending.money)
             return
           }
           tries += 1
@@ -304,6 +335,78 @@ export function ShopPanel() {
       }
     })
   },[updata])
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 720px)')
+    const sync = () => setIsNarrow(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  // 开票记录：按订单号映射到支付记录，用来显示「未开 / 审核中 / 已开票 / 已驳回」。
+  useEffect(() => {
+    if (!token) return
+    let cancelled = false
+    getInvoiceList({ page: 1, page_num: 50 })
+      .then((res: any) => {
+        if (cancelled) return
+        const payload = res?.data || {}
+        setInvoiceRecords(Array.isArray(payload.list) ? payload.list : [])
+        setInvoiceReady(true)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setInvoiceRecords([])
+        setInvoiceReady(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, updata])
+
+  const invoiceByBill = useMemo(() => {
+    const priority: Record<string, number> = { issued: 4, issuing: 3, pending: 2, rejected: 1 }
+    const map = new Map<string, InvoiceRecord>()
+    for (const record of invoiceRecords) {
+      const key = String(record.bill_id || record.order_no || '')
+      if (!key) continue
+      const prev = map.get(key)
+      if (!prev || (priority[record.status] || 0) > (priority[prev.status] || 0)) {
+        map.set(key, record)
+      }
+    }
+    return map
+  }, [invoiceRecords])
+
+  const renderInvoiceCell = (record: BillRow) => {
+    const invoice = invoiceByBill.get(String(record.bill_id))
+    const status = invoice?.status || (record.invoice_status && record.invoice_status !== 'none' ? record.invoice_status : undefined)
+    if (status === 'rejected') {
+      return (
+        <span className={styles.invoiceCell}>
+          <Tag color={INVOICE_STATUS_META.rejected.color}>已驳回</Tag>
+          {invoiceReady ? (
+            <Button size="small" type="link" onClick={() => setInvoiceTarget(record)}>
+              重新申请
+            </Button>
+          ) : null}
+        </span>
+      )
+    }
+    if (status) {
+      const meta = INVOICE_STATUS_META[status]
+      return <Tag color={meta?.color}>{meta?.label || status}</Tag>
+    }
+    if (!invoiceReady) {
+      return <span className={styles.invoiceMuted}>开票服务未开通</span>
+    }
+    return (
+      <Button size="small" type="link" onClick={() => setInvoiceTarget(record)}>
+        开发票
+      </Button>
+    )
+  }
+
   useEffect(() => {
     async function fetchUserBillList() {
       const params = {
@@ -394,6 +497,38 @@ export function ShopPanel() {
   }
   return (
     <div className={styles.shopPanel}>
+        <Modal
+          open={Boolean(paySuccess)}
+          title="充值成功"
+          onCancel={() => setPaySuccess(null)}
+          footer={[
+            <Button key="ok" onClick={() => setPaySuccess(null)}>
+              知道了
+            </Button>,
+            <Button
+              key="invoice"
+              type="primary"
+              onClick={() => {
+                setPaySuccess(null)
+                recordsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+            >
+              去支付记录开发票
+            </Button>
+          ]}
+        >
+          <p className={styles.successText}>
+            ¥{Number(paySuccess?.amount || 0).toFixed(2)} 已到账。需要发票的话，在下方「支付记录」里对这笔充值申请，
+            一单一票，已开票的订单不能重复开。
+          </p>
+        </Modal>
+        <InvoiceApplyModal
+          open={Boolean(invoiceTarget)}
+          bill={invoiceTarget}
+          defaultEmail={user_info?.data?.bodyMessage?.email || ''}
+          onClose={() => setInvoiceTarget(null)}
+          onSubmitted={() => setUpdata({})}
+        />
         <Modal
           title="微信支付"
           open={moneyObj.visiblePop}
@@ -505,42 +640,59 @@ export function ShopPanel() {
                 ) : null}
               </div>
             </div>
-            <div className={styles.goodsPay_card}>
-              <h4
-                onClick={() => {
-                  // onTurnoverLog(1, turnover.pageSize)
-                }}
-              >
-                订单记录 <SyncOutlined spin={false} />
+            <div className={styles.goodsPay_card} ref={recordsRef}>
+              <h4 className={styles.priceTitle}>
+                <span>支付记录</span>
+                <Button type="link" onClick={() => setUpdata({})}>
+                  刷新
+                </Button>
               </h4>
+              <p className={styles.recordHint}>每笔充值可开一张电子普通发票；一单一票，已开票的订单不能重复申请。</p>
               <Table
-                scroll={{
-                  x: 800
-                }}
+                scroll={isNarrow ? undefined : { x: 920 }}
                 bordered
                 loading={false}
                 dataSource={billList}
                 pagination={false}
-                rowKey="id"
+                rowKey="bill_id"
                 columns={[
                   {
-                    title: '单号',
+                    title: '订单号',
                     dataIndex: 'bill_id',
-                    key: 'bill_id'
+                    key: 'bill_id',
+                    render: (value: string, record: BillRow) => (
+                      <div>
+                        <span className={styles.orderNo}>{value}</span>
+                        {isNarrow ? <div className={styles.mobileDate}>{formatBillTime(record.generate_time)}</div> : null}
+                      </div>
+                    )
+                  },
+                  ...(isNarrow
+                    ? []
+                    : [
+                        {
+                          title: '用途',
+                          key: 'function_name',
+                          dataIndex: 'function_name'
+                        },
+                        {
+                          title: '日期',
+                          dataIndex: 'generate_time',
+                          key: 'generate_time',
+                          render: (value: string) => <span className={styles.billTime}>{formatBillTime(value)}</span>
+                        }
+                      ]),
+                  {
+                    title: '金额',
+                    dataIndex: 'pay',
+                    key: 'pay',
+                    render: (value: number) => <span className={styles.payAmount}>¥{Number(value || 0).toFixed(2)}</span>
                   },
                   {
-                    title: '模型',
-                    key: 'function_name',
-                    dataIndex:'function_name'
-                  },
-                  {
-                    title: '日期',
-                    dataIndex: 'generate_time',
-                    key: 'generate_time'
-                  },{
-                    title:'金额',
-                    dataIndex:'pay',
-                    key:'pay'
+                    title: '发票',
+                    key: 'invoice',
+                    width: isNarrow ? 110 : 150,
+                    render: (_: unknown, record: BillRow) => renderInvoiceCell(record)
                   }
                 ]}
               />
