@@ -325,7 +325,7 @@ function GoodsPay() {
     <div className={styles.goodsPay}>
       <Layout>
         <Modal
-          title={paymentChannel === 'xunhupay' ? '微信支付（虎皮椒）' : '微信支付'}
+          title="义乌市妮兔网络科技工作室"
           open={moneyObj.visiblePop}
           onOk={handleOk}
           onCancel={handleCancel}
