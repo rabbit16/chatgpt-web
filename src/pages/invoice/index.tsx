@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Empty, Form, Input, InputNumber, Pagination, Radio, Select, Spin, Tag, message } from 'antd'
+import { Button, Empty, Form, Input, InputNumber, Pagination, Radio, Select, Spin, Tag, message } from 'antd'
 import { FileTextOutlined, HistoryOutlined, ReconciliationOutlined, ReloadOutlined } from '@ant-design/icons'
 import Layout from '@/components/Layout'
 import IconBadge from '@/components/IconBadge'
@@ -54,7 +54,6 @@ function InvoicePage() {
   const [submitting, setSubmitting] = useState(false)
   const [backendReady, setBackendReady] = useState(true)
   const [titleType, setTitleType] = useState<'company' | 'personal'>('company')
-  const [kind, setKind] = useState<'electronic' | 'special'>('electronic')
 
   const loadAll = useCallback(
     async (nextPage = 1, nextStatus: InvoiceStatus | 'all' = status) => {
@@ -96,7 +95,6 @@ function InvoicePage() {
       setSubmitting(true)
       const res: any = await createInvoice({
         amount: Number(values.amount),
-        kind: values.kind,
         title_type: values.title_type,
         title: String(values.title || '').trim(),
         tax_no: values.title_type === 'company' ? String(values.tax_no || '').trim() : undefined,
@@ -173,11 +171,11 @@ function InvoicePage() {
                 <IconBadge icon={<FileTextOutlined />} tone="brand" size="sm" />
                 <div>
                   <h2>申请开票</h2>
-                  <p>一次申请一张发票；抬头信息按营业执照原样填，开错要作废重开。</p>
+                  <p>一次申请一张电子普通发票；抬头信息按营业执照原样填，开错要作废重开。</p>
                 </div>
               </div>
 
-              <Form form={form} layout="vertical" requiredMark="optional" initialValues={{ kind: 'electronic', title_type: 'company' }}>
+              <Form form={form} layout="vertical" requiredMark="optional" initialValues={{ title_type: 'company' }}>
                 <Form.Item
                   name="amount"
                   label="开票金额"
@@ -204,18 +202,6 @@ function InvoicePage() {
                     addonBefore="¥"
                     placeholder="例如 100.00"
                   />
-                </Form.Item>
-
-                <Form.Item name="kind" label="发票类型" rules={[{ required: true }]}>
-                  <Radio.Group
-                    className={styles.radioRow}
-                    onChange={(event) => setKind(event.target.value)}
-                    optionType="button"
-                    buttonStyle="solid"
-                  >
-                    <Radio.Button value="electronic">电子普通发票</Radio.Button>
-                    <Radio.Button value="special">增值税专用发票</Radio.Button>
-                  </Radio.Group>
                 </Form.Item>
 
                 <Form.Item name="title_type" label="抬头类型" rules={[{ required: true }]}>
@@ -263,16 +249,6 @@ function InvoicePage() {
                   <Input maxLength={60} placeholder="在「价格与充值 → 余额与充值」里能查到" />
                 </Form.Item>
 
-                {kind === 'special' ? (
-                  <Alert
-                    className={styles.tip}
-                    type="info"
-                    showIcon
-                    message="专用发票需要补资料"
-                    description="提交后站长会联系你补充开户行、账号、地址和电话；资料齐全才会开专票。"
-                  />
-                ) : null}
-
                 <Form.Item name="remark" label="备注">
                   <Input.TextArea maxLength={200} rows={2} placeholder="比如：请合并开一张" />
                 </Form.Item>
@@ -302,7 +278,7 @@ function InvoicePage() {
                   <li>只对<b>已支付</b>的充值订单开票，余额消费不开票。</li>
                   <li>抬头、税号按营业执照填；个人抬头填姓名即可。</li>
                   <li>审核通过后 1–3 个工作日开出，电子发票发到你填的邮箱。</li>
-                  <li>需要专票的，提交后补齐开户行、账号、地址、电话。</li>
+                  <li>本站只开电子普通发票，不办增值税专用发票。</li>
                   <li>开错了要作废重开，所以提交前多看一眼税号。</li>
                 </ul>
               </section>
@@ -356,7 +332,7 @@ function InvoicePage() {
                           <time>{record.created_at}</time>
                         </div>
                         <div className={styles.recordMeta}>
-                          <span>{record.kind === 'special' ? '增值税专用发票' : '电子普通发票'}</span>
+                          <span>电子普通发票</span>
                           <span>{record.email}</span>
                           {record.tax_no ? <span>税号 {record.tax_no}</span> : null}
                           {record.invoice_no ? <span>发票号 {record.invoice_no}</span> : null}

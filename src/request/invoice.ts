@@ -4,19 +4,18 @@ import request from '.'
  * 开发票（前端契约，后端由站长实现）
  * ------------------------------------------------------------
  * 契约文档：docs/后端接口-发票.md
+ * 只开「电子普通发票」，不办增值税专用发票（站长确认）。
  * 状态流转：pending（待审核）→ issuing（开票中）→ issued（已开票）
  *           pending / issuing 可以被驳回 rejected（带原因）
  * 后端未部署时，列表接口会失败，页面会展示空态而不是报错刷屏。
  */
 
 export type InvoiceStatus = 'pending' | 'issuing' | 'issued' | 'rejected'
-export type InvoiceKind = 'electronic' | 'special'
 export type InvoiceTitleType = 'company' | 'personal'
 
 export interface InvoiceRecord {
   id: number
   amount: number
-  kind: InvoiceKind
   title_type: InvoiceTitleType
   title: string
   tax_no?: string
@@ -45,7 +44,6 @@ export interface InvoiceSummary {
 
 export interface InvoiceFormPayload {
   amount: number
-  kind: InvoiceKind
   title_type: InvoiceTitleType
   title: string
   tax_no?: string

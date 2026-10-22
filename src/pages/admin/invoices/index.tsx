@@ -18,11 +18,6 @@ const STATUS: Record<InvoiceStatus, { label: string; color: string }> = {
   rejected: { label: '已驳回', color: 'red' }
 }
 
-const KIND_LABEL: Record<string, string> = {
-  electronic: '电子普票',
-  special: '增值税专票'
-}
-
 function money(value?: number | null) {
   return `¥${Number(value || 0).toFixed(2)}`
 }
@@ -113,7 +108,6 @@ function AdminInvoices() {
       '申请ID',
       '用户ID',
       '金额',
-      '发票类型',
       '抬头类型',
       '抬头',
       '税号',
@@ -128,7 +122,6 @@ function AdminInvoices() {
       item.id,
       item.user_id,
       Number(item.amount || 0).toFixed(2),
-      KIND_LABEL[item.kind] || item.kind,
       item.title_type === 'personal' ? '个人' : '企业',
       item.title,
       item.tax_no,
@@ -205,12 +198,6 @@ function AdminInvoices() {
             render: (value) => money(value)
           },
           {
-            title: '类型',
-            dataIndex: 'kind',
-            width: 110,
-            render: (value) => KIND_LABEL[value] || value
-          },
-          {
             title: '抬头',
             dataIndex: 'title',
             width: 220,
@@ -274,7 +261,6 @@ function AdminInvoices() {
               <div>抬头：{reviewing.title}</div>
               {reviewing.tax_no ? <div>税号：{reviewing.tax_no}</div> : null}
               <div>邮箱：{reviewing.email}</div>
-              <div>类型：{KIND_LABEL[reviewing.kind] || reviewing.kind}</div>
               {reviewing.order_no ? <div>订单号：{reviewing.order_no}</div> : null}
               {reviewing.remark ? <div>备注：{reviewing.remark}</div> : null}
             </div>
