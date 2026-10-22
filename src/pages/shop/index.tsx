@@ -648,54 +648,64 @@ export function ShopPanel() {
                 </Button>
               </h4>
               <p className={styles.recordHint}>每笔充值可开一张电子普通发票；一单一票，已开票的订单不能重复申请。</p>
-              <Table
-                scroll={isNarrow ? undefined : { x: 920 }}
-                bordered
-                loading={false}
-                dataSource={billList}
-                pagination={false}
-                rowKey="bill_id"
-                columns={[
-                  {
-                    title: '订单号',
-                    dataIndex: 'bill_id',
-                    key: 'bill_id',
-                    render: (value: string, record: BillRow) => (
-                      <div>
-                        <span className={styles.orderNo}>{value}</span>
-                        {isNarrow ? <div className={styles.mobileDate}>{formatBillTime(record.generate_time)}</div> : null}
+              {isNarrow ? (
+                <div className={styles.billCards}>
+                  {billList.length === 0 ? <div className={styles.billEmpty}>还没有支付记录</div> : null}
+                  {billList.map((bill) => (
+                    <article className={styles.billCard} key={bill.bill_id}>
+                      <div className={styles.billInfo}>
+                        <span className={styles.orderNo}>{bill.bill_id}</span>
+                        <span className={styles.mobileDate}>{formatBillTime(bill.generate_time)}</span>
+                        <span className={styles.billUse}>{bill.function_name}</span>
                       </div>
-                    )
-                  },
-                  ...(isNarrow
-                    ? []
-                    : [
-                        {
-                          title: '用途',
-                          key: 'function_name',
-                          dataIndex: 'function_name'
-                        },
-                        {
-                          title: '日期',
-                          dataIndex: 'generate_time',
-                          key: 'generate_time',
-                          render: (value: string) => <span className={styles.billTime}>{formatBillTime(value)}</span>
-                        }
-                      ]),
-                  {
-                    title: '金额',
-                    dataIndex: 'pay',
-                    key: 'pay',
-                    render: (value: number) => <span className={styles.payAmount}>¥{Number(value || 0).toFixed(2)}</span>
-                  },
-                  {
-                    title: '发票',
-                    key: 'invoice',
-                    width: isNarrow ? 110 : 150,
-                    render: (_: unknown, record: BillRow) => renderInvoiceCell(record)
-                  }
-                ]}
-              />
+                      <div className={styles.billActions}>
+                        <span className={styles.payAmount}>¥{Number(bill.pay || 0).toFixed(2)}</span>
+                        {renderInvoiceCell(bill)}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <Table
+                  scroll={{ x: 920 }}
+                  bordered
+                  loading={false}
+                  dataSource={billList}
+                  pagination={false}
+                  rowKey="bill_id"
+                  columns={[
+                    {
+                      title: '订单号',
+                      dataIndex: 'bill_id',
+                      key: 'bill_id',
+                      render: (value: string) => <span className={styles.orderNo}>{value}</span>
+                    },
+                    {
+                      title: '用途',
+                      key: 'function_name',
+                      dataIndex: 'function_name'
+                    },
+                    {
+                      title: '日期',
+                      dataIndex: 'generate_time',
+                      key: 'generate_time',
+                      render: (value: string) => <span className={styles.billTime}>{formatBillTime(value)}</span>
+                    },
+                    {
+                      title: '金额',
+                      dataIndex: 'pay',
+                      key: 'pay',
+                      render: (value: number) => <span className={styles.payAmount}>¥{Number(value || 0).toFixed(2)}</span>
+                    },
+                    {
+                      title: '发票',
+                      key: 'invoice',
+                      width: 150,
+                      render: (_: unknown, record: BillRow) => renderInvoiceCell(record)
+                    }
+                  ]}
+                />
+              )}
               <div className={styles.goodsPay_pagination}>
                 <Pagination
                   size="small"

@@ -132,35 +132,36 @@ export const antdTheme: ThemeConfig = {
 }
 
 /**
- * 深色版：偏蓝的近黑底 + 抬一层的蓝灰卡片 + 提亮的品牌蓝。
- * 数值与 tokens.less 的 [data-theme='dark'] 一一对应，改一处要两边同步。
+ * 深色版：中性深灰黑分层 + 提亮的文字与品牌蓝。
+ * 参考 DSH 的深色界面：不是一整块深蓝，而是「近黑底 → 抬起的卡片 → 更亮的浮层」，
+ * 文字用偏暖的灰白，长时间看不刺眼。数值与 tokens.less 的 [data-theme='dark'] 一一对应。
  */
 export const antdDarkTheme: ThemeConfig = {
   algorithm: antdAlgorithm.darkAlgorithm,
   token: {
     ...baseToken,
-    colorPrimary: '#5b93ff',
-    colorInfo: '#5b93ff',
-    colorSuccess: '#34d399',
-    colorWarning: '#f5b544',
+    colorPrimary: '#6f9dff',
+    colorInfo: '#6f9dff',
+    colorSuccess: '#4ade80',
+    colorWarning: '#fbbf24',
     colorError: '#f87171',
-    colorLink: '#6ba1ff',
-    colorTextBase: '#eef3ff',
-    colorText: '#eef3ff',
-    colorTextSecondary: '#b9c6de',
-    colorTextTertiary: '#8f9dbb',
-    colorTextQuaternary: '#6c7b9b',
-    colorBorder: '#223050',
-    colorBorderSecondary: '#1a2742',
-    colorBgLayout: '#080f1c',
-    colorBgContainer: '#0f1829',
-    colorBgElevated: '#16233a',
-    colorFillAlter: '#16233a',
-    colorFillSecondary: '#1a2742',
-    colorFillTertiary: '#16233a',
+    colorLink: '#8ab0ff',
+    colorTextBase: '#f0f0f3',
+    colorText: '#f0f0f3',
+    colorTextSecondary: '#cfcfd6',
+    colorTextTertiary: '#a4a4ad',
+    colorTextQuaternary: '#87878f',
+    colorBorder: '#34343a',
+    colorBorderSecondary: '#2a2a30',
+    colorBgLayout: '#18181b',
+    colorBgContainer: '#222226',
+    colorBgElevated: '#2a2a2f',
+    colorFillAlter: '#2a2a2f',
+    colorFillSecondary: '#313137',
+    colorFillTertiary: '#2a2a2f',
 
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
-    boxShadowSecondary: '0 18px 44px rgba(0, 0, 0, 0.55)'
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+    boxShadowSecondary: '0 18px 44px rgba(0, 0, 0, 0.5)'
   },
   components: {
     Button: {
@@ -171,35 +172,35 @@ export const antdDarkTheme: ThemeConfig = {
     },
     Input: {
       paddingInline: 12,
-      activeShadow: '0 0 0 3px rgba(91, 147, 255, 0.24)'
+      activeShadow: '0 0 0 3px rgba(111, 157, 255, 0.24)'
     },
     InputNumber: {
-      activeShadow: '0 0 0 3px rgba(91, 147, 255, 0.24)'
+      activeShadow: '0 0 0 3px rgba(111, 157, 255, 0.24)'
     },
     Select: {
-      optionSelectedBg: '#17294a'
+      optionSelectedBg: '#2b3546'
     },
     Card: {
       paddingLG: 24,
       headerFontSize: 16
     },
     Table: {
-      headerBg: '#111d33',
-      headerColor: '#b9c6de',
+      headerBg: '#1f1f23',
+      headerColor: '#cfcfd6',
       headerSplitColor: 'transparent',
-      rowHoverBg: '#14203a',
-      borderColor: '#1a2742',
+      rowHoverBg: '#26262b',
+      borderColor: '#2a2a30',
       cellPaddingBlock: 12
     },
     Tabs: {
-      itemSelectedColor: '#6ba1ff',
-      inkBarColor: '#6ba1ff',
+      itemSelectedColor: '#8ab0ff',
+      inkBarColor: '#8ab0ff',
       titleFontSize: 14
     },
     Menu: {
-      itemSelectedBg: '#17294a',
-      itemSelectedColor: '#6ba1ff',
-      itemHoverBg: '#16233a',
+      itemSelectedBg: '#2b3546',
+      itemSelectedColor: '#8ab0ff',
+      itemHoverBg: '#2a2a2f',
       itemHeight: 40
     },
     Modal: {
@@ -210,16 +211,16 @@ export const antdDarkTheme: ThemeConfig = {
       paddingLG: 24
     },
     Tag: {
-      defaultBg: '#16233a',
+      defaultBg: '#2a2a2f',
       borderRadiusSM: 6
     },
     Segmented: {
-      itemSelectedBg: '#1a2742',
-      trackBg: '#111d33',
+      itemSelectedBg: '#2a2a31',
+      trackBg: '#1c1c20',
       borderRadius: 8
     },
     Pagination: {
-      itemActiveBg: '#17294a'
+      itemActiveBg: '#2b3546'
     },
     Message: {
       borderRadiusLG: 12
@@ -231,11 +232,11 @@ export const antdDarkTheme: ThemeConfig = {
       borderRadius: 8
     },
     Form: {
-      labelColor: '#d7e1f5',
+      labelColor: '#cfcfd6',
       labelFontSize: 14
     },
     Empty: {
-      colorTextDescription: '#6c7b9b'
+      colorTextDescription: '#87878f'
     }
   }
 }

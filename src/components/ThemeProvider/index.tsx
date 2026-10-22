@@ -29,7 +29,7 @@ function ThemeProvider({ children }: { children: React.ReactElement }) {
       meta.name = 'theme-color'
       document.head.appendChild(meta)
     }
-    meta.content = resolved === 'dark' ? '#080f1c' : '#f7f9fd'
+    meta.content = resolved === 'dark' ? '#18181b' : '#f7f9fd'
   }, [resolved])
 
   return (
