@@ -2,13 +2,21 @@ import { useEffect, useMemo, useState } from 'react'
 import UserInfoCard from '@/components/UserInfoCard'
 import styles from './index.module.less'
 import Layout from '@/components/Layout'
-import { userStore } from '@/store'
+import { userStore, paymentStore } from '@/store'
 import {Image,Spin, Button, InputNumber, Modal, Pagination, Space, Table, message } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
-import { userBillList,userBillInfo, getUserPricing, type UserModelRate } from '@/request/api'
+import {
+  userBillList,
+  userBillInfo,
+  getUserPricing,
+  createXuHuPayOrder,
+  queryXuHuPayOrder,
+  type UserModelRate
+} from '@/request/api'
 import OpenAiLogo from '@/components/OpenAiLogo'
 import { useNavigate } from 'react-router-dom'
 import {getAliPayPage,payVerify}from '../../request/api'
+import { clearPendingOrder, readPendingOrder, savePendingOrder } from '@/utils/payment'
 import {
   PROVIDER_META,
   enrichVendorModel,
@@ -52,38 +60,117 @@ function GoodsPay() {
   const [listTotal,setListTotal] = useState(0);
   const [updata,setUpdata] = useState({});
   const [customAmount, setCustomAmount] = useState<number | null>(null)
+  const paymentChannel = paymentStore((state) => state.channel)
+  const [payOrder, setPayOrder] = useState<{ outTradeNo: string; payType: string } | null>(null)
   const getPostMoney=(value:number)=>{
     if (!Number.isInteger(value) || value <= 0) {
       message.warning('充值金额必须是大于 0 的整数')
       return
     }
-    const params = {
-      money:value,
-      userId:user_info?.data?.bodyMessage?.userId,
-      function_code:'chatGpt'
+    const userId = user_info?.data?.bodyMessage?.userId
+    setMoneyObj((e:any)=>({...e,visiblePop:true,loading:true,url:''}))
+    if (paymentChannel === 'xunhupay') {
+      createXuHuPayOrder({
+        userId,
+        money: value,
+        function_code: 'chatGpt',
+        pay_type: 'auto'
+      }).then((res:any) => {
+        const data = res.data || {}
+        if (String(data.code) !== '0') {
+          message.error(data.codeMsg || '下单失败，请稍后重试')
+          setMoneyObj((e:any) => ({ ...e, loading: false }))
+          return
+        }
+        if (data.payType === 'h5') {
+          // 手机端直接跳转，订单号先落盘，回来后查单确认。
+          savePendingOrder({
+            outTradeNo: data.outTradeNo,
+            channel: 'xunhupay',
+            money: value,
+            createdAt: Date.now()
+          })
+          setMoneyObj((e:any) => ({ ...e, visiblePop: false, loading: false }))
+          window.location.href = data.payUrl
+          return
+        }
+        setPayOrder({ outTradeNo: data.outTradeNo, payType: data.payType })
+        setMoneyObj((e:any) => ({
+          ...e,
+          visiblePop: true,
+          loading: false,
+          url: data.payUrl
+        }))
+      }).catch(() => {
+        setMoneyObj((e:any) => ({ ...e, loading: false }))
+      })
+      return
     }
-    setMoneyObj((e:any)=>({...e,visiblePop:true,loading:true}))
-    getAliPayPage(params).then((res)=>{
-      console.log(res);
-     
+    getAliPayPage({
+      money:value,
+      userId,
+      function_code:'chatGpt'
+    }).then((res)=>{
       const data = res.data?.payUrl||{};
       const {code_num,request_id,data:{QRcode_url}} = data;
       setMoneyObj({visiblePop:true,url:QRcode_url,code_num,request_id,loading:false})
-      // setMoneyObj((e:any)=>({...e,url:}));
     })
   }
+  const finishPaid = (tip: string) => {
+    message.success(tip)
+    clearPendingOrder()
+    setPayOrder(null)
+    setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:''})
+    setUpdata({})
+  }
   const handleOk =async()=>{
-    const res = await payVerify({codeNum:moneyObj.code_num});
-    console.log(res);
-    if(res?.data?.code==='0'){
-      message.success('支付成功');
-      setMoneyObj((e:any)=>({...e,visiblePop:false}))
+    if (paymentChannel === 'xunhupay') {
+      if (!payOrder) return
+      const res:any = await queryXuHuPayOrder(payOrder.outTradeNo)
+      const data = res.data || {}
+      if (data.paid) {
+        finishPaid('支付成功')
+      } else {
+        message.info('还未收到支付结果，请完成支付后再试')
+      }
+      return
     }
-    
+    const res = await payVerify({codeNum:moneyObj.code_num});
+    if(res?.data?.code==='0'){
+      finishPaid('支付成功')
+    }
   }
   const handleCancel=()=>{
-    setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
+    setPayOrder(null)
+    setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:''})
   }
+  // 虎皮椒二维码弹出后自动轮询，最多 10 分钟。
+  useEffect(() => {
+    if (paymentChannel !== 'xunhupay' || !payOrder || !moneyObj.visiblePop) return
+    const startedAt = Date.now()
+    let stopped = false
+    const timer = setInterval(() => {
+      if (stopped) return
+      if (Date.now() - startedAt > 10 * 60 * 1000) {
+        clearInterval(timer)
+        return
+      }
+      queryXuHuPayOrder(payOrder.outTradeNo)
+        .then((res:any) => {
+          if (stopped) return
+          if (res.data?.paid) {
+            stopped = true
+            clearInterval(timer)
+            finishPaid('支付成功')
+          }
+        })
+        .catch(() => null)
+    }, 4000)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
+  }, [payOrder, moneyObj.visiblePop, paymentChannel])
   const handleCustomRecharge = () => {
     if (customAmount == null || !Number.isInteger(customAmount) || customAmount <= 0) {
       message.warning('充值金额必须是大于 0 的整数')
@@ -123,6 +210,19 @@ function GoodsPay() {
       )
     })
   }
+  // 手机 H5 支付会跳走再回来，页面重新加载后立刻用落盘的订单号查一次。
+  useEffect(() => {
+    const pending = readPendingOrder()
+    if (!pending || paymentChannel !== 'xunhupay' || !token) return
+    queryXuHuPayOrder(pending.outTradeNo).then((res:any) => {
+      const data = res.data || {}
+      if (data.paid) {
+        message.success('支付成功，余额已到账')
+        clearPendingOrder()
+        setUpdata({})
+      }
+    }).catch(() => null)
+  }, [])
   useEffect(()=>{
     userBillInfo({userId:user_info?.data?.bodyMessage?.userId}).then((res)=>{
       console.log(res);
@@ -140,9 +240,7 @@ function GoodsPay() {
         userId:Number(user_info?.data?.bodyMessage?.userId),
         page_num:tableObj.pageSize
       }
-      let res = await userBillList(params);
-      console.log(res);
-      
+      const res = await userBillList(params);
       if(res?.code === 0){
         setBillList(res.data.user_bill_list)
         setListTotal(res.data.totalNum)
@@ -226,7 +324,12 @@ function GoodsPay() {
   return (
     <div className={styles.goodsPay}>
       <Layout>
-        <Modal title="微信支付" open={moneyObj.visiblePop} onOk={handleOk} onCancel={handleCancel}>
+        <Modal
+          title="义乌市妮兔网络科技工作室"
+          open={moneyObj.visiblePop}
+          onOk={handleOk}
+          onCancel={handleCancel}
+        >
 
         <div style={{display:'flex',justifyContent:'center'}}>
         <Spin spinning={moneyObj.loading}>

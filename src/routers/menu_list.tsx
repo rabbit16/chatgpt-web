@@ -117,6 +117,11 @@ const admin = {
       icon: <TransactionOutlined />
     },
     {
+      path: '/admin/paychannel',
+      name: '支付方式',
+      icon: <MoneyCollectFilled />
+    },
+    {
       path: '/admin/usage',
       name: '请求用量',
       icon: <BarChartOutlined />

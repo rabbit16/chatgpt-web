@@ -18,9 +18,11 @@ import AdminPrompt from './prompt'
 import AdminPricing from './pricing'
 import AdminSoftware from './software'
 import AdminTasks from './tasks'
+import AdminPayChannel from './paychannel'
 
 function renderAdminContent(pathname: string) {
   if (pathname.startsWith('/admin/users')) return <AdminUsers />
+  if (pathname.startsWith('/admin/paychannel')) return <AdminPayChannel />
   if (pathname.startsWith('/admin/announcement')) return <AdminAnnouncement />
   if (pathname.startsWith('/admin/feedback')) return <AdminFeedback />
   if (pathname.startsWith('/admin/orders')) return <AdminOrders />

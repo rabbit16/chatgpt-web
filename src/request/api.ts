@@ -57,6 +57,37 @@ export function payVerify(params:{codeNum:string}) {
   return request.post('/user/verify_pay_again', params)
 }
 
+// 虎皮椒下单：pay_type 传 auto，后端按 UA 分流手机 H5 / 电脑扫码
+export function createXuHuPayOrder(params:{
+  userId: number
+  money: number
+  function_code: string
+  pay_type?: 'auto' | 'h5' | 'qrcode'
+  description?: string
+}) {
+  return request.post('/user/xunhupay/pay', params)
+}
+
+// 虎皮椒查单，paid 为 true 表示已入账
+export function queryXuHuPayOrder(outTradeNo: string) {
+  return request.get(`/user/xunhupay/query/${encodeURIComponent(outTradeNo)}`)
+}
+
+// 虎皮椒配置自检，configured 为 false 说明后端缺 AppID/Secret
+export function getXuHuPayStatus() {
+  return request.get('/user/xunhupay/status')
+}
+
+// 读取全站当前生效的支付通道（公开接口，登录前也可调用）
+export function getPayChannel() {
+  return request.get('/user/pay/channel')
+}
+
+// 管理员切换全站支付通道
+export function setPayChannel(params: { channel: string }) {
+  return request.post('/user/admin/payment/channel', params)
+}
+
 export function getGPTListMessage(params:{userId:number,page:number,page_num:number,allContext:boolean,chat_id?:string}){
   return request.post('/user/getContextList',params)
 }
