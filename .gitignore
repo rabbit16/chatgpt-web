@@ -72,3 +72,4 @@ dist_副本
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+dist.bak.*

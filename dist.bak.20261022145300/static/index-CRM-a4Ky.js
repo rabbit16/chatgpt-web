@@ -1,1 +1,0 @@
-import{j as s,af as a,B as e}from"./antd-Bz01Kcq-.js";import{w as o}from"./index-L3N2t9Fv.js";function n(){const t=o();return s.jsx(a,{status:"success",title:"支付成功!",subTitle:"",extra:[s.jsx(e,{onClick:()=>{t("/")},children:"返回首页"},"home"),s.jsx(e,{type:"primary",onClick:()=>{t("/shop")},children:"查看记录"},"shop")]})}export{n as default};
