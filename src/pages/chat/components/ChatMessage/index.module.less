@@ -1,5 +1,12 @@
 .chatMessage{
     display: flex;
+    scroll-margin-top: 24px;
+    &[id='chat-search-target'] {
+        animation: searchTarget 1.8s ease-out;
+        outline: 2px solid #1677ff;
+        outline-offset: 6px;
+        border-radius: 8px;
+    }
     margin-top: 12px;
     &_avatarCard{
         display: flex;
@@ -28,6 +35,31 @@
             display: inline-block;
             padding: 12px;
             position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            word-break: break-word;
+            :global {
+                .markdown-body {
+                    background: transparent;
+                    font-size: 14px;
+                    white-space: normal;
+                }
+                .katex,
+                .katex-html,
+                .katex-mathml {
+                    white-space: nowrap;
+                    word-break: normal;
+                    word-wrap: normal;
+                }
+                .katex-display,
+                .katex-block {
+                    display: block;
+                    max-width: 100%;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    padding: 4px 0;
+                }
+            }
         }
         &_operate{
             position: absolute;
@@ -51,6 +83,7 @@
             border-top-right-radius: 12px;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
+            white-space: normal;
         }
         .right{
             margin-left: auto;
@@ -59,7 +92,18 @@
             border-top-right-radius: 2px;
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
+            white-space: pre-wrap;
+            :global {
+                .markdown-body {
+                    white-space: pre-wrap;
+                }
+            }
         }
     }
 
+}
+
+@keyframes searchTarget {
+    0%, 100% { background: transparent; }
+    35% { background: rgba(22, 119, 255, 0.12); }
 }

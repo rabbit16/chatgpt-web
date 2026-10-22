@@ -5,7 +5,8 @@ import Layout from '@/components/Layout'
 import styles from './index.module.less'
 import { Button, Input, Space, message } from 'antd'
 import { postChatCompletion } from '@/request/api'
-import { handleChatData, htmlToImage, textToMdFile } from '@/utils'
+import { handleChatData, textToMdFile } from '@/utils'
+import { htmlToImage } from '@/utils/htmlToImage'
 import { FileImageOutlined, FileMarkdownOutlined } from '@ant-design/icons'
 
 const initValue = `# ChatGptWeb系统

@@ -1,3 +1,149 @@
 .admin {
+  min-height: 100vh;
+}
 
+.content {
+  min-height: 360px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.card {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+
+  label {
+    display: block;
+    color: #667085;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  b {
+    font-size: 24px;
+    color: #101828;
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feedItem {
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+}
+
+.feedHead,
+.feedReplyMeta,
+.feedFoot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  time {
+    margin-left: auto;
+    color: #98a2b3;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.feedHead strong,
+.feedReplyMeta strong {
+  flex: none;
+}
+
+.feedBody,
+.feedReply p {
+  margin: 10px 0 0;
+  color: #1d2939;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.feedReply {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eef4ff;
+
+  p {
+    margin-top: 6px;
+  }
+}
+
+.feedFoot {
+  margin-top: 8px;
+  color: #98a2b3;
+  font-size: 12px;
+
+  span {
+    min-width: 0;
+  }
+}
+
+.feedPager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.replySource {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #344054;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.scrollBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: #fff;
+
+  span {
+    flex: none;
+    color: #667085;
+    font-size: 13px;
+  }
+}
+
+.scrollTrack {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

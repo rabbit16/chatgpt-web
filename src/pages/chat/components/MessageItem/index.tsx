@@ -11,10 +11,11 @@ type Props = {
     name?: string,
     onConfirm?: () => void
     onCancel?: () => void
+    onSelect?: () => void
 }
 
 function MessageItem(props: Props) {
-    const { chats, addChat, changeSelectChatId,getAllChatList } = chatStore()
+    const changeSelectChatId = chatStore((state) => state.changeSelectChatId)
     const className = useMemo(() => {
         const value = props.isSelect ?
             `${styles.menuItem} ${styles.menuItem_action}`
@@ -22,12 +23,12 @@ function MessageItem(props: Props) {
         return value
     }, [props.isSelect])
     return (
-        <div className={className} onClick={()=>changeSelectChatId(props.id)}>
+        <div className={className} onClick={() => props.onSelect ? props.onSelect() : changeSelectChatId(String(props.id || ''))}>
             <span className={styles.menuItem_icon}>
                 {props.isPersona ? <RedditCircleFilled /> : <CommentOutlined />}
             </span>
             <span className={styles.menuItem_name}>{props?.name}</span>
-            <div className={styles.menuItem_options}>
+            <div className={styles.menuItem_options} onClick={(e) => e.stopPropagation()}>
                 <Popconfirm
                     title="删除会话"
                     description="是否确定删除会话？"

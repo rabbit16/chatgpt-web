@@ -1,0 +1,1485 @@
+openapi: 3.0.3
+info:
+  title: Senior Voice API
+  description: 适老化语音问答 App 后端接口（FastAPI 契约）
+  version: 0.1.0
+servers:
+  - url: https://your-api-domain.example.com/api/v1
+    description: 本地/局域网开发（与 config/api.json 保持一致）
+tags:
+  - name: health
+  - name: auth
+  - name: me
+  - name: voice
+  - name: qa
+  - name: health-summaries
+  - name: health-reports
+  - name: archives
+  - name: family
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: 健康检查
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /auth/sms/send:
+    post:
+      tags: [auth]
+      summary: 发送短信验证码
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+      responses:
+        '200':
+          description: 已发送
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSmsResponse'
+        '429':
+          $ref: '#/components/responses/Error'
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: 手机号注册（验证码 + 密码，可选昵称）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: 注册成功并返回登录态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+
+  /auth/login/sms:
+    post:
+      tags: [auth]
+      summary: 验证码登录（可同时设置密码）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsLoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/login/password:
+    post:
+      tags: [auth]
+      summary: 密码登录
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordLoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/password:
+    post:
+      tags: [auth]
+      summary: 修改或设置密码
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: 退出登录
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+
+  /auth/token/refresh:
+    post:
+      tags: [auth]
+      summary: 刷新 access_token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: 新的 token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /me:
+    get:
+      tags: [me]
+      summary: 当前用户资料
+      responses:
+        '200':
+          description: 用户资料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    patch:
+      tags: [me]
+      summary: 更新邮箱 / 昵称
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeRequest'
+      responses:
+        '200':
+          description: 更新后的资料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /me/preferences:
+    get:
+      tags: [me]
+      summary: 获取偏好设置
+      responses:
+        '200':
+          description: 偏好
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+    patch:
+      tags: [me]
+      summary: 更新偏好设置
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesPatch'
+      responses:
+        '200':
+          description: 更新后的偏好
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+  /voice/recognize:
+    post:
+      tags: [voice]
+      summary: 语音识别
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, lang]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                lang:
+                  $ref: '#/components/schemas/Lang'
+      responses:
+        '200':
+          description: 识别结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeechRecognizeResponse'
+
+  /qa/sessions:
+    post:
+      tags: [qa]
+      summary: 创建问答会话
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQaSessionRequest'
+      responses:
+        '200':
+          description: 问答结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QaAnswer'
+
+  /qa/sessions/{session_id}:
+    get:
+      tags: [qa]
+      summary: 查询问答会话
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: 问答结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QaAnswer'
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /qa/sessions/{session_id}/recommendations:
+    post:
+      tags: [qa]
+      summary: 生成就医推荐
+      description: |
+        基于整段问答会话生成结构化就医推荐卡片（首页「就医推荐」按钮）。
+        路径 {session_id} 等于 /qa/ask 的 context_id（qa_sessions.id）。
+        与会话 1:1：已有推荐且此后无新消息时返回缓存；force=true 或对话有更新则重新生成。
+        前端只在 phase=diagnosis / intake_complete 后调用。
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicalRecommendationRequest'
+      responses:
+        '200':
+          description: 就医推荐卡片
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicalRecommendation'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /health-summaries:
+    get:
+      tags: [health-summaries]
+      summary: 档案首页健康问题总结
+      description: |
+        按 updated_at 倒序返回当前用户总结；每条带 items（sort_order 升序）。
+        列表为空返回 items=[]，不要 404。
+        子女可传 owner_user_id 查看已授权父母的总结；服务端须实时校验有效家庭关联。
+      parameters:
+        - $ref: '#/components/parameters/OwnerUserId'
+      responses:
+        '200':
+          description: 总结列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthSummaryListResponse'
+
+  /health-reports:
+    get:
+      tags: [health-reports]
+      summary: 体检报告列表（时间轴一半）
+      description: |
+        只返回体检。前端会与 GET /archives 合并后按日期倒序画时间轴。
+        不要返回 findings / full_text / glossary。
+        ORDER BY exam_date DESC, created_at DESC。
+        子女可传 owner_user_id 查看已授权父母报告；服务端须实时校验有效家庭关联。
+      parameters:
+        - $ref: '#/components/parameters/OwnerUserId'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: 前端展示页传 100
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 分页列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReportListResponse'
+
+  /health-reports/{report_id}:
+    get:
+      tags: [health-reports]
+      summary: 体检报告详情
+      description: |
+        findings 按 sort_order 升序。
+        full_text 从 health_reports.raw_payload.full_text 取出，没有则 null。
+        glossary 请内嵌返回（report_glossaries，enabled=1）。
+        允许记录所属用户为当前用户，或其已授权父母；服务端按记录真实 owner 校验有效家庭关系。无权限统一 404。
+      parameters:
+        - $ref: '#/components/parameters/ReportId'
+      responses:
+        '200':
+          description: 详情（异常项 + 完整正文 + 术语）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReportDetail'
+        '404':
+          $ref: '#/components/responses/Error'
+
+  /health-reports/{report_id}/share:
+    post:
+      tags: [health-reports]
+      summary: 把体检报告推给子女
+      parameters:
+        - $ref: '#/components/parameters/ReportId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareArchiveRequest'
+      responses:
+        '200':
+          description: 推送结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareArchiveResponse'
+
+  /health-reports/{report_id}/export:
+    get:
+      tags: [health-reports]
+      summary: 导出体检报告 PDF 下载链接
+      parameters:
+        - $ref: '#/components/parameters/ReportId'
+      responses:
+        '200':
+          description: 下载信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportPdfResponse'
+
+  /report-glossaries:
+    get:
+      tags: [health-reports]
+      summary: 全局体检术语（可选）
+      description: 前端展示页不调用；优先在报告详情内嵌 glossary。
+      responses:
+        '200':
+          description: 术语列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportGlossaryListResponse'
+
+  /archives/ocr:
+    post:
+      tags: [archives]
+      summary: 病历图片 OCR（就诊单或体检单）
+      description: |
+        大模型先判断 document_type：visit 写入 medical_archives，exam 写入 health_reports。
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, source]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                source:
+                  type: string
+                  enum: [camera, album]
+      responses:
+        '200':
+          description: OCR 结构化结果（已入库）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OcrResult'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '502':
+          $ref: '#/components/responses/Error'
+
+  /archives:
+    get:
+      tags: [archives]
+      summary: 就诊单列表（时间轴另一半）
+      description: |
+        只返回就诊单。前端会与 GET /health-reports 合并后按日期倒序画时间轴。
+        卡片使用 diagnosis / medicine / visit_date / visit_no。
+        ORDER BY visit_date DESC, created_at DESC。
+        q 前端展示页不传，可暂缓。
+        子女可传 owner_user_id 查看已授权父母档案；服务端须实时校验有效家庭关联。
+      parameters:
+        - $ref: '#/components/parameters/OwnerUserId'
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: 前端展示页传 100
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 分页列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveListResponse'
+    post:
+      tags: [archives]
+      summary: 保存档案
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArchiveRequest'
+      responses:
+        '201':
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveRecord'
+
+  /archives/{archive_id}:
+    get:
+      tags: [archives]
+      summary: 就诊单详情
+      description: |
+        完整报告 Tab 使用 raw_ocr_text。
+        允许记录所属用户为当前用户，或其已授权父母；服务端按记录真实 owner 校验有效家庭关系。无权限统一 404。
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      responses:
+        '200':
+          description: 详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveRecord'
+        '404':
+          $ref: '#/components/responses/Error'
+    patch:
+      tags: [archives]
+      summary: 更新档案
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateArchiveRequest'
+      responses:
+        '200':
+          description: 更新后的档案
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveRecord'
+    delete:
+      tags: [archives]
+      summary: 删除档案
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      responses:
+        '200':
+          description: 已删除
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+
+  /archives/{archive_id}/share:
+    post:
+      tags: [archives]
+      summary: 推送给家属
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareArchiveRequest'
+      responses:
+        '200':
+          description: 推送结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareArchiveResponse'
+
+  /archives/{archive_id}/export:
+    get:
+      tags: [archives]
+      summary: 导出 PDF 下载链接
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      responses:
+        '200':
+          description: 下载信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportPdfResponse'
+
+  /family/parents:
+    get:
+      tags: [family]
+      summary: 当前子女有权查看的父母列表
+      description: |
+        仅返回已登录账号手机号与父母未删除联系人手机号匹配，且联系人关系为 daughter/son 的父母账号。
+        关系改为 other、联系人改号或删除后立即撤销授权。只用于切换报告归属，不授予写权限。
+        空列表返回 items=[]。
+      responses:
+        '200':
+          description: 已授权父母列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyParentList'
+        '401':
+          $ref: '#/components/responses/Error'
+
+  /family/contacts:
+    get:
+      tags: [family]
+      summary: 家属联系人列表
+      responses:
+        '200':
+          description: 列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyContactList'
+    post:
+      tags: [family]
+      summary: 新增联系人
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFamilyContactRequest'
+      responses:
+        '201':
+          description: 已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyContact'
+
+  /family/contacts/{contact_id}:
+    patch:
+      tags: [family]
+      summary: 更新联系人
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFamilyContactRequest'
+      responses:
+        '200':
+          description: 更新后的联系人
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyContact'
+    delete:
+      tags: [family]
+      summary: 删除联系人
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+      responses:
+        '200':
+          description: 已删除
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+
+  /family/rules:
+    get:
+      tags: [family]
+      summary: 获取推送触发规则
+      responses:
+        '200':
+          description: 规则
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushRules'
+    put:
+      tags: [family]
+      summary: 全量更新推送规则
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushRules'
+      responses:
+        '200':
+          description: 更新后的规则
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushRules'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      description: 问答会话 ID，等于 /qa/ask 返回的 context_id
+      schema:
+        type: string
+    ArchiveId:
+      name: archive_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ReportId:
+      name: report_id
+      in: path
+      required: true
+      schema:
+        type: string
+    OwnerUserId:
+      name: owner_user_id
+      in: query
+      required: false
+      description: |
+        可选报告归属用户 ID。省略时默认为当前登录用户；仅已授权子女可指定父母 user_id。
+        服务端须校验家庭关联；无权访问或目标不可见时返回 404。
+      schema:
+        type: string
+    ContactId:
+      name: contact_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Error:
+      description: 错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+
+  schemas:
+    Lang:
+      type: string
+      enum: [zh, en]
+
+    HealthStatus:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+          example: 0.1.0
+
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+
+    SendSmsRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          example: '13800138000'
+        purpose:
+          type: string
+          enum: [login, register, reset_password]
+          default: login
+
+    RegisterRequest:
+      type: object
+      required: [phone, email, code, password]
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+          description: 账号邮箱，必填
+        code:
+          type: string
+        password:
+          type: string
+          minLength: 6
+        display_name:
+          type: string
+          maxLength: 64
+        preferred_lang:
+          type: string
+          enum: [zh, en]
+          default: zh
+
+    SendSmsResponse:
+      type: object
+      required: [ok, expire_in]
+      properties:
+        ok:
+          type: boolean
+        expire_in:
+          type: integer
+          description: 验证码有效秒数
+
+    SmsLoginRequest:
+      type: object
+      required: [phone, code]
+      properties:
+        phone:
+          type: string
+        code:
+          type: string
+        password:
+          type: string
+          description: 可选，首次设置密码
+
+    PasswordLoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+
+    ChangePasswordRequest:
+      type: object
+      required: [new_password]
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    TokenPair:
+      type: object
+      required: [access_token, refresh_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          enum: [bearer]
+        expires_in:
+          type: integer
+
+    UserProfile:
+      type: object
+      required: [id, phone, preferred_lang, created_at]
+      properties:
+        id:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        display_name:
+          type: string
+          nullable: true
+        preferred_lang:
+          $ref: '#/components/schemas/Lang'
+        created_at:
+          type: string
+          format: date-time
+
+    UpdateMeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+          maxLength: 64
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/TokenPair'
+        - type: object
+          required: [user]
+          properties:
+            user:
+              $ref: '#/components/schemas/UserProfile'
+
+    UserPreferences:
+      type: object
+      required: [preferred_lang]
+      properties:
+        preferred_lang:
+          $ref: '#/components/schemas/Lang'
+
+    UserPreferencesPatch:
+      type: object
+      properties:
+        preferred_lang:
+          $ref: '#/components/schemas/Lang'
+
+    SpeechRecognizeResponse:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+        duration_ms:
+          type: integer
+
+    CreateQaSessionRequest:
+      type: object
+      required: [question, lang]
+      properties:
+        question:
+          type: string
+        lang:
+          $ref: '#/components/schemas/Lang'
+        audio_url:
+          type: string
+
+    QaAnswer:
+      type: object
+      required: [session_id, question_text, answer_text, lang, created_at]
+      properties:
+        session_id:
+          type: string
+        question_text:
+          type: string
+        answer_text:
+          type: string
+        lang:
+          $ref: '#/components/schemas/Lang'
+        created_at:
+          type: string
+          format: date-time
+
+    MedicalRecommendationRequest:
+      type: object
+      properties:
+        force:
+          type: boolean
+          default: false
+          description: true 时强制按当前整段对话重新生成
+
+    MedicalRecommendation:
+      type: object
+      required:
+        - id
+        - session_id
+        - title
+        - department
+        - care_hint
+        - body
+        - risk_level
+        - disclaimer
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+        session_id:
+          type: string
+          description: 等于 /qa/ask 的 context_id
+        title:
+          type: string
+          example: 推荐就诊方向
+        department:
+          type: string
+          description: 推荐科室，1～2 个中文全称
+          example: 呼吸内科或全科
+        care_hint:
+          type: string
+          description: 去哪看（社区门诊 / 专科 / 急诊）
+          example: 建议先去社区医院门诊；如胸痛或呼吸困难请急诊
+        body:
+          type: string
+          description: 给老人读的原因说明，2～4 句
+        risk_level:
+          type: string
+          enum: [low, medium, high]
+        disclaimer:
+          type: string
+          example: 本建议不能替代医生诊断
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RiskLevel:
+      type: string
+      enum: [low, medium, high]
+      nullable: true
+
+    HealthSummaryItem:
+      type: object
+      required: [id, content, sort_order]
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        severity:
+          $ref: '#/components/schemas/RiskLevel'
+        sort_order:
+          type: integer
+
+    HealthSummary:
+      type: object
+      required: [id, title, summary_text, items, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        exam_date:
+          type: string
+          format: date
+          nullable: true
+        exam_no:
+          type: string
+          nullable: true
+        summary_text:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthSummaryItem'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    HealthSummaryListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthSummary'
+
+    HealthReportListItem:
+      type: object
+      required: [id, patient_name, exam_date, org_name, voucher_no, report_type]
+      properties:
+        id:
+          type: string
+        patient_name:
+          type: string
+        exam_date:
+          type: string
+          format: date
+        org_name:
+          type: string
+        voucher_no:
+          type: string
+        report_type:
+          type: string
+          example: 体检报告
+
+    HealthReportListResponse:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthReportListItem'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    HealthReportFinding:
+      type: object
+      required: [id, title, suggestion, sort_order]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        suggestion:
+          type: string
+        risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        sort_order:
+          type: integer
+
+    ReportGlossaryItem:
+      type: object
+      required: [id, term, definition, sort_order]
+      properties:
+        id:
+          type: string
+        term:
+          type: string
+        definition:
+          type: string
+        sort_order:
+          type: integer
+
+    ReportGlossaryListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportGlossaryItem'
+
+    HealthReportDetail:
+      allOf:
+        - $ref: '#/components/schemas/HealthReportListItem'
+        - type: object
+          required: [findings]
+          properties:
+            findings:
+              type: array
+              items:
+                $ref: '#/components/schemas/HealthReportFinding'
+            full_text:
+              type: string
+              nullable: true
+              description: 从 health_reports.raw_payload.full_text 取出；没有则 null
+            glossary:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReportGlossaryItem'
+              description: 请内嵌返回；前端展示页不另调 /report-glossaries
+
+    OcrFinding:
+      type: object
+      required: [title, suggestion, sort_order]
+      properties:
+        title:
+          type: string
+        suggestion:
+          type: string
+        risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        sort_order:
+          type: integer
+
+    OcrResult:
+      type: object
+      required: [document_type, diagnosis, medicine, visit_date, visit_no, raw_ocr_text]
+      properties:
+        document_type:
+          type: string
+          enum: [visit, exam]
+          description: visit=就诊单（medical_archives）；exam=体检单（health_reports）
+        id:
+          type: string
+          nullable: true
+          description: 已落库记录 id（就诊单 archive id / 体检单 report id）
+        diagnosis:
+          type: string
+        medicine:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_no:
+          type: string
+          description: 就诊号/门诊号；体检单时等同 voucher_no
+        raw_ocr_text:
+          type: string
+        patient_name:
+          type: string
+          nullable: true
+        org_name:
+          type: string
+          nullable: true
+        voucher_no:
+          type: string
+          nullable: true
+        report_type:
+          type: string
+          nullable: true
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OcrFinding'
+
+    ArchiveRecord:
+      type: object
+      required: [id, diagnosis, medicine, visit_date, visit_no, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        diagnosis:
+          type: string
+        medicine:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_no:
+          type: string
+          description: 就诊号/门诊号，用户维度业务唯一标识
+        raw_ocr_text:
+          type: string
+          nullable: true
+          description: 详情「完整报告」使用；没有则 null
+        image_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ArchiveListResponse:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchiveRecord'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    CreateArchiveRequest:
+      type: object
+      required: [diagnosis, medicine, visit_date, visit_no]
+      properties:
+        diagnosis:
+          type: string
+        medicine:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_no:
+          type: string
+        raw_ocr_text:
+          type: string
+        image_url:
+          type: string
+
+    UpdateArchiveRequest:
+      type: object
+      properties:
+        diagnosis:
+          type: string
+        medicine:
+          type: string
+        visit_date:
+          type: string
+          format: date
+        visit_no:
+          type: string
+
+    ShareArchiveRequest:
+      type: object
+      required: [contact_ids]
+      properties:
+        contact_ids:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        message:
+          type: string
+          maxLength: 200
+        attach_pdf:
+          type: boolean
+          default: true
+
+    ShareArchiveResponse:
+      type: object
+      required: [ok, shared_count]
+      properties:
+        ok:
+          type: boolean
+        shared_count:
+          type: integer
+        failed_count:
+          type: integer
+          default: 0
+
+    ExportPdfResponse:
+      type: object
+      required: [download_url, expires_in, status]
+      properties:
+        download_url:
+          type: string
+          format: uri
+        expires_in:
+          type: integer
+        filename:
+          type: string
+        status:
+          type: string
+          enum: [ready]
+
+    FamilyContact:
+      type: object
+      required: [id, name, phone, email, notify_enabled, created_at]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        relation:
+          type: string
+          enum: [daughter, son, other]
+        notify_enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    FamilyContactList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FamilyContact'
+
+    FamilyParent:
+      type: object
+      required: [id, display_name, phone, relation]
+      properties:
+        id:
+          type: string
+          description: 父母用户 ID，可作为 owner_user_id
+        display_name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          description: 脱敏后的父母手机号
+        relation:
+          type: string
+          enum: [daughter, son]
+
+    FamilyParentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FamilyParent'
+
+    CreateFamilyContactRequest:
+      type: object
+      required: [name, phone, email]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 64
+        phone:
+          type: string
+          description: 大陆 11 位手机号
+        email:
+          type: string
+          format: email
+          description: 推送发到此邮箱（QQ SMTP）
+        relation:
+          type: string
+          enum: [daughter, son, other]
+          default: other
+        notify_enabled:
+          type: boolean
+          default: true
+
+    UpdateFamilyContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        relation:
+          type: string
+          enum: [daughter, son, other]
+        notify_enabled:
+          type: boolean
+
+    PushRules:
+      type: object
+      required: [on_record_saved, on_abnormal, on_visit, abnormal_metrics]
+      properties:
+        on_record_saved:
+          type: boolean
+        on_abnormal:
+          type: boolean
+        on_visit:
+          type: boolean
+        abnormal_metrics:
+          type: array
+          items:
+            type: string
+            enum:
+              - bmi
+              - blood_pressure
+              - blood_lipid
+              - blood_glucose
+              - liver
+              - kidney
+              - other
+
+security:
+  - bearerAuth: []

@@ -23,4 +23,12 @@
     &_button{
         margin-left: 12px;
     }
+
+    :global(.ant-select-disabled .ant-select-selector),
+    :global(.ant-input-disabled),
+    :global(.ant-input[disabled]) {
+        color: #667085 !important;
+        background: #f2f4f7 !important;
+        cursor: not-allowed;
+    }
 }

@@ -46,13 +46,10 @@ const configStore = create<ConfigState>()(
       invite_introduce: '',
 	  random_personas: [],
       models: [
-        {
-          label: 'GPT-3.5',
-          value: 'chatGpt'
-        },
+        { label: 'GPT-6 Sol', value: 'gpt-6-sol' }
       ],
       config: {
-        model: 'chatGpt',
+        model: 'gpt-6-sol',
         temperature: 0.8,
         presence_penalty: 0,
         frequency_penalty: 0,

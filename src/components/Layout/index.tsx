@@ -4,6 +4,7 @@ import { ChatsInfo } from '@/types'
 import React, { useEffect } from 'react'
 import { MenuProps } from 'antd'
 import { configStore } from '@/store'
+import { sanitizeHtml } from '@/utils'
 
 type Props = {
   menuExtraRender?: () => React.ReactNode
@@ -22,16 +23,18 @@ type Props = {
   menuDataRender?: (menuData: MenuDataItem[]) => MenuDataItem[]
   menuFooterRender?: (props?: any) => React.ReactNode
   menuProps?: MenuProps
+  keepSiderWhenMenuEmpty?: boolean
   children?: React.ReactNode
 }
 
 function Layout(props: Props) {
   const { menuExtraRender = () => <></>, menuItemRender = () => undefined } = props
 
-  const { website_logo, website_title, website_footer, website_description, website_keywords } =
-    configStore()
-console.log(website_logo, website_title, website_footer, website_description, website_keywords);
-
+  const website_logo = configStore((state) => state.website_logo)
+  const website_title = configStore((state) => state.website_title)
+  const website_footer = configStore((state) => state.website_footer)
+  const website_description = configStore((state) => state.website_description)
+  const website_keywords = configStore((state) => state.website_keywords)
   function createMetaElement(key: string, value: string) {
     const isMeta = document.querySelector(`meta[name="${key}"]`)
     if (!isMeta) {
@@ -69,7 +72,7 @@ console.log(website_logo, website_title, website_footer, website_description, we
         locale: false,
         collapsedShowGroupTitle: false
       }}
-      suppressSiderWhenMenuEmpty
+      suppressSiderWhenMenuEmpty={!props.keepSiderWhenMenuEmpty}
       siderWidth={300}
       menuExtraRender={menuExtraRender}
       menuItemRender={menuItemRender}
@@ -91,7 +94,7 @@ console.log(website_logo, website_title, website_footer, website_description, we
                   marginTop: 12
                 }}
                 dangerouslySetInnerHTML={{
-                  __html: website_footer
+                  __html: sanitizeHtml(website_footer)
                 }}
               />
             )}

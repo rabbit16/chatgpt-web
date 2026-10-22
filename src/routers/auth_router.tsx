@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { adminRouter, searchRouteDetail, webRouter } from './index'
 import { userStore } from '@/store'
+import { isAdmin } from '@/utils/isAdmin'
 
 type AuthRouterProps = {
   children?: React.ReactNode
@@ -10,7 +11,9 @@ type AuthRouterProps = {
 function AuthRouter(props: AuthRouterProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { token, user_info ,setLoginModal} = userStore()
+  const token = userStore((state) => state.token)
+  const user_info = userStore((state) => state.user_info)
+  const setLoginModal = userStore((state) => state.setLoginModal)
   const { pathname } = location
   const routerDetail = searchRouteDetail(pathname, [...webRouter, ...adminRouter])
   const title = routerDetail?.configure?.title
@@ -22,20 +25,12 @@ function AuthRouter(props: AuthRouterProps) {
       navigate('/')
       return 
     }
-    const userRole = user_info?.role || 'user'
-    if (routerDetail?.configure?.verifToken && !token) {
-      navigate('/')
-      navigate('/login', {
-        state: {
-          form: routerDetail?.path
-        }
-      })
-      
-    } else if (token && !routerDetail?.configure?.role.includes(userRole)) {
-      navigate('/')
+    const userRole = isAdmin(user_info) ? 'administrator' : (user_info?.role || 'user')
+    const isPublic = Boolean(routerDetail?.configure?.public) || pathname === '/login'
+    if (!token && pathname !== '/login' && (routerDetail?.configure?.verifToken || !isPublic)) {
+      setLoginModal(true)
+    } else if (token && routerDetail?.configure?.role && !routerDetail.configure.role.includes(userRole)) {
       navigate('/404')
-    }else if(!token){
-      navigate('/login')
     }
   }, [pathname, routerDetail,token])
 

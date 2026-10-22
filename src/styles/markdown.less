@@ -102,6 +102,12 @@ html {
 		white-space: pre-wrap;
 	}
 
+	p:has(.katex),
+	p:has(.katex-display),
+	p:has(.katex-block) {
+		white-space: normal;
+	}
+
 	ol {
 		list-style-type: decimal;
 	}
@@ -1176,4 +1182,34 @@ html.dark {
 
 .markdown-body ::-webkit-calendar-picker-indicator {
   filter: invert(50%);
+}
+
+.markdown-body .katex,
+.markdown-body .katex-html,
+.markdown-body .katex-mathml {
+  white-space: nowrap;
+  word-break: normal;
+  word-wrap: normal;
+  overflow-wrap: normal;
+}
+
+.markdown-body p .katex,
+.markdown-body li .katex {
+  white-space: nowrap;
+}
+
+.markdown-body .katex-display,
+.markdown-body .katex-block {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25em 0;
+  margin: 0.75em 0;
+}
+
+.markdown-body .katex-display > .katex,
+.markdown-body .katex-block > .katex {
+  white-space: nowrap;
+  max-width: none;
 }

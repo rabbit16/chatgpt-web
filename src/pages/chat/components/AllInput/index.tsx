@@ -2,15 +2,15 @@ import { AutoComplete, Button, Input, Modal, message, Switch, } from 'antd'
 import styles from './index.module.less'
 import { ClearOutlined, CloudDownloadOutlined, SyncOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { promptStore, chatStore } from '@/store'
+import { promptStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
-import { htmlToImage } from '@/utils'
+import { htmlToImage } from '@/utils/htmlToImage'
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import {  Upload } from 'antd';
 import fileIcon from '../../../../assets/img/file.png';
 type Props = {
-  onSend: (value: string) => void
+  onSend: (value: string) => Promise<boolean>
   disabled?: boolean
   clearMessage?: () => void
   onStopFetch?: () => void
@@ -33,8 +33,24 @@ const propsUpload: UploadProps = {
   },
 };
 function AllInput(props: Props) {
-  const [prompt, setPrompt] = useState('')
+  const draftKey = 'chat_unsent_draft'
+  const [prompt, setPrompt] = useState(() => localStorage.getItem(draftKey) || '')
+  const promptRef = useRef(prompt)
   const { localPrompt } = promptStore()
+
+  const updatePrompt = (value: string) => {
+    promptRef.current = value
+    setPrompt(value)
+    if (value) localStorage.setItem(draftKey, value)
+    else localStorage.removeItem(draftKey)
+  }
+
+  const send = async () => {
+    const value = promptRef.current
+    if (!value.trim()) return
+    const sent = await props.onSend(value)
+    if (sent && promptRef.current === value) updatePrompt('')
+  }
   const [inputFile,setInputFile] = useState();
   const bodyResize = useDocumentResize()
   const [downloadModal, setDownloadModal] = useState({
@@ -112,25 +128,22 @@ function AllInput(props: Props) {
       <AutoComplete
         value={prompt}
         options={searchOptions}
+        disabled={props.disabled}
         style={{
           width: '100%',
           maxWidth: 800
         }}
         onSelect={(value) => {
-          // 这里选择后直接发送
-          //   props?.onSend?.(value)
-          // 并且将输入框清空
-          // 修改为选中放置在输入框内
-          setPrompt(value)
+          if (props.disabled) return
+          updatePrompt(value)
         }}
       >
         <Input.TextArea
           value={prompt}
           ref={inputRef}
-          // showCount
+          disabled={props.disabled}
           size="large"
-          placeholder="问点什么吧..."
-          // (Shift + Enter = 换行)
+          placeholder={props.disabled ? '正在回答，请等待或点停止…' : '问点什么吧...'}
           autoSize={{
             maxRows: 4
           }}
@@ -139,14 +152,14 @@ function AllInput(props: Props) {
               // === 无操作 ===
             } else if (e.key === 'Enter' && e.keyCode === 13 && bodyResize.width > 800) {
               if (!props.disabled) {
-                props?.onSend?.(prompt)
-                setPrompt('')
+                void send()
               }
               e.preventDefault() //禁止回车的默认换行
             }
           }}
           onChange={(e) => {
-            setPrompt(e.target.value)
+            if (props.disabled) return
+            updatePrompt(e.target.value)
           }}
         />
       </AutoComplete>
@@ -157,10 +170,11 @@ function AllInput(props: Props) {
           size="large"
           ghost
           danger
-          disabled={!props.disabled}
-       
+          onClick={() => {
+            props.onStopFetch?.()
+          }}
         >
-          <SyncOutlined spin /> 正在思考 🤚
+          <SyncOutlined spin /> 停止回答
         </Button>
       ) : (
         <Button
@@ -169,8 +183,7 @@ function AllInput(props: Props) {
           size="large"
           disabled={!prompt || props.disabled}
           onClick={() => {
-            props?.onSend?.(prompt)
-            setPrompt('')
+            void send()
           }}
         >
           发送

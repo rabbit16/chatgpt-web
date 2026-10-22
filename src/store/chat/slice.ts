@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { ChatGpt, ChatsInfo } from '@/types'
-import { formatTime, generateChatInfo } from '@/utils'
+import { formatTime, generateChatInfo, sameChatId } from '@/utils'
 import { addUserMessages } from '../../request/api'
 import userStore from '../user/slice'
 export interface ChatState {
@@ -41,6 +41,8 @@ export interface ChatState {
   changeChatMessage: (data: Array<ChatsInfo>) => void
   // 初始化列表
   getAllChatList: (data: any,id:any) => void
+  // 搜索跳转时写入/更新会话，确保不在当前页也能打开
+  upsertChat: (chat: ChatsInfo) => void
   setPage:(value:number,total:number)=>void
   changPage:(value:number)=>void
   updateRepeatedly:(value:boolean)=>void
@@ -71,36 +73,62 @@ const chatStore = create<ChatState>()(
       set((state)=>{
         return {
           chats:[...value],
-          selectChatId: id
+          selectChatId: String(id || '')
         }
       })
     },
+    upsertChat: (chat) =>
+      set((state: ChatState) => {
+        const id = String(chat.id)
+        const exists = state.chats.some((item) => sameChatId(item.id, id))
+        return {
+          chats: exists
+            ? state.chats.map((item) =>
+                sameChatId(item.id, id)
+                  ? {
+                      ...item,
+                      ...chat,
+                      id,
+                      path: id,
+                      data: Array.isArray(chat.data) ? chat.data : item.data
+                    }
+                  : item
+              )
+            : [{ ...chat, id, path: id }, ...state.chats],
+          selectChatId: id
+        }
+      }),
     addChat: async (value) => {
       let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
-      let id = res?.data?.newChatId;
+      let id = String(res?.data?.newChatId || '')
+      if (!id || id === 'undefined') return
       set((state: ChatState) => {
         let info = generateChatInfo(value)
-        info.id= String(id)
-        const newChats = [...state.chats]
-        newChats.unshift({ ...info })
+        info.id = id
+        info.path = id
+        const onFirstPage = state.page === 1
         return {
-          chats: [...newChats],
-          selectChatId: info.id
+          chats: onFirstPage ? [{ ...info }, ...state.chats] : [{ ...info }],
+          selectChatId: id,
+          page: 1,
+          total: state.total + 1
         }
       })
     },
     delChat: (id) =>
       set((state: ChatState) => {
-        const newChats = state.chats.filter((c) => c.id !== id)
-        if (state.chats.length <= 1) {
+        const newChats = state.chats.filter((c) => !sameChatId(c.id, id))
+        if (newChats.length <= 0) {
+          // 删光后不要留下空侧边栏；占位会话会在下次拉取/新建时被替换
           const info = generateChatInfo()
           return {
             chats: [{ ...info }],
             selectChatId: info.id
           }
         }
+        const nextId = String(newChats[0].id)
         return {
-          selectChatId: state.chats[1].id,
+          selectChatId: sameChatId(state.selectChatId, id) ? nextId : String(state.selectChatId),
           chats: [...newChats]
         }
       }),
@@ -114,14 +142,14 @@ const chatStore = create<ChatState>()(
       }),
     changeSelectChatId: (id) =>
       set(() => ({
-        selectChatId: id
+        selectChatId: String(id)
       })),
     changeChatMessage: (data) => set({ chats: data }),
     delChatMessage: (id, messageId) =>
       set((state: ChatState) => {
         const newChats = state.chats.map((c) => {
-          if (c.id === id) {
-            const newData = c.data.filter((d) => d.id !== messageId)
+          if (sameChatId(c.id, id)) {
+            const newData = c.data.filter((d) => !sameChatId(d.id, messageId))
             return {
               ...c,
               data: newData
@@ -136,7 +164,7 @@ const chatStore = create<ChatState>()(
     clearChatMessage: (id) =>
       set((state: ChatState) => {
         const newChats = state.chats.map((c) => {
-          if (c.id === id) {
+          if (sameChatId(c.id, id)) {
             return {
               ...c,
               parentMessageId: '',
@@ -154,7 +182,7 @@ const chatStore = create<ChatState>()(
     setChatInfo: (id, data, info) =>
       set((state: ChatState) => {
         const newChats = state.chats.map((item) => {
-          if (item.id === id) {
+          if (sameChatId(item.id, id)) {
             const name = item.data.length <= 0 && data?.text ? data.text : item.name
             return {
               ...item,
@@ -172,9 +200,9 @@ const chatStore = create<ChatState>()(
     setChatDataInfo: (id, messageId, info) =>
       set((state: ChatState) => {
         const newChats = state.chats.map((item) => {
-          if (item.id === id) {
+          if (sameChatId(item.id, id)) {
             const newData = item.data.map((m) => {
-              if (m.id === messageId) {
+              if (sameChatId(m.id, messageId)) {
                 return {
                   ...m,
                   ...info
@@ -183,7 +211,7 @@ const chatStore = create<ChatState>()(
               return m
             })
 
-            const dataFilter = newData.filter((d) => d.id === messageId)
+            const dataFilter = newData.filter((d) => sameChatId(d.id, messageId))
             const chatData = { id: messageId, ...info } as ChatGpt
             return {
               ...item,

@@ -1,30 +1,47 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { notification } from 'antd'
 import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
 import styles from './index.module.less'
 import {
   AppstoreOutlined,
-  CloudSyncOutlined,
+  ControlOutlined,
   LogoutOutlined,
   MenuUnfoldOutlined,
   PayCircleOutlined,
-  ReconciliationOutlined,
-  SyncOutlined,
-  UserOutlined,
-  WalletOutlined
+  UserOutlined
 } from '@ant-design/icons'
-import { chatStore, userStore } from '@/store'
+import { chatStore, userStore, billingNoticeStore } from '@/store'
 import { Avatar, Button, Dropdown } from 'antd'
 import { getEmailPre } from '@/utils'
 import MenuList from '../MenuList'
 import { useNavigate } from 'react-router-dom'
-import { fetchUserInfo } from '@/store/user/async'
+import { isAdmin } from '@/utils/isAdmin'
 
 function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   const navigate = useNavigate()
 
-  const { token, user_info, logout, setLoginModal } = userStore()
-  const { clearChats,changPage } = chatStore()
+  const token = userStore((state) => state.token)
+  const user_info = userStore((state) => state.user_info)
+  const logout = userStore((state) => state.logout)
+  const setLoginModal = userStore((state) => state.setLoginModal)
+  const clearChats = chatStore((state) => state.clearChats)
+  const changPage = chatStore((state) => state.changPage)
+  const notice = billingNoticeStore((state) => state.notice)
+  const hide = billingNoticeStore((state) => state.hide)
+
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => hide(), 4200)
+    return () => window.clearTimeout(timer)
+  }, [notice, hide])
+
+  const formatMoney = (value: number) => {
+    if (value >= 1) return `¥${value.toFixed(2)}`
+    if (value >= 0.01) return `¥${value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
+    if (value === 0) return '¥0'
+    return `¥${value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`
+  }
 
   const renderLogo = useMemo(() => {
     if (typeof props.logo === 'string') return <img src={props.logo} />
@@ -33,6 +50,17 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
 
   return (
     <div className={styles.header}>
+      {notice
+        ? createPortal(
+            <div className={styles.billingToast} role="status">
+              <span>输入 {notice.input_tokens} tokens</span>
+              <span>输出 {notice.output_tokens} tokens</span>
+              <span>计费 {formatMoney(notice.cost)}</span>
+              <span>余额 {formatMoney(notice.balance)}</span>
+            </div>,
+            document.body
+          )
+        : null}
       {props.isMobile && props.hasSiderMenu && (
         <MenuUnfoldOutlined
           className={styles.header__menuIcon}
@@ -53,20 +81,37 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               justifyContent: 'center'
             }}
           >
+            {isAdmin(user_info) ? (
+              <Button type="link" onClick={() => navigate('/admin')}>
+                后台
+              </Button>
+            ) : null}
             <Dropdown
               arrow
               placement="bottomRight"
               trigger={['click']}
               menu={{
                 items: [
-                  // {
-                  //   key: 'yonghuzhongxin',
-                  //   icon: <UserOutlined />,
-                  //   label: '用户中心',
-                  //   onClick: () => {
-                  //     navigate('/user')
-                  //   }
-                  // },
+                  ...(isAdmin(user_info)
+                    ? [
+                        {
+                          key: 'admin',
+                          icon: <ControlOutlined />,
+                          label: '后台管理',
+                          onClick: () => {
+                            navigate('/admin')
+                          }
+                        }
+                      ]
+                    : []),
+                  {
+                    key: 'profile',
+                    icon: <UserOutlined />,
+                    label: '个人资料',
+                    onClick: () => {
+                      navigate('/profile')
+                    }
+                  },
                   {
                     key: 'wodeyue',
                     icon: <PayCircleOutlined />,
@@ -75,21 +120,11 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                       navigate('/shop')
                     }
                   },
-                  // {
-                  //   key: 'xiaofeijilu',
-                  //   icon: <ReconciliationOutlined />,
-                  //   label: '消费记录',
-                  //   onClick: () => {
-                  //     navigate('/shop')
-                  //   }
-                  // },
                   {
                     key: 'tuichudenglu',
                     icon: <LogoutOutlined />,
                     label: '退出登录',
                     onClick: () => {
-                      window.localStorage.removeItem('user_storage')
-                      window.localStorage.clear();
                       logout();
                       clearChats();
                       navigate('/login');

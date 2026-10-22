@@ -10,12 +10,18 @@ export interface userState {
   user_info: UserInfo | undefined
   // 登录Token
   token: string | undefined
+  // token 签发后 24 小时失效
+  token_expires_at?: number
+  llm_api_key: string
+  allow_phone_key: boolean | null
   // 修改登录弹窗
   setLoginModal: (value: boolean) => void
+  setLlmAccess: (data: { llm_api_key?: string; allow_phone_key?: boolean | null }) => void
   // 登录
   login: (data: ResponseLoginData) => void
   // 退出
   logout: () => void
+  expireSession: () => void
   // 记录数据
   invitation_records: TableData<InvitationRecordInfo>
   // 消费记录
@@ -25,9 +31,11 @@ export interface userState {
   changeRecords: (data: TableData<any>, type: string | number) => void
   changeUserCurrentAmount: (amount?: number) => void
   upglobal: number,
-  upDataGlobal: Function
+  upDataGlobal: () => void
 
 }
+
+const TOKEN_TTL_MS = 24 * 60 * 60 * 1000
 
 const userStore = create<userState>()(
   persist(
@@ -35,9 +43,17 @@ const userStore = create<userState>()(
       loginModal: false,
       user_info: undefined,
       token: undefined,
+      token_expires_at: undefined,
+      llm_api_key: '',
+      allow_phone_key: null,
       setLoginModal: (value) => set({ loginModal: value }),
-      login: (data) => set(() => ({ ...data })),
-      logout: () => set(() => ({ user_info: undefined, token: undefined})),
+      setLlmAccess: (data) => set((state) => ({ ...state, ...data })),
+      login: (data) => set(() => ({
+        ...data,
+        token_expires_at: data.token ? Date.now() + TOKEN_TTL_MS : undefined
+      })),
+      logout: () => set(() => ({ user_info: undefined, token: undefined, token_expires_at: undefined, llm_api_key: '', allow_phone_key: null })),
+      expireSession: () => set(() => ({ loginModal: true, token: undefined, token_expires_at: undefined, llm_api_key: '' })),
       invitation_records: {
         count: 0,
         rows: []
@@ -87,10 +103,49 @@ const userStore = create<userState>()(
         })
     }),
     {
-      name: 'user_storage', // name of item in the storage (must be unique)
-      storage: createJSONStorage(() => localStorage) // (optional) by default the 'localStorage' is used
+      name: 'user_storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        user_info: state.user_info,
+        upglobal: state.upglobal,
+        token: state.token,
+        token_expires_at: state.token_expires_at
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (!state?.token) return
+        if (!state.token_expires_at) {
+          userStore.setState({ token_expires_at: Date.now() + TOKEN_TTL_MS })
+          return
+        }
+        if (state.token_expires_at <= Date.now()) {
+          userStore.setState({ token: undefined, token_expires_at: undefined, llm_api_key: '' })
+        }
+      }
     }
   )
 )
+try {
+  const persisted = localStorage.getItem('user_storage')
+  if (persisted) {
+    const parsed = JSON.parse(persisted)
+    const state = parsed?.state || {}
+    const token = typeof state.token === 'string' && state.token ? state.token : undefined
+    let tokenExpiresAt = typeof state.token_expires_at === 'number' ? state.token_expires_at : undefined
+    if (token && !tokenExpiresAt) tokenExpiresAt = Date.now() + TOKEN_TTL_MS
+    const tokenValid = Boolean(token && tokenExpiresAt && tokenExpiresAt > Date.now())
+    localStorage.setItem('user_storage', JSON.stringify({
+      ...parsed,
+      state: {
+        user_info: state.user_info,
+        upglobal: state.upglobal ?? 1,
+        ...(tokenValid ? { token, token_expires_at: tokenExpiresAt } : {})
+      }
+    }))
+  }
+  localStorage.removeItem('rabbitj_api_secrets')
+} catch {
+  // Storage may be unavailable in restricted browser contexts.
+}
+
 export const tokenUser = userStore
 export default userStore

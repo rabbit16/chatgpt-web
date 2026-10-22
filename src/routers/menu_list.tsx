@@ -1,35 +1,22 @@
 import {
-  CalculatorFilled,
+  ApiOutlined,
+  BarChartOutlined,
+  CloudDownloadOutlined,
+  CloudServerOutlined,
+  BulbOutlined,
   CommentOutlined,
-  ContactsFilled,
-  CrownFilled,
-  DropboxCircleFilled,
-  ExperimentFilled,
-  FileImageFilled,
-  FileTextFilled,
-  GithubFilled,
-  GithubOutlined,
-  GitlabFilled,
-  GoldenFilled,
-  IdcardFilled,
-  InsuranceFilled,
-  LockFilled,
-  MediumSquareFilled,
-  MessageFilled,
+  DashboardOutlined,
+  ProfileOutlined,
+  FormOutlined,
+  HistoryOutlined,
   MoneyCollectFilled,
-  NotificationFilled,
+  NotificationOutlined,
   PictureOutlined,
-  RadarChartOutlined,
-  ReconciliationFilled,
-  RedEnvelopeFilled,
-  RedditCircleFilled,
-  ScheduleFilled,
-  SettingFilled,
-  ShopFilled,
+  SettingOutlined,
   ShopOutlined,
-  SmileFilled,
-  UsergroupAddOutlined,
-  WalletFilled
+  TeamOutlined,
+  TransactionOutlined,
+  UserOutlined
 } from '@ant-design/icons'
 
 const web = [
@@ -39,23 +26,11 @@ const web = [
     icon: <CommentOutlined />,
     message: '与智能AI进行对话交流'
   },
-  // {
-  //   path: '/draw',
-  //   name: '绘画',
-  //   icon: <PictureOutlined />,
-  //   message: '利用智能AI绘画出图片'
-  // },
-  // {
-  //   path: '/mapping',
-  //   name: '思维导图',
-  //   icon: <RadarChartOutlined />,
-  //   message: '利用智能AI生成思维导图'
-  // },
   {
-    path: 'http://139.9.140.186:8080',
-    name: '智能搜索',
-    icon: <CommentOutlined />,
-    message: '搜索引擎'
+    path: '/draw',
+    name: '绘图',
+    icon: <PictureOutlined />,
+    message: 'TeamRouter 图像模型生成图片'
   },
   {
     path: '/shop',
@@ -64,165 +39,117 @@ const web = [
     message: '账户余额和充值套餐记录'
   },
   {
-    path: 'https://www.rabbitj.top/table_show_price.html',
-    name: '对话收费价格',
-    icon: <ShopOutlined />,
-    message: '模型价格'
+    path: '/tasks',
+    name: '任务',
+    icon: <ProfileOutlined />,
+    message: '查看中转日志归并出的未完成任务'
   },
-  
-  // {
-  //   path: '/user',
-  //   name: '邀请',
-  //   icon: <UsergroupAddOutlined />,
-  //   message: '账户余额和充值套餐记录'
-  // },
-  // {
-  //   path: 'https://github.com/79E/ChatGpt-Web',
-  //   name: '项目地址',
-  //   icon: <GithubOutlined />,
-  //   message: '免费开源可商业化AiWeb项目'
-  // }
+  {
+    path: '/usage',
+    name: '使用记录',
+    icon: <HistoryOutlined />,
+    message: '查看本账号请求用量与扣费'
+  },
+  {
+    path: '/price',
+    name: '模型价格',
+    icon: <MoneyCollectFilled />,
+    message: '查看当前账号美元价目'
+  },
+  {
+    path: '/announcement',
+    name: '公告',
+    icon: <NotificationOutlined />,
+    message: '查看站点公告与历史通知'
+  },
+  {
+    path: '/feedback',
+    name: '留言',
+    icon: <FormOutlined />,
+    message: '可匿名留言，不留名就不记身份'
+  },
+  {
+    path: '/agent',
+    name: 'Agent 接入',
+    icon: <ApiOutlined />,
+    message: '中转地址对接 Claude Code / Codex'
+  },
+  {
+    path: '/software',
+    name: '软件下载',
+    icon: <CloudDownloadOutlined />,
+    message: '按分类浏览软件，跳转网盘下载'
+  },
+  {
+    path: '/profile',
+    name: '个人资料',
+    icon: <UserOutlined />,
+    message: '修改名称、手机号、邮箱和密码'
+  }
 ]
 
 const admin = {
-  path: '/',
+  path: '/admin',
   routes: [
     {
       path: '/admin',
-      name: '欢迎光临',
-      icon: <SmileFilled />
+      name: '总览',
+      icon: <DashboardOutlined />
     },
     {
-      path: '/admin_base',
-      name: '基础管理',
-      icon: <ExperimentFilled />,
-      access: 'canAdmin',
-      component: './Admin',
-      routes: [
-        {
-          path: '/admin/carmi',
-          name: '卡密管理',
-          icon: <LockFilled />
-        },
-        {
-          path: '/admin/aikey',
-          name: 'AI Key管理',
-          icon: <InsuranceFilled />
-        }
-      ]
+      path: '/admin/users',
+      name: '用户',
+      icon: <TeamOutlined />
     },
     {
-      path: '/admin_user',
-      name: '用户管理',
-      icon: <CrownFilled />,
-      access: 'canAdmin',
-      component: './Admin',
-      routes: [
-        {
-          path: '/admin/user',
-          name: '用户列表',
-          icon: <IdcardFilled />
-        },
-        {
-          path: '/admin/turnover',
-          name: '消费记录',
-          icon: <ReconciliationFilled />
-        },
-        {
-          path: '/admin/signin',
-          name: '签到记录',
-          icon: <ScheduleFilled />
-        },
-        {
-          path: '/admin/invite',
-          name: '邀请记录',
-          icon: <ContactsFilled />
-        },
-        {
-          path: '/admin/cashback',
-          name: '佣金提成',
-          icon: <CalculatorFilled />
-        },
-        {
-          path: '/admin/withdrawal',
-          name: '提现申请',
-          icon: <RedEnvelopeFilled />
-        },
-        {
-          path: '/admin/amounts',
-          name: '余额明细',
-          icon: <MediumSquareFilled />
-        },
-      ]
+      path: '/admin/announcement',
+      name: '公告',
+      icon: <NotificationOutlined />
     },
     {
-      name: '功能性管理',
-      icon: <MessageFilled />,
-      path: '/admin_message',
-      routes: [
-        {
-          path: '/admin/dialog',
-          name: '内置对话',
-          icon: <GitlabFilled />
-        },
-        {
-          path: '/admin/persona',
-          name: '角色配置',
-          icon: <RedditCircleFilled />
-        },
-        {
-          path: '/admin/plugin',
-          name: '插件管理',
-          icon: <DropboxCircleFilled />
-        },
-        {
-          path: '/admin/messages',
-          name: '消息列表',
-          icon: <FileTextFilled />
-        },
-        {
-          path: '/admin/draw',
-          name: '绘画列表',
-          icon: <FileImageFilled />
-        },
-      ]
+      path: '/admin/feedback',
+      name: '留言',
+      icon: <FormOutlined />
     },
     {
-      path: '/admin_orders',
-      name: '商品和订单',
-      icon: <GoldenFilled />,
-      routes: [
-        {
-          path: '/admin/product',
-          name: '商品列表',
-          icon: <ShopFilled />
-        },
-        {
-          path: '/admin/payment',
-          name: '支付配置',
-          icon: <MoneyCollectFilled />
-        },
-        {
-          path: '/admin/order',
-          name: '支付订单',
-          icon: <WalletFilled />
-        }
-      ]
+      path: '/admin/orders',
+      name: '订单',
+      icon: <TransactionOutlined />
     },
     {
-      name: '通知配置',
-      path: '/admin/notification',
-      icon: <NotificationFilled />
+      path: '/admin/paychannel',
+      name: '支付方式',
+      icon: <MoneyCollectFilled />
     },
     {
-      path: '/admin/config',
-      name: '系统配置',
-      icon: <SettingFilled />
+      path: '/admin/usage',
+      name: '请求用量',
+      icon: <BarChartOutlined />
     },
     {
-      path: 'https://github.com/79E/ChatGpt-Web',
-      name: 'Github',
-      icon: <GithubFilled />
+      path: '/admin/tasks',
+      name: '代理任务',
+      icon: <ProfileOutlined />
+    },
+    {
+      path: '/admin/vendors',
+      name: '供应商',
+      icon: <CloudServerOutlined />
+    },
+    {
+      path: '/admin/prompt',
+      name: 'Prompt 注入',
+      icon: <BulbOutlined />
+    },
+    {
+      path: '/admin/pricing',
+      name: '费率设置',
+      icon: <SettingOutlined />
+    },
+    {
+      path: '/admin/software',
+      name: '软件下载',
+      icon: <CloudDownloadOutlined />
     }
   ]
 }

@@ -49,7 +49,22 @@ dist-ssr
 *.pem
 
 # local env files
-.env*.local
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+!.env.example
+
+# local-only data / build leftovers
+.husky/json.json
+ma.js
+src/ma.js
+src/pages/mat.js
+dist.back
+dist_副本
+*.docx
+.DS_Store
 
 # vercel
 .vercel

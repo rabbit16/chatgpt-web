@@ -27,6 +27,64 @@
 			cursor: pointer;
 		}
 
+		.priceTitle {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			cursor: default;
+		}
+
+		.pricePreview {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 12px;
+
+			@media (max-width: 768px) {
+				grid-template-columns: 1fr;
+			}
+
+			&Item {
+				padding: 14px;
+				border-radius: 12px;
+				background: #fff;
+				border: 1px solid #edf0f5;
+				cursor: pointer;
+				transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+				&:hover {
+					border-color: #1877ff;
+					box-shadow: 0 8px 20px rgba(24, 119, 255, 0.08);
+				}
+
+				strong {
+					display: block;
+					margin: 8px 0 4px;
+					font-size: 16px;
+				}
+
+				p {
+					margin: 0 0 10px;
+					color: #98a2b3;
+					font-size: 12px;
+				}
+
+				div {
+					color: #344054;
+					font-size: 13px;
+					line-height: 1.7;
+				}
+			}
+		}
+
+		.priceProvider {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 999px;
+			background: #eef4ff;
+			color: #1877ff;
+			font-size: 12px;
+		}
+
 		&_item_box {
 			display: flex;
 			overflow: auto;
@@ -62,6 +120,41 @@
 					}
 				}
 
+			}
+		}
+
+		.customRecharge {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 16px;
+			flex-wrap: wrap;
+			margin-top: 12px;
+			padding: 14px 16px;
+			border-radius: 12px;
+			background: #fff;
+			border: 1px dashed #b7d2ff;
+
+			strong {
+				display: block;
+				margin-bottom: 4px;
+				color: #101828;
+			}
+
+			p {
+				margin: 0;
+				color: #667085;
+				font-size: 12px;
+			}
+
+			&_form {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+
+				:global(.ant-input-number) {
+					width: 180px;
+				}
 			}
 		}
 	}

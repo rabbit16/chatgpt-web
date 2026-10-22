@@ -1,6 +1,5 @@
 import { notification } from 'antd'
-import { chatStore, userStore } from '@/store'
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { userStore } from '@/store'
 export type ResponseData<T> = {
   code: number
   data: any
@@ -54,7 +53,6 @@ const isPlainObject = (obj: any) => {
 
 // 请求拦截器
 const interceptorsRequest = (config: { url: string; options?: RequestInit }) => {
-  console.log('请求拦截器', config)
   const options = {
     ...config.options,
     headers: {
@@ -67,7 +65,6 @@ const interceptorsRequest = (config: { url: string; options?: RequestInit }) => 
 
 // 响应拦截器
 const interceptorsResponse = async <T>(options: any, response: any): Promise<ResponseData<T>> => {
-  console.log('响应拦截器：', options, response)
   let data: ResponseData<T> = await response.json()
   
   if (!isResponseData(data)) {
@@ -77,13 +74,15 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
       message: ''
     }
   }
-  if (data.code || data.data.code !== '0') {
+  const body = data?.data
+  const bodyCode = body && typeof body === 'object' ? (body as any).code : undefined
+  if (response.status === 401 || data.code || (bodyCode != null && String(bodyCode) !== '0')) {
 
-    if (data.data.code!='0') {
-      if(userStore.getState().token||data.data.code!==3004){  
+    if (bodyCode != null && String(bodyCode) !== '0') {
+      if(userStore.getState().token||String(bodyCode)!=='3004'){
         notification.error({
           message: '错误',
-          description: data.data.codeMsg ? data.data.codeMsg : '网络请求错误',
+          description: (body as any)?.codeMsg ? (body as any).codeMsg : '网络请求错误',
           style: {
             top: 60,
             zIndex: 1011
@@ -92,9 +91,9 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
       }
       
     }
-    if ((response.status === 401 && data.code === 4001) || data.data.code == '3004') {
-      userStore.getState().logout()
-      chatStore.getState().clearChats()
+    const isAuthRequest = /\/user\/(verify|register)(?:\?|$)/.test(options.url)
+    if (!isAuthRequest && (response.status === 401 || data.code === 4001 || data.code === 3004 || String(bodyCode) === '3004')) {
+      userStore.getState().expireSession()
     }
   }
   return data
@@ -120,7 +119,7 @@ const request = <T>(
 ): Promise<ResponseData<T>> => {
   // 超时时间
   const { timeout = 60 * 1000 * 3 } = config || {}
-  let timeoutId: string | number | NodeJS.Timeout | null | undefined = null
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
 
   if (typeof url !== 'string') throw new TypeError('url must be required and of string type!')
   url = getBaseUrl(url)
@@ -143,13 +142,8 @@ const request = <T>(
   })
 
   // 超时处理
-  const timeoutPromise = (timeout: number): Promise<ResponseData<any>> => {
-    if (timeout <= 0) {
-      return new Promise(() => {
-        // ======= 等待 =======
-      })
-    }
-    return new Promise((resolve) => {
+  const timeoutPromise = (): Promise<ResponseData<any>> =>
+    new Promise((resolve) => {
       timeoutId = setTimeout(() => {
         const data = { code: 504, data: [], message: '请求超时，请稍后重新尝试。' }
         interceptorsErrorResponse(data)
@@ -157,19 +151,12 @@ const request = <T>(
         resolve(data)
       }, timeout)
     })
-  }
   // 发送请求
   const fetchPromise: Promise<ResponseData<T>> = new Promise((resolve, reject) => {
     fetch(url, options)
       .then(async (res) => {
 
-        let token: string = ''
-        // console.log(res.headers);
-        // console.log(,[...res.headers.keys()],[...res.headers.entries()]);
-        // for (const [key, value] of res.headers.entries()) {
-        //   console.log(`${key}: ${value}`);
-        // }
-
+        let token = ''
         if (res.headers.get('x-set-cookie') && url.includes('verify')) {
           token = res.headers.get('x-set-cookie') || ''
         }
@@ -191,7 +178,6 @@ const request = <T>(
           // We know it's been canceled!
           return
         }
-        debugger
         const data = { code: 504, data: error, message: '网络异常，请稍后重新尝试。' }
         await interceptorsErrorResponse(data)
         await reject(data)
@@ -201,7 +187,7 @@ const request = <T>(
       })
   })
 
-  return Promise.race([timeoutPromise(timeout), fetchPromise])
+  return timeout > 0 ? Promise.race([timeoutPromise(), fetchPromise]) : fetchPromise
 }
 
 const get = <T = unknown>(
@@ -211,13 +197,12 @@ const get = <T = unknown>(
   config?: RequestConfig
 ) => {
   if (params && typeof params !== 'string' && isPlainObject(params)) {
-    const tempArray: string[] = []
-    for (const item in params) {
-      if (item) {
-        tempArray.push(`${item}=${params[item]}`)
-      }
-    }
-    params = url.includes('?') ? tempArray.join('&') : `?${tempArray.join('&')}`
+    const searchParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) searchParams.append(key, String(value))
+    })
+    const query = searchParams.toString()
+    params = query ? `${url.includes('?') ? '&' : '?'}${query}` : ''
   }
 
   return request<T>(
@@ -279,13 +264,12 @@ const del = <T = unknown>(
   config?: RequestConfig
 ) => {
   if (params && typeof params !== 'string' && isPlainObject(params)) {
-    const tempArray: string[] = []
-    for (const item in params) {
-      if (item) {
-        tempArray.push(`${item}=${params[item]}`)
-      }
-    }
-    params = url.includes('?') ? tempArray.join('&') : `?${tempArray.join('&')}`
+    const searchParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) searchParams.append(key, String(value))
+    })
+    const query = searchParams.toString()
+    params = query ? `${url.includes('?') ? '&' : '?'}${query}` : ''
   }
 
   return request<T>(
@@ -333,42 +317,17 @@ const postStreams = async <T>(
   return response
 }
 
-const gptPost = async (url: any, params: any, options: any) => {
-  return await fetch(getBaseUrl(url), {
-    method: 'post',
-    headers: {
-      token: userStore.getState().token,
-      'Content-Type': 'application/json',
-      'Accept': 'text/event-stream'
-    } as any,
-    body: JSON.stringify(params),
-    signal: options
-  })
-  let da = await fetchEventSource(getBaseUrl(url), {
+const gptPost = (url: string, params: unknown, signal?: AbortSignal) => {
+  return fetch(getBaseUrl(url), {
     method: 'POST',
     headers: {
-      token: userStore.getState().token,
+      token: userStore.getState().token || '',
       'Content-Type': 'application/json',
-    } as any,
+      Accept: 'text/event-stream'
+    },
     body: JSON.stringify(params),
-    signal: options,
-    async onopen(response) {
-      console.log(response,123)
-    },
-    async onmessage(params) {
-      console.log(params,45)
-    },
-    async onclose(err: number | void | null | undefined) {
-      console.log(err,6);
-    },
-    onerror:(e)=>{
-      console.log(e);
-      
-    }
-
+    signal
   })
-  console.log(da,123123132);
-  
 }
 export default {
   get,

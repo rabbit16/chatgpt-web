@@ -1,0 +1,35 @@
+.scrollBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  span {
+    flex: none;
+    color: #667085;
+    font-size: 13px;
+  }
+}
+
+.scrollTrack {
+  flex: 1;
+  min-width: 0;
+}
+
+.root {
+  min-width: 0;
+  overflow: hidden;
+
+  :global(.ant-table-content),
+  :global(.ant-table-body) {
+    overflow-x: auto !important;
+    cursor: grab;
+    touch-action: pan-y;
+    scrollbar-width: thin;
+  }
+}
+
+.dragging {
+  cursor: grabbing !important;
+  user-select: none;
+}

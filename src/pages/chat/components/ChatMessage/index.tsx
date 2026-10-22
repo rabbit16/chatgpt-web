@@ -1,33 +1,16 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import React, { memo, useLayoutEffect, useMemo, useRef } from 'react'
+import { create } from 'zustand'
 import { copyToClipboard, joinTrim } from '@/utils'
+import { renderMarkdown } from '@/utils/renderMarkdown'
 import styles from './index.module.less'
 import OpenAiLogo from '@/components/OpenAiLogo'
-import { Space, Popconfirm, message, Dropdown } from 'antd'
-
-import MarkdownIt from 'markdown-it'
-import { MathJax, MathJaxContext } from "better-react-mathjax";
-import mdKatex from '@traptitech/markdown-it-katex'
-import mila from 'markdown-it-link-attributes'
-import hljs from 'highlight.js'
+import { Dropdown, message } from 'antd'
+import 'katex/dist/katex.min.css'
 import { CopyOutlined, DeleteOutlined, MoreOutlined, RedoOutlined } from '@ant-design/icons'
-
 import ai3Logo from '@/assets/openai/ai3.svg'
 import ai4Logo from '@/assets/openai/ai4.svg'
 import avatarIcon from '@/assets/avatar.png'
-import { PluginInfo } from '@/types'
-import PluginCard from '@/components/PluginCard'
-const config = {
-  loader: { load: ["input/asciimath"] },
-  asciimath: {
-    displaystyle: true,
-    delimiters: [
-      ["$", "$"],
-      ["`", "`"],
-      ["[", "]"],
-      ["(", ")"],
-    ]
-  }
-};
+
 const dropdownItems = [
   {
     icon: <CopyOutlined />,
@@ -47,21 +30,36 @@ const dropdownItems = [
 ]
 
 function screenDropdownItems(status: string, position: 'left' | 'right') {
-  const newList = dropdownItems.filter((item) => {
+  return dropdownItems.filter((item) => {
     if (status !== 'error' && item.key === 'delete') {
       return false
     }
-
     if (position !== 'left' && item.key === 'refurbish') {
       return false
     }
     return true
   })
-
-  return [...newList]
 }
 
+type StreamTextState = {
+  textById: Record<string, string>
+  setText: (id: string, text: string) => void
+  clearText: (id: string) => void
+}
+
+export const streamTextStore = create<StreamTextState>((set) => ({
+  textById: {},
+  setText: (id, text) => set((state) => ({ textById: { ...state.textById, [id]: text } })),
+  clearText: (id) => set((state) => {
+    if (!(id in state.textById)) return state
+    const textById = { ...state.textById }
+    delete textById[id]
+    return { textById }
+  })
+}))
+
 function ChatMessage({
+  streamId,
   position,
   content,
   status,
@@ -69,8 +67,9 @@ function ChatMessage({
   model,
   onDelChatMessage,
   onRefurbishChatMessage,
-  pluginInfo
+  isSearchTarget = false
 }: {
+  streamId?: string
   position: 'left' | 'right'
   content?: string
   status: 'pass' | 'loading' | 'error' | string
@@ -78,10 +77,13 @@ function ChatMessage({
   model?: string
   onDelChatMessage?: () => void
   onRefurbishChatMessage?: () => void
-  pluginInfo?: PluginInfo
+  isSearchTarget?: boolean
 }) {
   const copyMessageKey = 'copyMessageKey'
   const markdownBodyRef = useRef<HTMLDivElement>(null)
+  const liveText = streamTextStore((state) => (streamId ? state.textById[streamId] : undefined))
+  const displayText = liveText ?? content ?? ''
+  const streaming = status === 'loading'
 
   function onCopyOut(text: string) {
     copyToClipboard(text)
@@ -119,64 +121,37 @@ function ChatMessage({
     if (markdownBodyRef.current) {
       const copyBtn = markdownBodyRef.current.querySelectorAll('.code-block-header__copy')
       copyBtn.forEach((btn) => {
-        btn.removeEventListener('click', () => {
-          // ==== 无需操作 ====
-        })
+        btn.replaceWith(btn.cloneNode(true))
       })
     }
   }
 
-  function highlightBlock(str: string, lang: string, code: string) {
-    return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">复制代码</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
-  }
-
-  const mdi = new MarkdownIt({
-    html: true,
-    linkify: true,
-    highlight(code, language) {
-      const validLang = !!(language && hljs.getLanguage(language))
-      if (validLang) {
-        const lang = language ?? ''
-        return highlightBlock(hljs.highlight(code, { language: lang }).value, lang, code)
-      }
-      return highlightBlock(hljs.highlightAuto(code).value, '', code)
-    }
-  })
-
-  mdi.use(mila, { attrs: { target: '_blank', rel: 'noopener' } })
-  mdi.use(mdKatex, { blockClass: 'katex-block', errorColor: ' #cc0000', output: 'mathml' })
-
   const renderText = useMemo(() => {
-    const value = content || ''
     if (position === 'right') {
       return (
         <div ref={markdownBodyRef} className="markdown-body">
-          {value}
+          {displayText}
         </div>
       )
     }
-    const renderMdHtml = mdi.render(value)
     return (
       <div
         ref={markdownBodyRef}
         className="markdown-body"
         dangerouslySetInnerHTML={{
-          __html: renderMdHtml
+          __html: renderMarkdown(displayText, streaming)
         }}
+        data-pos={position}
       />
     )
-  }, [content, position])
-  useEffect(() => {
-    if (status !== 'loading') {
+  }, [displayText, position, streaming])
 
-    }
-  }, [status])
   useLayoutEffect(() => {
     addCopyEvents()
     return () => {
       removeCopyEvents()
     }
-  }, [markdownBodyRef.current, content])
+  }, [displayText])
 
   function chatAvatar({
     isShow,
@@ -189,12 +164,7 @@ function ChatMessage({
   }) {
     if (!isShow) return null
     return (
-      <div
-        className={styles.chatMessage_avatarCard}
-        style={{
-          ...style
-        }}
-      >
+      <div className={styles.chatMessage_avatarCard} style={style}>
         <img src={icon} alt="" />
       </div>
     )
@@ -202,18 +172,17 @@ function ChatMessage({
 
   return (
     <div
+      id={isSearchTarget ? 'chat-search-target' : undefined}
       className={styles.chatMessage}
       style={{
         justifyContent: position === 'right' ? 'flex-end' : 'flex-start'
       }}
     >
-      {useMemo(() => {
-        return chatAvatar({
-          style: { marginRight: 8 },
-          isShow: position === 'left',
-          icon: model && model.indexOf('gpt-4') !== -1 ? ai4Logo : ai3Logo
-        })
-      }, [])}
+      {chatAvatar({
+        style: { marginRight: 8 },
+        isShow: position === 'left',
+        icon: model && model.indexOf('gpt-4') !== -1 ? ai4Logo : ai3Logo
+      })}
       <div className={styles.chatMessage_content}>
         <span
           className={styles.chatMessage_content_time}
@@ -223,18 +192,13 @@ function ChatMessage({
         >
           {time}
         </span>
-        {pluginInfo && <PluginCard {...pluginInfo} />}
         <div
           className={joinTrim([
             styles.chatMessage_content_text,
             position === 'right' ? styles.right : styles.left
           ])}
         >
-          {status === 'loading' ? <OpenAiLogo rotate /> : <MathJaxContext config={config}>
-            <MathJax hideUntilTypeset={"first"}>
-              {renderText}
-              </MathJax>
-              </MathJaxContext>}
+          {status === 'loading' && !displayText ? <OpenAiLogo rotate /> : renderText}
           <div
             className={styles.chatMessage_content_operate}
             style={{
@@ -255,13 +219,11 @@ function ChatMessage({
                   if (key === 'delete') {
                     onDelChatMessage?.()
                   }
-
                   if (key === 'refurbish') {
                     onRefurbishChatMessage?.()
                   }
-
-                  if (key === 'copyout' && content) {
-                    onCopyOut(content)
+                  if (key === 'copyout' && displayText) {
+                    onCopyOut(displayText)
                   }
                 }
               }}
@@ -273,15 +235,13 @@ function ChatMessage({
           </div>
         </div>
       </div>
-      {useMemo(() => {
-        return chatAvatar({
-          style: { marginLeft: 8 },
-          isShow: position === 'right',
-          icon: avatarIcon
-        })
-      }, [])}
+      {chatAvatar({
+        style: { marginLeft: 8 },
+        isShow: position === 'right',
+        icon: avatarIcon
+      })}
     </div>
   )
 }
 
-export default ChatMessage
+export default memo(ChatMessage)

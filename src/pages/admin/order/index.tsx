@@ -5,6 +5,7 @@ import { ProTable } from '@ant-design/pro-components';
 import { Modal, Tag } from 'antd';
 import { useRef, useState } from 'react';
 import styles from './index.module.less';
+import { sanitizeHtml } from '@/utils';
 
 function OrderPage() {
 
@@ -220,7 +221,7 @@ function OrderPage() {
 
     function syntaxHighlight(json: string) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
             let cls = 'number';
             if (/^"/.test(match)) {
                 if (/:$/.test(match)) {
@@ -290,7 +291,7 @@ function OrderPage() {
                 {
                     isModalOpen.json && (
                         <pre className={styles.jsonPre} dangerouslySetInnerHTML={{
-                            __html: syntaxHighlight(JSON.stringify(JSON.parse(isModalOpen.json), null, 4))
+                            __html: sanitizeHtml(syntaxHighlight(JSON.stringify(JSON.parse(isModalOpen.json), null, 4)))
                         }}
                         />
                     )

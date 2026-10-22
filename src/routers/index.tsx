@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router-dom'
 
 type ConfigureType = {
   verifToken?: boolean
+  public?: boolean
   title?: string
   role: Array<'user' | 'administrator' | string>
 }
@@ -14,60 +15,26 @@ export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index
 }
 
 const ChatPage = React.lazy(() => import('@/pages/chat'))
-const DrawPage = React.lazy(() => import('@/pages/draw'))
-const MappingPage = React.lazy(() => import('@/pages/mapping'))
 const ShopPage = React.lazy(() => import('@/pages/shop'))
-const UserPage = React.lazy(() => import('@/pages/user'))
+const UsagePage = React.lazy(() => import('@/pages/usage'))
+const TasksPage = React.lazy(() => import('@/pages/tasks'))
+const PricePage = React.lazy(() => import('@/pages/price'))
+const DrawPage = React.lazy(() => import('@/pages/draw'))
+const AnnouncementPage = React.lazy(() => import('@/pages/announcement'))
+const FeedbackPage = React.lazy(() => import('@/pages/feedback'))
+const AgentPage = React.lazy(() => import('@/pages/agent'))
+const SoftwarePage = React.lazy(() => import('@/pages/software'))
+const ProfilePage = React.lazy(() => import('@/pages/profile'))
 const LoginPage = React.lazy(() => import('@/pages/login'))
 const ResultPage = React.lazy(() => import('@/pages/result'))
 const Page404 = React.lazy(() => import('@/pages/404'))
-
-import AdminPage from '@/pages/admin'
-import AdminCarmiPage from '@/pages/admin/carmi'
-import AdminUserPage from '@/pages/admin/user'
-import AdminTurnoverPage from '@/pages/admin/turnover'
-import AdminSigninPage from '@/pages/admin/signin'
-import AdminMessagePage from '@/pages/admin/message'
-import AdminProductPage from '@/pages/admin/product'
-import AdminAikeyPage from '@/pages/admin/aikey'
-import AdminConfigPage from '@/pages/admin/config'
-import AdminPaymentPage from '@/pages/admin/payment'
-import AdminOrderPage from '@/pages/admin/order'
-import AdminNotificationPage from '@/pages/admin/notification'
-import AdminCashbackPage from '@/pages/admin/cashback'
-import AdminInvitePage from '@/pages/admin/invite'
-import AdminWithdrawalPage from '@/pages/admin/withdrawal'
-import AdminAmountsPage from '@/pages/admin/amounts'
-import AdminDialogPage from '@/pages/admin/dialog'
-import AdminPersonaPage from '@/pages/admin/persona'
-import AdminPluginPage from '@/pages/admin/plugin'
-import AdminDrawPage from '@/pages/admin/draw'
+const AdminPage = React.lazy(() => import('@/pages/admin'))
 
 export const webRouter: RouteOptions[] = [
   {
     id: 'ChatPage',
     path: '/',
     element: <ChatPage />,
-    children: [],
-    configure: {
-      verifToken: false,
-      role: ['user', 'administrator']
-    }
-  },
-  {
-    id: 'DrawPage',
-    path: '/draw',
-    element: <DrawPage />,
-    children: [],
-    configure: {
-      verifToken: false,
-      role: ['user', 'administrator']
-    }
-  },
-  {
-    id: 'MappingPage',
-    path: '/mapping',
-    element: <MappingPage />,
     children: [],
     configure: {
       verifToken: false,
@@ -85,12 +52,106 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'UserPage',
-    path: '/user',
-    element: <UserPage />,
+    id: 'TasksPage',
+    path: '/tasks',
+    element: <TasksPage />,
     children: [],
     configure: {
       verifToken: true,
+      title: '我的任务',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'UsagePage',
+    path: '/usage',
+    element: <UsagePage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '使用记录',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'PricePage',
+    path: '/price',
+    element: <PricePage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '模型价格',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'DrawPage',
+    path: '/draw',
+    element: <DrawPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: 'AI 绘图',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'AnnouncementPage',
+    path: '/announcement',
+    element: <AnnouncementPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '公告',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'FeedbackPage',
+    path: '/feedback',
+    element: <FeedbackPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '留言反馈',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'AgentPage',
+    path: '/agent',
+    element: <AgentPage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: 'Agent 接入',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'ProfilePage',
+    path: '/profile',
+    element: <ProfilePage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '个人资料',
+      role: ['user', 'administrator']
+    }
+  },
+  {
+    id: 'SoftwarePage',
+    path: '/software',
+    element: <SoftwarePage />,
+    children: [],
+    configure: {
+      verifToken: false,
+      public: true,
+      title: '软件下载',
       role: ['user', 'administrator']
     }
   },
@@ -101,6 +162,7 @@ export const webRouter: RouteOptions[] = [
     children: [],
     configure: {
       verifToken: false,
+      public: true,
       role: ['user', 'administrator']
     }
   },
@@ -115,6 +177,127 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
+    id: 'AdminPage',
+    path: '/admin',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '后台管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminUsersPage',
+    path: '/admin/users',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '用户管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminAnnouncementPage',
+    path: '/admin/announcement',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '公告管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminFeedbackPage',
+    path: '/admin/feedback',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '留言管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminOrdersPage',
+    path: '/admin/orders',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '订单管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminTasksPage',
+    path: '/admin/tasks',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '代理任务',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminUsagePage',
+    path: '/admin/usage',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '请求用量',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminVendorsPage',
+    path: '/admin/vendors',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '供应商管理',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminPromptPage',
+    path: '/admin/prompt',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: 'Prompt 注入',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminSoftwarePage',
+    path: '/admin/software',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '软件下载',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminPricingPage',
+    path: '/admin/pricing',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '费率设置',
+      role: ['administrator']
+    }
+  },
+  {
     id: 'Page404',
     path: '/404',
     element: <Page404 />,
@@ -125,7 +308,7 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'Page404',
+    id: 'Page404Fallback',
     path: '*',
     element: <Page404 />,
     children: [],
@@ -136,228 +319,7 @@ export const webRouter: RouteOptions[] = [
   }
 ]
 
-export const adminRouter: RouteOptions[] = [
-  {
-    id: 'AdminPage',
-    path: '/admin',
-    element: <AdminPage />,
-    children: [
-      {
-        id: 'AdminCarmiPage',
-        path: '/admin/carmi',
-        element: <AdminCarmiPage />,
-        index: false,
-        configure: {
-          title: '卡密管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminUserPage',
-        path: '/admin/user',
-        element: <AdminUserPage />,
-        index: true,
-        configure: {
-          title: '用户管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminTurnoverPage',
-        path: '/admin/turnover',
-        element: <AdminTurnoverPage />,
-        index: false,
-        configure: {
-          title: '消费记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminSigninPage',
-        path: '/admin/signin',
-        element: <AdminSigninPage />,
-        index: false,
-        configure: {
-          title: '签到记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminMessagePage',
-        path: '/admin/messages',
-        element: <AdminMessagePage />,
-        index: false,
-        configure: {
-          title: '对话记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminDialogPage',
-        path: '/admin/dialog',
-        element: <AdminDialogPage />,
-        index: false,
-        configure: {
-          title: '内置对话',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminProductPage',
-        path: '/admin/product',
-        element: <AdminProductPage />,
-        index: false,
-        configure: {
-          title: '商品列表',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminPaymentPage',
-        path: '/admin/payment',
-        element: <AdminPaymentPage />,
-        index: false,
-        configure: {
-          title: '支付配置',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminAikeyPage',
-        path: '/admin/aikey',
-        element: <AdminAikeyPage />,
-        index: false,
-        configure: {
-          title: 'AI Key管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminOrderPage',
-        path: '/admin/order',
-        element: <AdminOrderPage />,
-        index: false,
-        configure: {
-          title: '订单管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminConfigPage',
-        path: '/admin/config',
-        element: <AdminConfigPage />,
-        index: false,
-        configure: {
-          title: '系统配置',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminNotificationPage',
-        path: '/admin/notification',
-        element: <AdminNotificationPage />,
-        index: false,
-        configure: {
-          title: '系统通知配置',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminCashbackPage',
-        path: '/admin/cashback',
-        element: <AdminCashbackPage />,
-        index: false,
-        configure: {
-          title: '消费提成记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminInvitePage',
-        path: '/admin/invite',
-        element: <AdminInvitePage />,
-        index: false,
-        configure: {
-          title: '邀请记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminWithdrawalPage',
-        path: '/admin/withdrawal',
-        element: <AdminWithdrawalPage />,
-        index: false,
-        configure: {
-          title: '提现记录',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminAmountsPage',
-        path: '/admin/amounts',
-        element: <AdminAmountsPage />,
-        index: false,
-        configure: {
-          title: '金额明细',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminPersonaPage',
-        path: '/admin/persona',
-        element: <AdminPersonaPage />,
-        index: false,
-        configure: {
-          title: '角色配置',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminPluginPage',
-        path: '/admin/plugin',
-        element: <AdminPluginPage />,
-        index: false,
-        configure: {
-          title: '插件管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      },
-      {
-        id: 'AdminDrawPage',
-        path: '/admin/draw',
-        element: <AdminDrawPage />,
-        index: false,
-        configure: {
-          title: '绘画记录管理',
-          verifToken: true,
-          role: ['administrator']
-        }
-      }
-    ],
-    configure: {
-      verifToken: true,
-      role: ['administrator']
-    }
-  }
-]
+export const adminRouter: RouteOptions[] = []
 
 export function searchRouteDetail(path: string, routes: RouteOptions[]): RouteOptions | null {
   let detail = null

@@ -1,702 +1,758 @@
-import styles from './index.module.less'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  Alert,
   Button,
   Empty,
-  Input,
   Image,
-  Radio,
-  Slider,
-  Space,
+  Input,
+  Pagination,
   Popconfirm,
-  notification,
-  message,
   Segmented,
   Select,
-  Upload
+  Space,
+  Tag,
+  message
 } from 'antd'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { drawStore, userStore } from '@/store'
-import { drawAsync } from '@/store/async'
-import OpenAiLogo from '@/components/OpenAiLogo'
-import { postChatCompletion, postImagesGenerations } from '@/request/api'
 import {
-  CaretDownOutlined,
-  CaretUpOutlined,
-  CheckCircleFilled,
-  CheckCircleOutlined,
-  ClearOutlined,
-  CloseCircleFilled,
-  CloseCircleOutlined,
-  CloseOutlined,
-  LoadingOutlined,
-  SyncOutlined
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  PictureOutlined,
+  ReloadOutlined,
+  UploadOutlined
 } from '@ant-design/icons'
-import { formatTime, generateUUID, handleChatData } from '@/utils'
-import { ResponseData } from '@/request'
 import Layout from '@/components/Layout'
-import { DrawRecord } from '@/types'
-import ImageCard from './ImageCard'
+import { userStore } from '@/store'
+import {
+  getUserPricing,
+  postImagesEdits,
+  postImagesGenerations,
+  type ImageGenerationResult,
+  type UserImageModelRate
+} from '@/request/api'
+import {
+  compareModelNewestFirst,
+  enrichVendorModel,
+  formatUsd,
+  getImageModelIntro,
+  isPerImageBilling,
+  pickImageTierPrice,
+  resolveImageSizeTier
+} from '@/data/modelPricing'
+import {
+  clearDrawImages,
+  deleteDrawImage,
+  drawCacheUserKey,
+  downloadDrawImage,
+  getDrawImageBlob,
+  listDrawImagesPage,
+  saveDrawImageToCache,
+  type DrawCacheRecord
+} from '@/utils/drawImageCache'
+import styles from './index.module.less'
 
-const drawSize = [
-  {
-    label: '256px',
-    value: 256
+const SIZES = [
+  { label: '1024×1024（1K）', value: '1024x1024' },
+  { label: '1536×1024 横图（2K）', value: '1536x1024' },
+  { label: '1024×1536 竖图（2K）', value: '1024x1536' },
+  { label: '2048×2048（2K）', value: '2048x2048' },
+  { label: '4096×4096（4K）', value: '4096x4096' },
+  { label: '自动', value: 'auto' }
+]
+
+const QUALITIES = [
+  { label: '自动', value: 'auto' },
+  { label: '低 (low)', value: 'low' },
+  { label: '中 (medium)', value: 'medium' },
+  { label: '高 (high)', value: 'high' }
+]
+
+const PAGE_SIZE = 6
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024
+
+type DrawMode = 'text' | 'img2img' | 'edit'
+type GalleryItem = DrawCacheRecord & { previewUrl: string }
+
+const MODE_LABEL: Record<DrawMode, string> = {
+  text: '文生图',
+  img2img: '图生图',
+  edit: '修改图片'
+}
+
+const MODE_GUIDE: Record<DrawMode, { title: string; steps: string[]; example: string }> = {
+  text: {
+    title: '只写文字，从零生成一张新图',
+    steps: [
+      '选图像模型和尺寸。',
+      '在提示词里写清主体、风格、光线和构图。',
+      '点「生成图片」。请求走 /v1/images/generations。'
+    ],
+    example: '一只坐在窗边的橘猫，柔和阳光，写实摄影，浅景深'
   },
-  {
-    label: '320px',
-    value: 320
+  img2img: {
+    title: '在本机选一张参考图，按文字重新生成',
+    steps: [
+      '从本机选择参考图（png / jpg / webp，15MB 以内），或从下方图库点「作为参考图」。图片只读进浏览器，不会先传到网站。',
+      '提示词写你希望保留什么、改成什么风格或场景。',
+      'GPT Image 可把「贴合原图」设为高，主体和细节更接近原图；设为低，允许更大改动。',
+      '点「按参考图生成」。图片数据放进同一次 /v1/images/edits 请求，由中转转发，网站不保存原图。'
+    ],
+    example: '保留人物姿态和构图，改成水彩插画，背景换成雨后的街道'
   },
-  {
-    label: '356px',
-    value: 356
-  },
-  {
-    label: '468px',
-    value: 468
-  },
-  {
-    label: '512px',
-    value: 512
-  },
-  {
-    label: '640px',
-    value: 640
-  },
-  {
-    label: '704px',
-    value: 704
-  },
-  {
-    label: '768px',
-    value: 768
-  },
-  {
-    label: '832px',
-    value: 832
-  },
-  {
-    label: '896px',
-    value: 896
-  },
-  {
-    label: '960px',
-    value: 960
-  },
-  {
-    label: '1024px',
-    value: 1024
+  edit: {
+    title: '在原图上改内容，大部分时候只写说明就够',
+    steps: [
+      '从本机选择要修改的原图，或从下方图库点「去修改」。原图只留在浏览器里。',
+      '在修改说明里写清楚改什么、哪里不要动。例如：把背景换成沙滩，人不要动。',
+      '整张图换风格、换场景，不用选下面的「只改一块」。',
+      '点「修改图片」。图片数据随这次请求转发，网站不保存原图。'
+    ],
+    example: '把背景换成雪山，人物和服装不要改'
   }
-]
+}
 
-const stylePresets = [
-  { label: '无风格', value: '' },
-  { label: '3D模型', value: '3d-model' },
-  { label: '模拟胶片', value: 'analog-film' },
-  { label: '动漫', value: 'anime' },
-  { label: '电影', value: 'cinematic' },
-  { label: '漫画', value: 'comic-book' },
-  { label: '数字艺术', value: 'digital-art' },
-  { label: '增强现实', value: 'enhance' },
-  { label: '奇幻艺术', value: 'fantasy-art' },
-  { label: '等距投影', value: 'isometric' },
-  { label: '线条艺术', value: 'line-art' },
-  { label: '低多边形', value: 'low-poly' },
-  { label: '建模粘土', value: 'modeling-compound' },
-  { label: '霓虹朋克', value: 'neon-punk' },
-  { label: '折纸艺术', value: 'origami' },
-  { label: '摄影', value: 'photographic' },
-  { label: '像素艺术', value: 'pixel-art' },
-  { label: '瓷砖纹理', value: 'tile-texture' }
-]
+function supportsGptImageControls(model: string) {
+  return /gpt-image|chatgpt-image/i.test(model || '')
+}
 
-function DrawPage() {
-  const { token, setLoginModal } = userStore()
-  const { galleryDrawImages, historyDrawImages, clearhistoryDrawImages, addDrawImage } = drawStore()
+function resultToSrc(first?: ImageGenerationResult['data'][number]) {
+  if (first?.b64_json) {
+    return `data:${first.mime || 'image/png'};base64,${first.b64_json}`
+  }
+  return first?.url || ''
+}
 
-  const containerOneRef = useRef<HTMLDivElement>(null)
-  const containerTwoRef = useRef<HTMLDivElement>(null)
-  const [bottom, setBottom] = useState(0)
-
-  const [collapse, setCollapse] = useState(true)
-  const [gptLoading, setGptLoading] = useState(false)
-
-  const [drawRecordData, setDrawRecordData] = useState({
-    isAll: false,
-    loading: false,
-    page: 1,
-    page_size: 20,
-    type: 'me'
-  })
-
-  async function getDrawListData({ page = 1, type = 'me' }: { page?: number, type?: string }) {
-    setDrawRecordData(data => ({ ...data, type, loading: true }))
-    const result = await drawAsync.fetchDrawImages({ ...drawRecordData, page, type })
-    if (result.code) {
-      setDrawRecordData(data => ({ ...data, type, loading: false }))
+function readLocalImage(accept: string, onFile: (file: File) => void) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = accept
+  input.onchange = () => {
+    const file = input.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      message.warning('请选择图片文件')
       return
     }
-    let isAll = false
-    if (result.data.rows.length <= 0) {
-      isAll = true
+    if (file.size > MAX_IMAGE_BYTES) {
+      message.warning('图片请小于 15MB')
+      return
     }
-    setDrawRecordData(data => ({ ...data, page, type, loading: false, isAll }))
+    onFile(file)
+  }
+  input.click()
+}
+
+function formatTierMap(tiers?: Record<string, number>) {
+  if (!tiers) return []
+  return (['1k', '2k', '4k'] as const)
+    .filter((key) => typeof tiers[key] === 'number')
+    .map((key) => `${key.toUpperCase()} ${formatUsd(tiers[key])}/张`)
+}
+
+function DrawPage() {
+  const { token, user_info, setLoginModal, llm_api_key } = userStore()
+  const phone =
+    (user_info as any)?.data?.bodyMessage?.telephone || (user_info as any)?.telephone || ''
+  const credential =
+    (llm_api_key || '').startsWith('sk-') || /^1[3-9]\d{9}$/.test(llm_api_key || '')
+      ? llm_api_key
+      : phone
+  const userKey = drawCacheUserKey(phone || credential)
+
+  const [models, setModels] = useState<UserImageModelRate[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [modelId, setModelId] = useState('')
+  const [mode, setMode] = useState<DrawMode>('text')
+  const [size, setSize] = useState('1024x1024')
+  const [quality, setQuality] = useState('auto')
+  const [fidelity, setFidelity] = useState<'high' | 'low'>('high')
+  const [prompt, setPrompt] = useState('')
+  const [sourceFile, setSourceFile] = useState<File | null>(null)
+  const [sourcePreview, setSourcePreview] = useState('')
+  const [maskFile, setMaskFile] = useState<File | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState('')
+  const abortRef = useRef<AbortController | null>(null)
+
+  const [gallery, setGallery] = useState<GalleryItem[]>([])
+  const [galleryTotal, setGalleryTotal] = useState(0)
+  const [galleryPage, setGalleryPage] = useState(1)
+  const [galleryLoading, setGalleryLoading] = useState(false)
+  const previewUrlsRef = useRef<string[]>([])
+
+  const revokePreviewUrls = useCallback(() => {
+    for (const url of previewUrlsRef.current) {
+      URL.revokeObjectURL(url)
+    }
+    previewUrlsRef.current = []
+  }, [])
+
+  const loadGallery = useCallback(
+    async (page: number) => {
+      setGalleryLoading(true)
+      try {
+        const { items, total } = await listDrawImagesPage(userKey, page, PAGE_SIZE)
+        revokePreviewUrls()
+        const withUrls: GalleryItem[] = []
+        for (const item of items) {
+          const blob = await getDrawImageBlob(item.id)
+          if (!blob) continue
+          const previewUrl = URL.createObjectURL(blob)
+          previewUrlsRef.current.push(previewUrl)
+          withUrls.push({ ...item, previewUrl })
+        }
+        setGallery(withUrls)
+        setGalleryTotal(total)
+        const maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE))
+        if (page > maxPage) setGalleryPage(maxPage)
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : '读取本地图库失败')
+        setGallery([])
+        setGalleryTotal(0)
+      } finally {
+        setGalleryLoading(false)
+      }
+    },
+    [userKey, revokePreviewUrls]
+  )
+
+  useEffect(() => {
+    void loadGallery(galleryPage)
+    return () => revokePreviewUrls()
+  }, [galleryPage, userKey, loadGallery, revokePreviewUrls])
+
+  const loadModels = async (signal?: AbortSignal) => {
+    setLoadingModels(true)
+    setError('')
+    try {
+      const data = await getUserPricing({ signal })
+      const list = [...(data.image_models || [])].sort((a, b) =>
+        compareModelNewestFirst(a.model, b.model)
+      )
+      setModels(list)
+      if (list.length && !list.some((item) => item.model === modelId)) {
+        setModelId(list[0].model)
+      }
+    } catch (err) {
+      if (!signal?.aborted) {
+        setModels([])
+        setError(err instanceof Error ? err.message : '获取图像模型失败')
+      }
+    } finally {
+      if (!signal?.aborted) setLoadingModels(false)
+    }
   }
 
   useEffect(() => {
-    if (token) {
-      getDrawListData({ ...drawRecordData })
-    } else {
-      handleScroll()
-      getDrawListData({ ...drawRecordData, type: 'gallery' })
-    }
-  }, [token])
-
-  const [drawConfig, setDrawConfig] = useState<{
-    prompt: string
-    quantity: number
-    width: number
-    height: number
-    quality?: number
-    steps?: number
-    style?: string
-    image?: File | string
-  }>({
-    prompt: '',
-    quantity: 1,
-    width: 512,
-    height: 512,
-    quality: 7,
-    steps: 50,
-    style: '',
-    image: ''
-  })
-
-  const [showImage, setShowImage] = useState<string | ArrayBuffer | null>('')
-  const [drawType, setDrawType] = useState('openai')
-  const [drawResultData, setDrawResultData] = useState<{
-    loading: boolean
-    list: Array<DrawRecord>
-  }>({
-    loading: false,
-    list: []
-  })
-  const handleDraw = (res: ResponseData<Array<DrawRecord>>) => {
-    if (res.code || res.data.length <= 0) {
-      message.error('请求错误 🙅')
+    if (!sourceFile) {
+      setSourcePreview('')
       return
     }
-    setDrawResultData({
-      loading: false,
-      list: res.data
-    })
-    const addImagesData = res.data.map((item) => {
-      return {
-        ...item,
-        ...drawConfig,
-        draw_type: drawType,
-        id: generateUUID(),
-        dateTime: formatTime()
+    const url = URL.createObjectURL(sourceFile)
+    setSourcePreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [sourceFile])
+
+  useEffect(() => {
+    if (!token || !credential) return
+    const controller = new AbortController()
+    void loadModels(controller.signal)
+    return () => controller.abort()
+  }, [token, credential])
+
+  const current = useMemo(
+    () => models.find((item) => item.model === modelId) || models[0],
+    [models, modelId]
+  )
+  const enriched = current
+    ? enrichVendorModel({
+        id: current.model,
+        name: current.display_name,
+        owned_by: current.owned_by
+      })
+    : null
+  const intro = current ? getImageModelIntro(current.model) || enriched?.intro : ''
+  const perImage = isPerImageBilling(current)
+  const sizeTier = resolveImageSizeTier(size)
+  const estimateUsd = perImage ? pickImageTierPrice(current?.per_image_tiers, size) : null
+  const gptImage = supportsGptImageControls(current?.model || '')
+  const needsSource = mode !== 'text'
+  const guide = MODE_GUIDE[mode]
+
+  const onGenerate = async () => {
+    const text = prompt.trim()
+    if (!text) {
+      message.warning(mode === 'edit' ? '请填写修改说明' : '请填写提示词')
+      return
+    }
+    if (!current?.model) {
+      message.warning('当前供应商暂无可用图像模型')
+      return
+    }
+    if (needsSource && !sourceFile) {
+      message.warning(mode === 'edit' ? '请先从本机选择要修改的原图' : '请先从本机选择参考图')
+      return
+    }
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+    setGenerating(true)
+    setError('')
+    try {
+      let res: ImageGenerationResult
+      if (needsSource && sourceFile) {
+        res = await postImagesEdits(
+          {
+            model: current.model,
+            prompt: text,
+            image: sourceFile,
+            mask: mode === 'edit' && gptImage ? maskFile : null,
+            n: 1,
+            size,
+            quality,
+            input_fidelity: gptImage ? fidelity : undefined,
+            response_format: 'b64_json'
+          },
+          controller.signal
+        )
+      } else {
+        res = await postImagesGenerations(
+          {
+            model: current.model,
+            prompt: text,
+            n: 1,
+            size,
+            quality,
+            response_format: 'b64_json'
+          },
+          controller.signal
+        )
       }
-    })
-    addDrawImage(addImagesData)
-  }
+      const src = resultToSrc(res.data?.[0])
+      if (!src) throw new Error('上游未返回图片数据')
 
-  const onStartDraw = async () => {
-    if (gptLoading) {
-      message.warning('请等待提示词优化完毕')
-      return
-    }
-    if (!drawConfig.prompt) {
-      message.warning('请输入提示词')
-      return
-    }
-    if (!token) {
-      setLoginModal(true)
-      return
-    }
-    setDrawResultData({
-      loading: true,
-      list: []
-    })
-
-    await postImagesGenerations(
-      {
-        ...drawConfig,
-        draw_type: drawType
-      },
-      {},
-      { timeout: 0 }
-    )
-      .then(handleDraw)
-      .finally(() => {
-        setDrawResultData((dr) => ({ ...dr, loading: false }))
-      })
-  }
-
-  async function optimizePrompt() {
-    setGptLoading(true)
-    const response = await postChatCompletion({
-      prompt: drawConfig.prompt,
-      type: 'draw'
-    })
-      .then((res) => {
-        return res
-      })
-      .catch((error) => {
-        setGptLoading(false)
-        return error
-      })
-
-    const reader = response.body?.getReader?.()
-    let allContent = ''
-    while (true) {
-      const { done = true, value } = (await reader?.read()) || {}
-      if (done) {
-        setGptLoading(false)
-        break
+      try {
+        await saveDrawImageToCache(userKey, {
+          model: current.model,
+          prompt: text,
+          src,
+          size,
+          quality,
+          mode,
+          billing: res.billing?.notice
+        })
+        setGalleryPage(1)
+        await loadGallery(1)
+        message.success('生成成功，已写入本机浏览器缓存，请及时下载保存')
+      } catch (cacheErr) {
+        message.warning(
+          cacheErr instanceof Error
+            ? `生成成功，但本地缓存失败：${cacheErr.message}，请立即手动下载`
+            : '生成成功，但本地缓存失败，请立即手动下载'
+        )
       }
-      // 将获取到的数据片段显示在屏幕上
-      const text = new TextDecoder('utf-8').decode(value)
-      const texts = handleChatData(text)
-      for (let i = 0; i < texts.length; i++) {
-        const { content, segment } = texts[i]
-        allContent += content ? content : ''
-        if (segment === 'stop') {
-          setGptLoading(false)
-          break
-        }
 
-        if (segment === 'start') {
-          setDrawConfig((config) => ({ ...config, prompt: allContent }))
-        }
-        if (segment === 'text') {
-          setDrawConfig((config) => ({ ...config, prompt: allContent }))
-        }
-      }
+    } catch (err) {
+      if ((err as any)?.name === 'AbortError') return
+      setError(err instanceof Error ? err.message : '图像处理失败')
+    } finally {
+      setGenerating(false)
     }
   }
 
-  const handleScroll = () => {
-    const twoClientHeight = containerTwoRef.current?.clientHeight || 0
-    const oneScrollTop = containerOneRef.current?.scrollTop || 0
-    const clientHeight = containerOneRef.current?.clientHeight || 0
-    const scrollHeight = containerOneRef.current?.scrollHeight || 0
-    if (!drawRecordData.loading && !drawRecordData.isAll && (oneScrollTop + clientHeight + 40) >= scrollHeight) {
-      getDrawListData({
-        page: drawRecordData.page + 1,
-        type: drawRecordData.type
-      })
-    }
-
-    if (drawRecordData.type === 'gallery') {
-      setBottom(-(twoClientHeight + 100))
-      return
-    }
-
-    if (oneScrollTop > 100) {
-      setBottom(-(twoClientHeight + 100))
-    } else {
-      setBottom(0)
+  const onDownload = async (item: DrawCacheRecord) => {
+    try {
+      await downloadDrawImage(item)
+      message.success('已开始下载')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '下载失败')
     }
   }
 
-  useLayoutEffect(() => {
-    containerOneRef.current?.addEventListener('scroll', handleScroll)
-    return () => {
-      containerOneRef.current?.removeEventListener('scroll', handleScroll)
-    }
-  }, [drawRecordData])
-
-  function SegmentedLabel({ icon, title }: { icon: string; title: string }) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <img style={{ width: 24, marginRight: 4 }} src={icon} alt={title} />
-        <span style={{ fontWeight: 500 }}>{title}</span>
-      </div>
-    )
-  }
-
-  const showFile = async (file: any) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      setShowImage(reader.result)
+  const onDelete = async (id: string) => {
+    try {
+      await deleteDrawImage(id)
+      message.success('已从本地图库删除')
+      await loadGallery(galleryPage)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '删除失败')
     }
   }
 
-  function DrawPageHeader(props: { type: string }) {
-    return (
-      <div className={styles.drawPage_mydraw_header}>
-        <div>
-          <h4>{props.type === 'me' ? '我的绘画' : '绘画广场'}</h4>
-          <p>{props.type === 'me' ? '请及时保存绘画图片，链接可能会失效' : '可以将你的好作品提交给大家使用'}</p>
-        </div>
-        {
-          props.type === 'me' && (
-            <Popconfirm
-              title="清除历史绘画"
-              description="确定清除所有绘画数据吗？"
-              onConfirm={() => {
-                drawAsync.fetchSetDrawImages({ status: 0 })
-              }}
-              okText="Yes"
-              cancelText="No"
-            >
-              <ClearOutlined className={styles.drawPage_mydraw_header_icon} />
-            </Popconfirm>
-          )
-        }
-      </div>
-    )
-  }
-
-  function DrawEmpty({ isShow }: { isShow: boolean }) {
-    if (!isShow) return
-    return <Empty style={{ paddingTop: 100 }} image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无绘画记录" />
-  }
-
-  const drawImagesList = useMemo(() => {
-    if (drawRecordData.type === 'me') {
-      return [...historyDrawImages]
+  const onUseCached = async (item: DrawCacheRecord, nextMode: DrawMode) => {
+    try {
+      const blob = await getDrawImageBlob(item.id)
+      if (!blob) throw new Error('本地缓存中找不到该图片')
+      const file = new File([blob], `draw-${item.id.slice(0, 8)}.png`, { type: blob.type || 'image/png' })
+      setMode(nextMode)
+      setSourceFile(file)
+      setMaskFile(null)
+      message.success(nextMode === 'edit' ? '已填入待修改的原图，请写修改说明' : '已填入参考图，请写想生成的画面')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '读取本地图片失败')
     }
-    return [...galleryDrawImages]
-  }, [drawRecordData, historyDrawImages, galleryDrawImages])
+  }
+
+  const onClearAll = async () => {
+    try {
+      const n = await clearDrawImages(userKey)
+      message.success(n ? `已清空 ${n} 张本地缓存` : '本地图库已是空的')
+      setGalleryPage(1)
+      await loadGallery(1)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '清空失败')
+    }
+  }
 
   return (
-    <div className={styles.drawPage}>
+    <div className={styles.page}>
       <Layout>
-        <div className={styles.drawPage_container}>
-          <div className={styles.drawPage_container_one} ref={containerOneRef}>
-            <div className={styles.drawPage_header}>
-              <img src="https://u1.dl0.cn/icon/Midjourneybf2f31b4a2ac2dc9.png" alt="Midjourney" />
-              <h2>AI 一下，妙笔生画</h2>
-              <h4>只需一句话，让你的文字变成画作</h4>
+        <div className={styles.wrap}>
+          <header className={styles.head}>
+            <div>
+              <p className={styles.kicker}>
+                <PictureOutlined /> 文生图 · 图生图 · 修改图片
+              </p>
+              <h1>AI 绘图</h1>
+              <p>
+                文生图从文字出图；图生图和修改图片在本机选图，提交时把图片数据放进同一次请求由中转转发，网站不保存原图。修改图片时，多数情况写清楚改哪里即可；只有必须锁住其余画面时，才用「只改一块」。价格跟随当前供应商。
+              </p>
             </div>
-            <div
-              className={styles.drawPage_create}
-              style={{
-                minHeight: drawResultData.loading || drawResultData.list.length > 0 ? '' : 0
-              }}
-            >
-              {drawResultData.loading && <OpenAiLogo rotate width="3em" height="3em" />}
-              <Image.PreviewGroup>
-                {drawResultData.list.map((item) => {
-                  return (
-                    <Image
-                      className={styles.drawPage_image}
-                      key={item.images?.[0]}
-                      width={220}
-                      src={item.images?.[0]}
-                    />
-                  )
-                })}
-              </Image.PreviewGroup>
-            </div>
-            <div className={styles.drawPage_selectTab}>
-              <Segmented
-                defaultValue="me"
-                value={drawRecordData.type}
-                onChange={(value: any) => {
-                  if (value === 'me' && !token) {
-                    setLoginModal(true)
-                    return
-                  }
-                  handleScroll()
-                  setDrawRecordData(data => ({ ...data, type: value, page: 1, isAll: false }))
-                  getDrawListData({ page: 1, type: value })
-                }}
-                options={[
-                  {
-                    value: 'me',
-                    label: '我的绘画'
-                  },
-                  {
-                    value: 'gallery',
-                    label: '绘画广场'
-                  }
-                ]}
-              />
-            </div>
-            <div className={styles.drawPage_mydraw}>
-              <DrawPageHeader type={drawRecordData.type} />
-              <DrawEmpty isShow={
-                drawRecordData.type === 'me' && historyDrawImages.length <= 0
-                ||
-                drawRecordData.type === 'gallery' && galleryDrawImages.length <= 0
-              }
-              />
+            {token && credential ? (
+              <Button icon={<ReloadOutlined />} loading={loadingModels} onClick={() => void loadModels()}>
+                刷新模型
+              </Button>
+            ) : null}
+          </header>
 
-              <Image.PreviewGroup>
-                <div className={styles.drawPage_mydraw_list}>
-                  {
-                    drawImagesList.map((item) => {
-                      return (
-                        <ImageCard
-                          key={item.id}
-                          {...item}
-                          type={drawRecordData.type}
-                          onClickOperate={(id, status) => {
-                            drawAsync.fetchSetDrawImages({ id, status }).then((res) => {
-                              if (!res.code) {
-                                message.success('操作成功')
-                              } else {
-                                message.error('操作失败')
-                              }
-                            })
-                          }}
-                        />
-                      )
-                    })
-                  }
-                </div>
-              </Image.PreviewGroup>
-              <div className={styles.drawPage_container_footer}>
-                {
-                  drawRecordData.loading ? <span><SyncOutlined spin /> 加载中...</span> :
-                    drawRecordData.isAll ? <span>- 我也是有底线的 -</span> :
-                      <span />
-                }
-              </div>
-            </div>
-          </div>
-          <div
-            className={styles.drawPage_container_two}
-            style={{
-              bottom: bottom
-            }}
-            ref={containerTwoRef}
-          >
-            <div className={styles.drawPage_config}>
-              <div
-                style={{
-                  paddingLeft: 20,
-                  paddingRight: 20
-                }}
-              >
-                <div
-                  className={styles.drawPage_config_collapse}
-                  onClick={() => {
-                    setCollapse((c) => {
-                      return !c
-                    })
-                  }}
+          <Alert
+            showIcon
+            type="warning"
+            className={styles.storageNotice}
+            message="图像仅保存在您当前设备的浏览器中"
+            description={
+              <span>
+                本网站<strong>数据库不存储</strong>您的原图和生成结果。参考图只在浏览器里读取，点生成时把图片数据放进同一次请求，由中转转发。生成结果写入本机 IndexedDB。刷新页面或重启浏览器后仍可在此查看（同一台电脑、同一浏览器）。
+                换设备、换浏览器、清除站点数据或卸载浏览器会导致<strong>永久丢失</strong>，若满意请及时点击「下载」保存到本地磁盘。
+              </span>
+            }
+          />
+
+          <section className={styles.guide}>
+            {(Object.keys(MODE_GUIDE) as DrawMode[]).map((key) => {
+              const item = MODE_GUIDE[key]
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={mode === key ? `${styles.guideCard} ${styles.guideOn}` : styles.guideCard}
+                  onClick={() => setMode(key)}
                 >
-                  {' '}
-                  {collapse ? (
-                    <p>
-                      <CaretUpOutlined /> <span style={{ fontSize: 12 }}>展开配置</span>
-                    </p>
-                  ) : (
-                    <p>
-                      <CaretDownOutlined /> <span style={{ fontSize: 12 }}>收缩配置</span>
-                    </p>
-                  )}{' '}
-                </div>
+                  <strong>{MODE_LABEL[key]}</strong>
+                  <span>{item.title}</span>
+                </button>
+              )
+            })}
+          </section>
+
+          <Alert
+            showIcon
+            type="info"
+            message={`怎么用「${MODE_LABEL[mode]}」`}
+            description={
+              <div className={styles.howTo}>
+                <ol>
+                  {guide.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+                <p>示例提示词：{guide.example}</p>
+                {mode === 'edit' ? (
+                  <div className={styles.maskHelp}>
+                    <p>「只改一块」是可选的，多数人用不到。它是一张和原图一样大的 PNG，专门圈出允许重画的位置：要改的地方做成透明，其余涂实。</p>
+                    <p>适合：去掉路人、水印或杂物；只换背景、人不要动；只改衣服或手里的东西。整张图换风格时不要用。不会做这种图就跳过，把位置写进修改说明。</p>
+                  </div>
+                ) : null}
+              </div>
+            }
+          />
+
+          {!token ? (
+            <Alert
+              showIcon
+              type="info"
+              message="登录后即可按上面的步骤出图"
+              description={
+                <Button type="link" onClick={() => setLoginModal(true)}>
+                  登录 / 注册
+                </Button>
+              }
+            />
+          ) : !credential ? (
+            <Alert showIcon type="warning" message="请先到「Agent 接入」页创建 sk- 密钥，再调用绘图" />
+          ) : error && !models.length ? (
+            <Alert showIcon type="error" message={error} action={<Button onClick={() => void loadModels()}>重试</Button>} />
+          ) : null}
+
+          {token && credential ? (
+            <section className={styles.panel}>
+              <div className={styles.field}>
+                <label>用法</label>
                 <Segmented
                   block
-                  value={drawType}
-                  style={{
-                    backgroundImage: 'linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)'
-                  }}
-                  onChange={(e) => {
-                    setDrawType(e.toString())
-                  }}
-                  options={[
-                    {
-                      label: useMemo(
-                        () => (
-                          <SegmentedLabel
-                            icon="https://u1.dl0.cn/icon/openai_draw_icon.png"
-                            title="OpenAI"
-                          />
-                        ),
-                        []
-                      ),
-                      value: 'openai'
-                    },
-                    {
-                      label: useMemo(
-                        () => (
-                          <SegmentedLabel
-                            icon="https://u1.dl0.cn/icon/sd_draw_icon.png"
-                            title="StableDiffusion"
-                          />
-                        ),
-                        []
-                      ),
-                      value: 'stablediffusion'
-                    }
-                  ]}
+                  value={mode}
+                  onChange={(value) => setMode(value as DrawMode)}
+                  options={(Object.keys(MODE_LABEL) as DrawMode[]).map((key) => ({
+                    label: MODE_LABEL[key],
+                    value: key
+                  }))}
                 />
-                <div
-                  className={styles.drawPage_config_options}
-                  style={{
-                    maxHeight: collapse ? 0 : '300px'
-                  }}
-                >
-                  <div className={styles.drawPage_config_group}>
-                    <div className={styles.drawPage_config_item}>
-                      <p>图片宽度：</p>
-                      <Select
-                        defaultValue={drawConfig.width}
-                        value={drawConfig.width}
-                        options={drawSize}
-                        onChange={(e) => {
-                          setDrawConfig((c) => ({ ...c, width: e }))
-                        }}
-                      />
-                    </div>
-                    <div className={styles.drawPage_config_item}>
-                      <p>图片高度：</p>
-                      <Select
-                        defaultValue={drawConfig.height}
-                        value={drawConfig.height}
-                        options={drawSize}
-                        onChange={(e) => {
-                          setDrawConfig((c) => ({ ...c, height: e }))
-                        }}
-                      />
-                    </div>
-                    {/* <div className={styles.drawPage_config_item}>
-                      <p>生成数量({drawConfig.quantity}张)：</p>
-                      <Slider
-                        defaultValue={drawConfig.quantity}
-                        value={drawConfig.quantity}
-                        min={1}
-                        max={10}
-                        onChange={(e) => {
-                          setDrawConfig((c) => ({ ...c, quantity: e }))
-                        }}
-                      />
-                    </div> */}
+              </div>
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label>图像模型</label>
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    loading={loadingModels}
+                    value={current?.model}
+                    onChange={setModelId}
+                    options={models.map((item) => ({
+                      value: item.model,
+                      label: item.display_name || item.model
+                    }))}
+                    placeholder={loadingModels ? '加载中…' : '选择模型'}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label>尺寸</label>
+                  <Select value={size} onChange={setSize} options={SIZES} />
+                </div>
+                <div className={styles.field}>
+                  <label>质量</label>
+                  <Select value={quality} onChange={setQuality} options={QUALITIES} />
+                </div>
+                {needsSource && gptImage ? (
+                  <div className={styles.field}>
+                    <label>贴合原图</label>
+                    <Select
+                      value={fidelity}
+                      onChange={setFidelity}
+                      options={[
+                        { label: '高：尽量保留原图细节', value: 'high' },
+                        { label: '低：允许更大改动', value: 'low' }
+                      ]}
+                    />
                   </div>
-                  {drawType === 'stablediffusion' && (
-                    <div className={styles.drawPage_config_group}>
-                      <div className={styles.drawPage_config_item}>
-                        <p>优化次数({drawConfig.steps})：</p>
-                        <Slider
-                          defaultValue={drawConfig.steps}
-                          value={drawConfig.steps}
-                          min={10}
-                          max={150}
-                          onChange={(e) => {
-                            setDrawConfig((c) => ({ ...c, steps: e }))
-                          }}
-                        />
-                      </div>
-                      <div className={styles.drawPage_config_item}>
-                        <p>图像质量({drawConfig.quality})：</p>
-                        <Slider
-                          defaultValue={drawConfig.quality}
-                          value={drawConfig.quality}
-                          min={1}
-                          max={37}
-                          onChange={(e) => {
-                            setDrawConfig((c) => ({ ...c, quality: e }))
-                          }}
-                        />
-                      </div>
-                      <div className={styles.drawPage_config_item}>
-                        <p>图像风格：</p>
-                        <Select
-                          defaultValue={drawConfig.style}
-                          value={drawConfig.style}
-                          options={stylePresets}
-                          clearIcon
-                          onChange={(e) => {
-                            setDrawConfig((c) => ({ ...c, style: e }))
-                          }}
-                        />
-                        {/* <Radio.Group onChange={(e) => {
-                      const { value } = e.target;
-                      if (value === drawConfig.style) {
-                        setDrawConfig((c) => ({ ...c, style: '' }))
-                        return
-                      }
-                      setDrawConfig((c) => ({ ...c, style: value }))
-                    }} defaultValue={drawConfig.style} value={drawConfig.style}
-                    >
-                      <div className={styles.drawPage_config_stylePresets}>
-                        {stylePresets.map((item) => {
-                          const stylePresetsClassName = drawConfig.style === item.value ?
-                            `${styles.drawPage_config_stylePresets_item} ${styles.drawPage_config_stylePresets_select}` : styles.drawPage_config_stylePresets_item
-                          return (
-                            <div className={stylePresetsClassName} key={item.value}>
-                              <Radio value={item.value}><span className={styles.drawPage_config_stylePresets_item_text}>{item.label}</span></Radio>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </Radio.Group> */}
-                      </div>
-                    </div>
+                ) : null}
+              </div>
+
+              {current ? (
+                <div className={styles.meta}>
+                  <Tag color="blue">{current.model}</Tag>
+                  {perImage ? (
+                    <>
+                      <Tag color="green">按张计费 · {sizeTier.toUpperCase()}</Tag>
+                      {formatTierMap(current.per_image_tiers).map((text) => (
+                        <span key={text}>{text}</span>
+                      ))}
+                      {estimateUsd != null ? (
+                        <span>当前尺寸预估 {formatUsd(estimateUsd)} / 张</span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <Tag>按 tokens 计费</Tag>
+                      <span>文本输入 {formatUsd(current.text_input)} / 百万 tokens</span>
+                      <span>图像输入 {formatUsd(current.image_input)} / 百万 tokens</span>
+                      <span>输出 {formatUsd(current.output)} / 百万 tokens</span>
+                    </>
                   )}
                 </div>
-              </div>
-              <div className={styles.drawPage_config_input}>
-                <Upload
-                  maxCount={1}
-                  accept="image/*"
-                  disabled={drawType === 'openai'}
-                  showUploadList={false}
-                  customRequest={(options) => {
-                    showFile(options.file)
-                    setDrawConfig((config) => ({ ...config, image: options.file as File }))
-                  }}
-                >
-                  <div
-                    className={styles.drawPage_config_input_image}
-                    style={{
-                      opacity: drawType === 'stablediffusion' ? 1 : 0.6,
-                      cursor: drawType === 'stablediffusion' ? 'pointer' : 'not-allowed',
-                      backgroundImage: drawConfig.image && showImage ? `url(${showImage})` : ''
-                    }}
-                  >
-                    上传图片
-                    {drawConfig.image && (
-                      <div
-                        className={styles.drawPage_config_input_image_close}
-                        onClick={(e) => {
-                          setDrawConfig((config) => ({ ...config, image: '' }))
-                          setShowImage('')
-                          e.stopPropagation()
-                        }}
-                      >
-                        <CloseCircleOutlined />
+              ) : null}
+              {intro ? <p className={styles.intro}>{intro}</p> : null}
+
+              {needsSource ? (
+                <div className={styles.uploadRow}>
+                  <div className={styles.field}>
+                    <label>{mode === 'edit' ? '要修改的原图' : '参考图'}</label>
+                    <Button
+                      icon={<UploadOutlined />}
+                      onClick={() =>
+                        readLocalImage('image/png,image/jpeg,image/webp,image/gif', setSourceFile)
+                      }
+                    >
+                      {sourceFile ? '更换图片' : mode === 'edit' ? '选择原图' : '选择参考图'}
+                    </Button>
+                    {sourceFile ? (
+                      <div className={styles.fileLine}>
+                        {sourcePreview ? (
+                          <img className={styles.thumb} src={sourcePreview} alt="" />
+                        ) : null}
+                        <span>{sourceFile.name}</span>
+                        <Button type="link" size="small" onClick={() => setSourceFile(null)}>
+                          移除
+                        </Button>
                       </div>
+                    ) : (
+                      <p className={styles.fileHint}>
+                        只从本机读入，不会先传到网站。也可在下方图库里把已有图片设为参考图。
+                      </p>
                     )}
                   </div>
-                </Upload>
-                <Input.TextArea
-                  autoSize={{
-                    minRows: 3,
-                    maxRows: 3
-                  }}
-                  defaultValue={drawConfig.prompt}
-                  value={drawConfig.prompt}
-                  onChange={(e) => {
-                    setDrawConfig((config) => ({ ...config, prompt: e.target.value }))
-                  }}
-                  style={{
-                    borderRadius: 0
-                  }}
-                  placeholder="请输入绘画提示次，可勾选优化文案功能对提示词进行优化效果会更好哦！"
-                />
-                <div className={styles.drawPage_config_input_buttons}>
-                  <div onClick={optimizePrompt}>{gptLoading && <LoadingOutlined />} 优化文案</div>
-                  <div onClick={onStartDraw}>
-                    {drawResultData.loading && <LoadingOutlined />} 生成图像
-                  </div>
+                  {mode === 'edit' && gptImage ? (
+                    <div className={styles.field}>
+                      <label>只改一块（可选，多数情况不用选）</label>
+                      <div className={styles.maskHelp}>
+                        <p>这是一张和原图一样大的 PNG，用来圈出「只许改这里」。</p>
+                        <p>要改的地方做成透明，不想动的地方涂实。透明处会重画，涂实处尽量保持原样。</p>
+                        <p>适合这些情况：去掉路人、水印或杂物；只换背景，人不要动；只改衣服颜色或手里的东西。</p>
+                        <p>整张图都要换风格时不要选。不会做这种图也没关系，把要改的位置写进修改说明即可。</p>
+                      </div>
+                      <Button icon={<UploadOutlined />} onClick={() => readLocalImage('image/png', setMaskFile)}>
+                        {maskFile ? '更换这张圈选图' : '选择「只改这一块」的图'}
+                      </Button>
+                      {maskFile ? (
+                        <div className={styles.fileLine}>
+                          <span>{maskFile.name}</span>
+                          <Button type="link" size="small" onClick={() => setMaskFile(null)}>
+                            移除
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className={styles.fileHint}>不选的话，就按修改说明处理整张图。这张图也只在提交时随请求转发，宽高要和原图一样。</p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
+              ) : null}
+
+              <div className={styles.field}>
+                <label>{mode === 'edit' ? '修改说明' : '提示词'}</label>
+                <Input.TextArea
+                  rows={5}
+                  maxLength={4000}
+                  showCount
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={guide.example}
+                />
               </div>
+
+              {error ? <Alert showIcon type="error" message={error} style={{ marginBottom: 12 }} /> : null}
+
+              <Space>
+                <Button type="primary" size="large" loading={generating} onClick={() => void onGenerate()}>
+                  {mode === 'edit' ? '修改图片' : mode === 'img2img' ? '按参考图生成' : '生成图片'}
+                </Button>
+                {generating ? (
+                  <Button
+                    onClick={() => {
+                      abortRef.current?.abort()
+                      setGenerating(false)
+                    }}
+                  >
+                    取消
+                  </Button>
+                ) : null}
+              </Space>
+            </section>
+          ) : null}
+
+          <section className={styles.panel}>
+            <div className={styles.galleryHead}>
+              <div>
+                <h2>本地图库</h2>
+                <p className={styles.galleryHint}>
+                  共 {galleryTotal} 张 · 保存在本机浏览器 · 第 {galleryPage} 页
+                </p>
+              </div>
+              <Space wrap>
+                <Button
+                  icon={<ReloadOutlined />}
+                  loading={galleryLoading}
+                  onClick={() => void loadGallery(galleryPage)}
+                >
+                  刷新列表
+                </Button>
+                <Popconfirm
+                  title="清空本机图库？"
+                  description="仅删除浏览器缓存，不影响已下载到磁盘的文件。"
+                  onConfirm={() => void onClearAll()}
+                  disabled={!galleryTotal}
+                >
+                  <Button danger icon={<DeleteOutlined />} disabled={!galleryTotal}>
+                    清空本地图库
+                  </Button>
+                </Popconfirm>
+              </Space>
             </div>
-          </div>
+
+            {!gallery.length && !galleryLoading ? (
+              <Empty description="还没有本地缓存的生成记录，生成后会自动保存在本机" />
+            ) : (
+              <>
+                <div className={styles.grid}>
+                  {gallery.map((item) => (
+                    <article key={item.id} className={styles.card}>
+                      <Image src={item.previewUrl} alt={item.prompt} />
+                      <div className={styles.cardBody}>
+                        <strong>{item.model}</strong>
+                        <p>{item.prompt}</p>
+                        <time>{item.timeLabel}</time>
+                        {item.mode ? <Tag>{MODE_LABEL[item.mode]}</Tag> : null}
+                        {item.size ? (
+                          <div className={styles.metaLine}>
+                            尺寸 {item.size}
+                            {item.quality ? ` · 质量 ${item.quality}` : ''}
+                          </div>
+                        ) : null}
+                        {item.billing ? <div className={styles.bill}>{item.billing}</div> : null}
+                        <Space className={styles.cardActions} wrap>
+                          <Button
+                            type="primary"
+                            size="small"
+                            icon={<DownloadOutlined />}
+                            onClick={() => void onDownload(item)}
+                          >
+                            下载
+                          </Button>
+                          {token && credential ? (
+                            <>
+                              <Button size="small" icon={<PictureOutlined />} onClick={() => void onUseCached(item, 'img2img')}>
+                                作为参考图
+                              </Button>
+                              <Button size="small" icon={<EditOutlined />} onClick={() => void onUseCached(item, 'edit')}>
+                                去修改
+                              </Button>
+                            </>
+                          ) : null}
+                          <Popconfirm title="从本机图库删除这张？" onConfirm={() => void onDelete(item.id)}>
+                            <Button size="small" danger icon={<DeleteOutlined />}>
+                              删除
+                            </Button>
+                          </Popconfirm>
+                        </Space>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+                {galleryTotal > PAGE_SIZE ? (
+                  <div className={styles.pagination}>
+                    <Pagination
+                      current={galleryPage}
+                      pageSize={PAGE_SIZE}
+                      total={galleryTotal}
+                      showSizeChanger={false}
+                      onChange={(p) => setGalleryPage(p)}
+                      showTotal={(t) => `共 ${t} 张`}
+                    />
+                  </div>
+                ) : null}
+              </>
+            )}
+          </section>
         </div>
       </Layout>
     </div>

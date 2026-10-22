@@ -1,0 +1,163 @@
+.page {
+  max-width: 1400px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    color: #101828;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #667085;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+}
+
+.alert {
+  margin-bottom: 16px;
+}
+
+.routeSection {
+  margin-top: 28px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #101828;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #667085;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+}
+
+.replaceBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+
+  :global(.ant-input),
+  :global(.ant-input-password) {
+    width: 240px;
+  }
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.code {
+  margin-top: 4px;
+  color: #98a2b3;
+  font-size: 12px;
+}
+
+.url {
+  display: inline-block;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f2f4f7;
+  color: #344054;
+  font-size: 12px;
+}
+
+.muted {
+  color: #98a2b3;
+}
+
+.balanceCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+
+  :global(.ant-btn-link) {
+    padding-inline: 0;
+    height: auto;
+  }
+}
+
+.modelForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  margin-bottom: 16px;
+
+  :global(.ant-form-item) {
+    margin-bottom: 8px;
+  }
+}
+
+.modelToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modelSearch {
+  width: 260px;
+}
+
+.typeBlock {
+  margin-bottom: 16px;
+}
+
+.typeTitle {
+  margin-bottom: 4px;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.typeHint {
+  margin: 0 0 10px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.typeRow {
+  display: grid;
+  grid-template-columns: 44px 96px 56px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+  }
+}

@@ -1,41 +1,25 @@
+import type { RefObject } from 'react'
+import { useCallback, useRef } from 'react'
 
-type ScrollElement = HTMLDivElement | null
+export function useScroll(scrollRef: RefObject<HTMLDivElement | null>) {
+  const pinnedToBottom = useRef(true)
 
-interface ScrollReturn {
-  scrollElement: ScrollElement
-  scrollToBottom: () => Promise<void>
-  scrollToTop: () => Promise<void>
-  scrollToBottomIfAtBottom: () => Promise<void>
-}
+  const trackScroll = useCallback(() => {
+    const element = scrollRef.current
+    if (!element) return
+    pinnedToBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight <= 100
+  }, [scrollRef])
 
-export function useScroll(scrollElement: ScrollElement): ScrollReturn {
+  const scrollToBottom = useCallback(() => {
+    const element = scrollRef.current
+    if (!element) return
+    element.scrollTop = element.scrollHeight
+    pinnedToBottom.current = true
+  }, [scrollRef])
 
-  const scrollToBottom = async () => {
-    if (scrollElement) {
-      scrollElement.scrollTop = scrollElement.scrollHeight
-    }
-  }
+  const scrollToBottomIfAtBottom = useCallback(() => {
+    if (pinnedToBottom.current) scrollToBottom()
+  }, [scrollToBottom])
 
-  const scrollToTop = async () => {
-    if (scrollElement){
-      scrollElement.scrollTop = 0
-    }
-  }
-
-  const scrollToBottomIfAtBottom = async () => {
-    if (scrollElement) {
-      const threshold = 100 // 阈值，表示滚动条到底部的距离阈值
-      const distanceToBottom = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
-      if (distanceToBottom <= threshold){
-        scrollElement.scrollTop = scrollElement.scrollHeight
-      }
-    }
-  }
-
-  return {
-    scrollElement,
-    scrollToBottom,
-    scrollToTop,
-    scrollToBottomIfAtBottom,
-  }
+  return { scrollToBottom, scrollToBottomIfAtBottom, trackScroll }
 }

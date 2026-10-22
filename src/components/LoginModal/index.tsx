@@ -1,4 +1,4 @@
-import { getCode } from '@/request/api'
+import { resetPassword, sendPasswordCode, suggestAnonymousUsername } from '@/request/api'
 import { userAsync } from '@/store/async'
 import { RequestLoginParams } from '@/types'
 import {
@@ -10,16 +10,22 @@ import {
   TwitterCircleFilled
 } from '@ant-design/icons'
 import { LoginForm, ProFormCaptcha, ProFormText } from '@ant-design/pro-form'
-import { Button, Form, FormInstance, Modal, Space, Tabs, message } from 'antd'
+import { Alert, Button, Form, FormInstance, Modal, Space, Switch, Tabs, message } from 'antd'
 import { useState } from 'react'
 import { useNavigation, useLocation } from 'react-router-dom'
 import md5 from 'md5'
+import { copyToClipboard } from '@/utils'
+
+const ANONYMOUS_NOTICE =
+  '匿名用户可以正常使用和充值，但请务必记住用户名和密码。忘记后无法自行找回，本站不承担任何责任。除非联系站长，否则无法找回账号。'
 type Props = {
   open: boolean
   onCancel: () => void
 }
 
-type LoginType = 'code' | 'password' | 'register' | string
+type LoginType = 'code' | 'password' | 'register' | 'reset' | string
+
+const passwordRule = /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
 
 export function LoginCard(props: {
   form: FormInstance<RequestLoginParams>
@@ -36,9 +42,36 @@ export function LoginCard(props: {
 
   const { type = 'password' } = props
 
-  const [loginTabsValue, setLoginTabsValue] = useState<LoginType>('login') // 登陆注册tab标志
-  const [loginType, setLoginType] = useState<LoginType>(type) // 登陆注册标志验证码
-  console.log(loginTabsValue)
+  const [loginTabsValue, setLoginTabsValue] = useState<LoginType>('login')
+  const [loginType, setLoginType] = useState<LoginType>(type)
+  const [sendingCode, setSendingCode] = useState(false)
+  const [codeWait, setCodeWait] = useState(0)
+  const [anonymous, setAnonymous] = useState(false)
+  const [generatedName, setGeneratedName] = useState('')
+  const [generatingName, setGeneratingName] = useState(false)
+
+  const loadAnonymousName = async () => {
+    setGeneratingName(true)
+    try {
+      const res: any = await suggestAnonymousUsername()
+      const name = res?.data?.username || ''
+      if (res?.data?.code === '0' && name) {
+        setGeneratedName(name)
+        return name
+      }
+      message.error(res?.data?.codeMsg || '暂时无法生成用户名')
+      return ''
+    } finally {
+      setGeneratingName(false)
+    }
+  }
+
+  const switchTab = (activeKey: string) => {
+    props.form.resetFields()
+    const nextType = activeKey === 'login' ? 'password' : activeKey
+    setLoginType(nextType)
+    setLoginTabsValue(activeKey)
+  }
   return (
     <LoginForm<RequestLoginParams>
       form={props.form}
@@ -65,30 +98,86 @@ export function LoginCard(props: {
       }}
       submitter={{
         searchConfig: {
-          submitText: loginType === 'register' ? '注册' : '登录'
+          submitText: loginType === 'register' ? '注册' : loginType === 'reset' ? '重置密码' : '登录'
         }
       }}
       onFinish={async (e:any) => {
-        console.log(loginTabsValue)
+        if (loginType === 'reset') {
+          if (e.password !== e.passwordSecond) {
+            message.error('两次输入密码不同')
+            return false
+          }
+          const res: any = await resetPassword({
+            email: (e.email || '').trim(),
+            code: (e.code || '').trim(),
+            password: md5(e.password)
+          })
+          if (res?.data?.code === '0' || res?.code === 0) {
+            message.success(res?.data?.codeMsg || '密码已重置，请登录')
+            switchTab('login')
+          }
+          return false
+        }
         if (loginType === 'register') {
           if(e.password!==e.passwordSecond){
             message.error('两次输入密码不同')
             return
           }
-          e.password = md5(e.password)
-          delete e.passwordSecond
-          let res = await userAsync.fetchRegister({...e})
-          if(res && res.data.code==='0'){
-            debugger
-            message.success(res.data.statusInfo)
-            let datalogin =  await userAsync.fetchLogin({password: e.password,userId: e.telephone} as any)
-            console.log(datalogin);
-            
-          }else{
-            message.error(res.data.codeMsg)
+          if (anonymous && !generatedName) {
+            message.error('请先生成用户名')
+            return false
           }
-          props.onSuccess?.()
-          return await false
+          const passwordMd5 = md5(e.password)
+          const payload: any = {
+            name: e.name,
+            password: passwordMd5,
+            anonymous
+          }
+          if (anonymous) {
+            payload.username = generatedName
+          } else {
+            payload.telephone = e.telephone
+            payload.email = e.email
+          }
+          const res: any = await userAsync.fetchRegister(payload)
+          if(res && res.data.code==='0'){
+            const finalName = res.data.bodyMessage?.username || generatedName
+            if (anonymous) {
+              await new Promise((resolve) => {
+                Modal.warning({
+                  title: '请牢记用户名和密码',
+                  closable: false,
+                  maskClosable: false,
+                  keyboard: false,
+                  okText: '我已记住，进入系统',
+                  content: (
+                    <div>
+                      <p>你的用户名是：<b>{finalName}</b></p>
+                      <Button
+                        type="link"
+                        style={{ padding: 0 }}
+                        onClick={() => {
+                          copyToClipboard(finalName).then(() => message.success('用户名已复制'))
+                        }}
+                      >
+                        复制用户名
+                      </Button>
+                      <p style={{ marginTop: 12 }}>{ANONYMOUS_NOTICE}</p>
+                    </div>
+                  ),
+                  onOk: () => resolve(true)
+                })
+              })
+              await userAsync.fetchLogin({ password: passwordMd5, userId: finalName } as any)
+            } else {
+              message.success(res.data.codeMsg || '注册成功')
+              await userAsync.fetchLogin({ password: passwordMd5, userId: e.telephone } as any)
+            }
+            props.onSuccess?.()
+          }else{
+            message.error(res?.data?.codeMsg || '注册失败')
+          }
+          return false
 
         } else {
           return new Promise((resolve, reject) => {
@@ -113,12 +202,7 @@ export function LoginCard(props: {
       <Tabs
         centered
         activeKey={loginTabsValue}
-        onChange={(activeKey) => {
-          props.form.resetFields()
-          const type = activeKey === 'login' ? 'password' : activeKey
-          setLoginType(type)
-          setLoginTabsValue(activeKey)
-        }}
+        onChange={switchTab}
         items={[
           {
             key: 'login',
@@ -127,6 +211,10 @@ export function LoginCard(props: {
           {
             key: 'register',
             label: '注册账户'
+          },
+          {
+            key: 'reset',
+            label: '找回密码'
           }
         ]}
       />
@@ -139,7 +227,7 @@ export function LoginCard(props: {
               prefix: <UserOutlined />
             }}
             name="userId"
-            placeholder="电子邮箱/手机号码"
+            placeholder="电子邮箱/手机号码/用户名"
             rules={[
               {
                 required: true
@@ -157,24 +245,59 @@ export function LoginCard(props: {
               {
                 required: true,
                 message: '8位及以上字母数字',
-                pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
+                pattern: passwordRule
               }
             ]}
           />
+          <div style={{ marginBottom: 12, textAlign: 'right' }}>
+            <Button type="link" onClick={() => switchTab('reset')}>
+              忘记密码
+            </Button>
+          </div>
         </div>
       )}
-      {loginTabsValue !== 'login' ? (
+      {loginTabsValue === 'register' ? (
         <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span>匿名注册</span>
+            <Switch
+              checked={anonymous}
+              onChange={(checked) => {
+                setAnonymous(checked)
+                if (checked) loadAnonymousName()
+              }}
+            />
+          </div>
+          {anonymous ? (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={ANONYMOUS_NOTICE}
+            />
+          ) : null}
+          {anonymous ? (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, color: '#667085' }}>系统用户名</div>
+              <Space>
+                <b style={{ fontSize: 18 }}>{generatingName ? '生成中…' : generatedName || '尚未生成'}</b>
+                <Button type="link" loading={generatingName} onClick={loadAnonymousName}>
+                  换一个
+                </Button>
+              </Space>
+            </div>
+          ) : null}
           <ProFormText
             fieldProps={{
               size: 'large',
               prefix: <UserOutlined />
             }}
-            name="code"
-            placeholder="网名"
+            name="name"
+            placeholder="名称"
             rules={[
               {
-                required: false
+                required: true,
+                message: '请填写名称'
               }
             ]}
           />
@@ -189,7 +312,7 @@ export function LoginCard(props: {
               {
                 required: true,
                 message: '8位及以上字母数字',
-                pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
+                pattern: passwordRule
               }
             ]}
           />
@@ -199,70 +322,145 @@ export function LoginCard(props: {
               size: 'large',
               prefix: <LockOutlined className={'prefixIcon'} />
             }}
-            placeholder="请在次输入密码"
+            placeholder="请再次输入密码"
             rules={[
               {
                 required: true,
                 message: '8位及以上字母数字',
-                pattern: /^(?:[a-zA-Z]{8,}|\d{8,}|(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z\d]{8,})$/
+                pattern: passwordRule
               }
             ]}
           />
-          <ProFormText
-            fieldProps={{
-              size: 'large',
-              prefix: <UserOutlined />
-            }}
-            name="telephone"
-            placeholder="电话号码"
-            rules={[
-              {
-                required: true,
-                pattern: /^1[3456789]\d{9}$/,
-                message:'请填写正确的电话号码'
-              }
-            ]}
-          />
+          {anonymous ? null : (
+            <>
+              <ProFormText
+                fieldProps={{
+                  size: 'large',
+                  prefix: <UserOutlined />
+                }}
+                name="telephone"
+                placeholder="电话号码"
+                rules={[
+                  {
+                    required: true,
+                    pattern: /^1[3456789]\d{9}$/,
+                    message:'请填写正确的电话号码'
+                  }
+                ]}
+              />
+              <ProFormText
+                fieldProps={{
+                  size: 'large',
+                  prefix: <UserOutlined />
+                }}
+                name="email"
+                placeholder="电子邮箱"
+                rules={[
+                  {
+                    required: true,
+                    pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message:'请填写正确的邮箱'
+                  }
+                ]}
+              />
+            </>
+          )}
+        </div>
+      ) : null}
+      {loginTabsValue === 'reset' ? (
+        <div>
           <ProFormText
             fieldProps={{
               size: 'large',
               prefix: <UserOutlined />
             }}
             name="email"
-            placeholder="电子邮箱"
+            placeholder="注册邮箱"
             rules={[
               {
                 required: true,
                 pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                message:'请填写正确的邮箱'
+                message: '请填写正确的邮箱'
               }
             ]}
           />
-          {/* <ProFormText
+          <Space.Compact style={{ width: '100%', marginBottom: 24 }}>
+            <ProFormText
+              fieldProps={{
+                size: 'large',
+                prefix: <LockOutlined />
+              }}
+              formItemProps={{ style: { marginBottom: 0, flex: 1 } }}
+              name="code"
+              placeholder="邮箱验证码"
+              rules={[{ required: true, message: '请输入验证码' }]}
+            />
+            <Button
+              size="large"
+              loading={sendingCode}
+              disabled={codeWait > 0}
+              onClick={async () => {
+                const email = String(props.form.getFieldValue('email') || '').trim()
+                if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                  message.error('请先填写正确的邮箱')
+                  return
+                }
+                setSendingCode(true)
+                try {
+                  const res: any = await sendPasswordCode({ email })
+                  if (res?.data?.code === '0' || res?.code === 0) {
+                    message.success(res?.data?.codeMsg || '验证码已发送')
+                    setCodeWait(60)
+                    const timer = window.setInterval(() => {
+                      setCodeWait((value) => {
+                        if (value <= 1) {
+                          window.clearInterval(timer)
+                          return 0
+                        }
+                        return value - 1
+                      })
+                    }, 1000)
+                  }
+                } finally {
+                  setSendingCode(false)
+                }
+              }}
+            >
+              {codeWait > 0 ? `${codeWait}s` : '获取验证码'}
+            </Button>
+          </Space.Compact>
+          <ProFormText.Password
+            name="password"
             fieldProps={{
               size: 'large',
-              prefix: <UserOutlined />
+              prefix: <LockOutlined />
             }}
-            name="email_code"
-            placeholder="电子邮箱验证码"
-          /> */}
-          <ProFormText
-            fieldProps={{
-              size: 'large',
-              prefix: <UserOutlined />
-            }}
-            name="name"
-            placeholder="姓名"
+            placeholder="新密码"
             rules={[
               {
-                required: false
+                required: true,
+                message: '8位及以上字母数字',
+                pattern: passwordRule
+              }
+            ]}
+          />
+          <ProFormText.Password
+            name="passwordSecond"
+            fieldProps={{
+              size: 'large',
+              prefix: <LockOutlined />
+            }}
+            placeholder="再次输入新密码"
+            rules={[
+              {
+                required: true,
+                message: '8位及以上字母数字',
+                pattern: passwordRule
               }
             ]}
           />
         </div>
-      ) : (
-        ''
-      )}
+      ) : null}
       <div
         style={{
           marginBlockEnd: 24

@@ -1,80 +1,108 @@
-import { DefaultFooter, PageContainer, ProLayout } from '@ant-design/pro-components'
+import { DefaultFooter, ProLayout } from '@ant-design/pro-components'
 import styles from './index.module.less'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { Dropdown } from 'antd'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Dropdown, Spin } from 'antd'
 import { LogoutOutlined } from '@ant-design/icons'
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
 import menuList from '@/routers/menu_list'
 import { chatStore, userStore } from '@/store'
-import OpenAiLogo from '@/components/OpenAiLogo'
+import { isAdmin } from '@/utils/isAdmin'
+import AdminOverview from './overview'
+import AdminUsers from './users'
+import AdminAnnouncement from './announcement'
+import AdminFeedback from './feedback'
+import AdminOrders from './orders'
+import AdminUsage from './usage'
+import AdminVendors from './vendors'
+import AdminPrompt from './prompt'
+import AdminPricing from './pricing'
+import AdminSoftware from './software'
+import AdminTasks from './tasks'
+import AdminPayChannel from './paychannel'
+
+function renderAdminContent(pathname: string) {
+  if (pathname.startsWith('/admin/users')) return <AdminUsers />
+  if (pathname.startsWith('/admin/paychannel')) return <AdminPayChannel />
+  if (pathname.startsWith('/admin/announcement')) return <AdminAnnouncement />
+  if (pathname.startsWith('/admin/feedback')) return <AdminFeedback />
+  if (pathname.startsWith('/admin/orders')) return <AdminOrders />
+  if (pathname.startsWith('/admin/usage')) return <AdminUsage />
+  if (pathname.startsWith('/admin/tasks')) return <AdminTasks />
+  if (pathname.startsWith('/admin/vendors')) return <AdminVendors />
+  if (pathname.startsWith('/admin/prompt')) return <AdminPrompt />
+  if (pathname.startsWith('/admin/pricing')) return <AdminPricing />
+  if (pathname.startsWith('/admin/software')) return <AdminSoftware />
+  return <AdminOverview />
+}
 
 function AdminPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { token, user_info, logout } = userStore()
   const { clearChats } = chatStore()
-  const [selectedKeys, setSelectedKeys] = useState<Array<string>>([])
-  if (!token || user_info?.role !== 'administrator') {
-    return (
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <OpenAiLogo rotate width="3em" height="3em" />
-      </div>
-    )
+  const pathname = location.pathname || '/admin'
+
+  useEffect(() => {
+    if (!token || !isAdmin(user_info)) {
+      navigate('/')
+    }
+  }, [token, user_info, navigate])
+
+  if (!token || !isAdmin(user_info)) {
+    return null
   }
+
   return (
     <div className={styles.admin}>
       <ProLayout
-        title="后台管理系统"
+        title="后台管理"
         logo={import.meta.env.VITE_APP_LOGO}
         layout="mix"
         splitMenus={false}
         contentWidth="Fluid"
         fixedHeader
         fixSiderbar
+        location={{
+          pathname
+        }}
+        contentStyle={{
+          minHeight: 'calc(100vh - 56px)',
+          overflow: 'auto'
+        }}
         theme="light"
-        contentStyle={
-          {
-            //   height: 'calc(100vh - 10px)'
-            //   background: 'red'
-          }
-        }
         siderMenuType="group"
         menu={{
           locale: false,
           collapsedShowGroupTitle: false
         }}
-        // settings={{}}
-        suppressSiderWhenMenuEmpty
-        siderWidth={260}
-        onPageChange={(location) => {
-          setSelectedKeys([`${location?.pathname}`])
-        }}
-        menuExtraRender={() => <div />}
+        siderWidth={240}
+        menuExtraRender={() => (
+          <div style={{ padding: '8px 12px', color: '#667085', fontSize: 12 }}>
+            {user_info?.data?.bodyMessage?.userName || '管理员'}
+          </div>
+        )}
         route={menuList.admin}
         menuItemRender={(item: any, dom: React.ReactNode) => {
-          const target = item.path?.indexOf('http') != -1 ? '_blank' : '_self'
           return (
-            <Link key={item.path} to={`${item.path}`} target={target}>
+            <Link key={item.path} to={`${item.path}`}>
               {dom}
             </Link>
           )
         }}
         avatarProps={{
-          src: user_info?.avatar,
+          src: 'https://u1.dl0.cn/icon/1682426702646avatarf3db669b024fad66-1930929abe2847093.png',
           size: 'small',
-          title: '超级管理员',
-          render: (props: any, dom: React.ReactNode) => {
+          title: '管理员',
+          render: (_props: any, dom: React.ReactNode) => {
             return (
               <Dropdown
                 menu={{
                   items: [
+                    {
+                      key: 'home',
+                      label: '返回前台',
+                      onClick: () => navigate('/')
+                    },
                     {
                       key: 'logout',
                       icon: <LogoutOutlined />,
@@ -82,7 +110,7 @@ function AdminPage() {
                       onClick: () => {
                         logout()
                         clearChats()
-                        window.localStorage.clear();
+                        window.localStorage.clear()
                         navigate('/login')
                       }
                     }
@@ -97,42 +125,29 @@ function AdminPage() {
         menuFooterRender={(props: any) => {
           if (props?.collapsed) return undefined
           return (
-            <div
-              style={{
-                textAlign: 'center',
-                paddingBlockStart: 12
-              }}
-            >
-              <div>© 2023 Made with love</div>
-              <div>by Chatgpt</div>
+            <div style={{ textAlign: 'center', paddingBlockStart: 12, color: '#98a2b3' }}>
+              仅管理员可见
             </div>
           )
         }}
         menuProps={{
-          onSelect: (e: any) => {
-            if (e.key.indexOf('http') === -1 && !selectedKeys.includes(e.key)) {
-              setSelectedKeys([...e.selectedKeys])
-            }
-          },
-          onClick: (r: any) => {
-            if (r.key.indexOf('http') === -1 && !selectedKeys.includes(r.key)) {
-              setSelectedKeys([...r.keyPath])
-            }
-          },
-          selectedKeys: [...selectedKeys],
+          selectedKeys: [pathname],
           theme: 'light'
         }}
         breadcrumbRender={() => []}
-        footerRender={() => (
-          <DefaultFooter
-            links={[{ key: 'github', title: 'github', href: 'https://github.com/79E/ChatGpt-Web' }]}
-            copyright="ChatGpt"
-          />
-        )}
+        footerRender={() => <DefaultFooter copyright="GPT Admin" />}
       >
-        <PageContainer>
-          <Outlet />
-        </PageContainer>
+        <div key={pathname} className={styles.content}>
+          <React.Suspense
+            fallback={
+              <div style={{ padding: 48, textAlign: 'center' }}>
+                <Spin />
+              </div>
+            }
+          >
+            {renderAdminContent(pathname)}
+          </React.Suspense>
+        </div>
       </ProLayout>
     </div>
   )

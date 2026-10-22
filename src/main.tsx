@@ -9,8 +9,6 @@ import OpenAiLogo from './components/OpenAiLogo'
 import '@/styles/global.less'
 import '@/styles/markdown.less'
 import '@/styles/highlight.less'
-import { DevSupport } from '@react-buddy/ide-toolbox'
-import { ComponentPreviews, useInitial } from '@/dev'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <BrowserRouter>
@@ -31,9 +29,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             </div>
           }
         >
-          <DevSupport ComponentPreviews={ComponentPreviews} useInitialHook={useInitial}>
-            <App />
-          </DevSupport>
+          <App />
         </React.Suspense>
       </Global>
     </AuthRouter>

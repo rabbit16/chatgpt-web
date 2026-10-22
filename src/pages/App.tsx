@@ -1,21 +1,8 @@
 import { useRoutes } from 'react-router-dom'
-import { webRouter, adminRouter } from '../routers'
-import { useMemo } from 'react'
-import { userStore } from '@/store'
+import { webRouter } from '../routers'
 
 function App() {
-  const { user_info } = userStore()
-
-  const routers: Array<any> = useMemo(() => {
-    const routerList = [...webRouter]
-    // if (user_info?.role === 'administrator') {
-    //   routerList = [...routerList, ...adminRouter]
-    // }
-    return routerList
-  }, [user_info])
-
-  const routesElement = useRoutes([...routers])
-  return routesElement
+  return useRoutes(webRouter)
 }
 
 export default App

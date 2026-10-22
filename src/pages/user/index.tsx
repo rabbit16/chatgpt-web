@@ -19,7 +19,7 @@ import { userAsync } from '@/store/async'
 import { configStore, userStore } from '@/store'
 import styles from './index.module.less'
 import { ConsumeRecordInfo, InvitationRecordInfo, SigninInfo, WithdrawalRecordInfo } from '@/types'
-import { formatTime, transform } from '@/utils'
+import { formatTime, sanitizeHtml, transform } from '@/utils'
 import UserInfoCard from '@/components/UserInfoCard'
 import {
   ModalForm,
@@ -399,7 +399,7 @@ function UserPage() {
                 <h4>公告</h4>
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: user_introduce
+                    __html: sanitizeHtml(user_introduce)
                   }}
                 />
               </div>
@@ -464,7 +464,7 @@ function UserPage() {
                   </p>
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: invite_introduce
+                      __html: sanitizeHtml(invite_introduce)
                     }}
                   />
                 </div>

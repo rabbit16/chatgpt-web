@@ -5,5 +5,7 @@ import promptStore from './prompt/slice'
 import userStore from './user/slice'
 import shopStore from './shop/slice'
 import pluginStore from './plugin/slice'
+import billingNoticeStore from './billingNotice'
+import paymentStore from './payment/slice'
 
-export { chatStore, shopStore, drawStore, configStore, promptStore, userStore, pluginStore }
+export { chatStore, shopStore, drawStore, configStore, promptStore, userStore, pluginStore, billingNoticeStore, paymentStore }

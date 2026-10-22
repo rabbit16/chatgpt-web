@@ -1,0 +1,145 @@
+.page {
+  min-height: 100%;
+  background: #f4f6fb;
+
+  [class*='ant-pro-layout-content'] {
+    padding-block: 0;
+    background: #f4f6fb !important;
+  }
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pageHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+  }
+
+  p {
+    margin: 0;
+    color: #667085;
+    font-size: 13px;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: #667085;
+    font-size: 13px;
+  }
+
+  b {
+    font-size: 24px;
+    color: #101828;
+  }
+}
+
+.statPrimary {
+  border-color: #b7eb8f;
+  background: linear-gradient(180deg, #f6ffed 0%, #fff 100%);
+
+  label {
+    color: #389e0d;
+  }
+
+  b {
+    color: #237804;
+  }
+}
+
+.card {
+  padding: 12px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e8edf5;
+  overflow: hidden;
+
+  :global(.ant-table-content),
+  :global(.ant-table-body) {
+    scrollbar-width: thin;
+    scrollbar-color: #98a2b3 #f2f4f7;
+
+    &::-webkit-scrollbar {
+      display: block;
+      height: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #98a2b3;
+      border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f2f4f7;
+    }
+  }
+}
+
+.money {
+  color: #067647;
+  font-weight: 600;
+}
+
+.balance {
+  color: #175cd3;
+  font-weight: 600;
+}
+
+.slow {
+  color: #b42318;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .pageHead {
+    flex-direction: column;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
