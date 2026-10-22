@@ -1,4 +1,4 @@
-import { chatStore, configStore } from '@/store'
+import { chatStore, configStore, paymentStore } from '@/store'
 import { configAsync } from '@/store/async'
 import { useEffect, useLayoutEffect } from 'react'
 import LoginModal from '../LoginModal'
@@ -79,6 +79,26 @@ function Global(props: Props) {
       await delay(500)
     }
   }
+
+  // 支付通道以后端全局配置为准，启动时同步一次。
+  // 用裸 fetch 而不是 request，避免后端尚未上线时被 3004 拦截器弹登录框。
+  useEffect(() => {
+    let cancelled = false
+    const base = import.meta.env.VITE_APP_REQUEST_HOST || ''
+    fetch(`${base}/user/pay/channel`, { method: 'GET' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload) => {
+        if (cancelled || !payload || String(payload.code) !== '0' || !payload.channel) return
+        paymentStore.getState().setFromServer({
+          channel: payload.channel,
+          channels: payload.channels
+        })
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!token) return

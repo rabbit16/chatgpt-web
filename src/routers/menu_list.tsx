@@ -111,6 +111,7 @@ const admin = {
     { path: '/admin/feedback', name: '留言', icon: <FormOutlined /> },
     { path: '/admin/orders', name: '订单', icon: <TransactionOutlined /> },
     { path: '/admin/invoices', name: '开票', icon: <FileTextOutlined /> },
+    { path: '/admin/paychannel', name: '支付方式', icon: <MoneyCollectFilled /> },
     { path: '/admin/usage', name: '请求用量', icon: <BarChartOutlined /> },
     { path: '/admin/tasks', name: '代理任务', icon: <ProfileOutlined /> },
     { path: '/admin/vendors', name: '供应商', icon: <CloudServerOutlined /> },

@@ -237,3 +237,81 @@
 		margin-top: 20px;
 	}
 }
+/* 充值面板：价格页「余额与充值」页签里的内容容器 */
+.shopPanel {
+	width: 100%;
+}
+
+/* 支付弹窗 */
+.payModalBody {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 4px 0 2px;
+}
+
+.payAmountRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	width: 100%;
+	padding: 10px 14px;
+	border-radius: 12px;
+	background: var(--brand-softer);
+	border: 1px solid var(--border-soft);
+
+	span {
+		color: var(--text-4);
+		font-size: 13px;
+	}
+
+	strong {
+		color: var(--brand);
+		font-size: 22px;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+.qrShell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 232px;
+	height: 232px;
+	padding: 16px;
+	border-radius: 16px;
+	background: #fff;
+	border: 1px solid var(--border);
+}
+
+.qrPlaceholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 200px;
+	height: 200px;
+	color: var(--text-5);
+	font-size: 13px;
+	text-align: center;
+	background: var(--surface-sunken);
+	border-radius: 12px;
+}
+
+.payHint {
+	margin: 0;
+	color: var(--text-4);
+	font-size: 13px;
+	line-height: 1.7;
+	text-align: center;
+}
+
+.paySupport {
+	margin: 0;
+	color: var(--text-3);
+	font-size: 13px;
+
+	a {
+		color: var(--brand);
+	}
+}

@@ -1,13 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 import UserInfoCard from '@/components/UserInfoCard'
 import styles from './index.module.less'
-import { userStore } from '@/store'
+import { userStore, paymentStore } from '@/store'
 import {Image,Spin, Button, InputNumber, Modal, Pagination, Space, Table, message } from 'antd'
 import { SyncOutlined } from '@ant-design/icons'
-import { userBillList,userBillInfo, getUserPricing, type UserModelRate } from '@/request/api'
+import {
+  userBillList,
+  userBillInfo,
+  getUserPricing,
+  createXuHuPayOrder,
+  queryXuHuPayOrder,
+  type UserModelRate
+} from '@/request/api'
 import OpenAiLogo from '@/components/OpenAiLogo'
 import { useNavigate } from 'react-router-dom'
 import {getAliPayPage,payVerify}from '../../request/api'
+import {
+  clearPendingOrder,
+  isPayOk,
+  normalizePayload,
+  payErrorMessage,
+  readPendingOrder,
+  savePendingOrder
+} from '@/utils/payment'
 import {
   PROVIDER_META,
   enrichVendorModel,
@@ -26,6 +41,25 @@ type FeaturedCard = {
 }
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || ''
+
+type PayModalState = {
+  loading: boolean
+  visiblePop: boolean
+  url: string
+  code_num: string
+  request_id: string
+  /** 本次充值金额，弹窗里给用户对账用 */
+  amount: number
+}
+
+const emptyPayModal = (): PayModalState => ({
+  loading: false,
+  visiblePop: false,
+  url: '',
+  code_num: '',
+  request_id: '',
+  amount: 0
+})
 
 export function ShopPanel() {
   const navigate = useNavigate()
@@ -46,43 +80,147 @@ export function ShopPanel() {
     pageSize:5,
   })
   const [num4,set4Num] = useState(0)
-  const [moneyObj,setMoneyObj] = useState({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
+  const [moneyObj,setMoneyObj] = useState<PayModalState>(emptyPayModal())
   const [askNum,setAskNum]=useState(0);
   const [listTotal,setListTotal] = useState(0);
   const [updata,setUpdata] = useState({});
   const [customAmount, setCustomAmount] = useState<number | null>(null)
-  const getPostMoney=(value:number)=>{
+  const paymentChannel = paymentStore((state) => state.channel)
+  const [payOrder, setPayOrder] = useState<{ outTradeNo: string; payType: string } | null>(null)
+  const getPostMoney = async (value: number) => {
     if (!Number.isInteger(value) || value <= 0) {
       message.warning('充值金额必须是大于 0 的整数')
       return
     }
-    const params = {
-      money:value,
-      userId:user_info?.data?.bodyMessage?.userId,
-      function_code:'chatGpt'
+    const userId = user_info?.data?.bodyMessage?.userId
+    setPayOrder(null)
+    setMoneyObj({ ...emptyPayModal(), loading: true, visiblePop: true, amount: value })
+    if (paymentChannel === 'xunhupay') {
+      try {
+        const res: any = await createXuHuPayOrder({
+          userId,
+          money: value,
+          function_code: 'chatGpt',
+          pay_type: 'auto'
+        })
+        const data = normalizePayload<any>(res)
+        if (!isPayOk(res)) {
+          message.error(payErrorMessage(res, '下单失败，请稍后重试'))
+          setMoneyObj(emptyPayModal())
+          return
+        }
+        if (data.payType === 'h5') {
+          // 手机端直接跳转，订单号先落盘，回来后查单确认。
+          savePendingOrder({
+            outTradeNo: data.outTradeNo,
+            channel: 'xunhupay',
+            money: value,
+            createdAt: Date.now()
+          })
+          setMoneyObj(emptyPayModal())
+          window.location.href = data.payUrl
+          return
+        }
+        setPayOrder({ outTradeNo: data.outTradeNo, payType: data.payType })
+        setMoneyObj({
+          loading: false,
+          visiblePop: true,
+          url: data.payUrl || '',
+          code_num: '',
+          request_id: '',
+          amount: value
+        })
+      } catch {
+        message.error('网络异常，下单失败，请稍后重试')
+        setMoneyObj(emptyPayModal())
+      }
+      return
     }
-    setMoneyObj((e:any)=>({...e,visiblePop:true,loading:true}))
-    getAliPayPage(params).then((res)=>{
-      console.log(res);
-     
-      const data = res.data?.payUrl||{};
-      const {code_num,request_id,data:{QRcode_url}} = data;
-      setMoneyObj({visiblePop:true,url:QRcode_url,code_num,request_id,loading:false})
-      // setMoneyObj((e:any)=>({...e,url:}));
-    })
-  }
-  const handleOk =async()=>{
-    const res = await payVerify({codeNum:moneyObj.code_num});
-    console.log(res);
-    if(res?.data?.code==='0'){
-      message.success('支付成功');
-      setMoneyObj((e:any)=>({...e,visiblePop:false}))
+    try {
+      const res: any = await getAliPayPage({
+        money: value,
+        userId,
+        function_code: 'chatGpt'
+      })
+      const data = res.data?.payUrl || {}
+      const { code_num, request_id, data: { QRcode_url } } = data
+      setMoneyObj({
+        loading: false,
+        visiblePop: true,
+        url: QRcode_url || '',
+        code_num,
+        request_id,
+        amount: value
+      })
+    } catch {
+      message.error('网络异常，下单失败，请稍后重试')
+      setMoneyObj(emptyPayModal())
     }
-    
   }
-  const handleCancel=()=>{
-    setMoneyObj({loading:false,visiblePop:false,url:'',code_num:'',request_id:'',})
+  const finishPaid = (tip: string) => {
+    message.success(tip)
+    clearPendingOrder()
+    setPayOrder(null)
+    setMoneyObj(emptyPayModal())
+    setUpdata({})
   }
+  const handleOk = async () => {
+    if (paymentChannel === 'xunhupay') {
+      if (!payOrder) return
+      try {
+        const res: any = await queryXuHuPayOrder(payOrder.outTradeNo)
+        if (normalizePayload<any>(res).paid) {
+          finishPaid('支付成功，余额已到账')
+        } else {
+          message.info('还没收到支付结果，完成支付后会自动到账')
+        }
+      } catch {
+        message.error('查单失败，请稍后在「订单记录」核对')
+      }
+      return
+    }
+    try {
+      const res: any = await payVerify({ codeNum: moneyObj.code_num })
+      if (isPayOk(res)) {
+        finishPaid('支付成功')
+      } else {
+        message.info('还没收到支付结果，完成支付后会自动到账')
+      }
+    } catch {
+      message.error('查单失败，请稍后在「订单记录」核对')
+    }
+  }
+  const handleCancel = () => {
+    setPayOrder(null)
+    setMoneyObj(emptyPayModal())
+  }
+  // 虎皮椒二维码弹出后自动轮询，最多 10 分钟；成功后自动关弹窗并刷新余额。
+  useEffect(() => {
+    if (paymentChannel !== 'xunhupay' || !payOrder || !moneyObj.visiblePop) return
+    const startedAt = Date.now()
+    let stopped = false
+    const timer = setInterval(() => {
+      if (stopped) return
+      if (Date.now() - startedAt > 10 * 60 * 1000) {
+        clearInterval(timer)
+        return
+      }
+      queryXuHuPayOrder(payOrder.outTradeNo)
+        .then((res: any) => {
+          if (stopped) return
+          if (normalizePayload<any>(res).paid) {
+            stopped = true
+            clearInterval(timer)
+            finishPaid('支付成功，余额已到账')
+          }
+        })
+        .catch(() => null)
+    }, 4000)
+    return () => {
+      stopped = true
+      clearInterval(timer)
+    }
+  }, [payOrder, moneyObj.visiblePop, paymentChannel])
   const handleCustomRecharge = () => {
     if (customAmount == null || !Number.isInteger(customAmount) || customAmount <= 0) {
       message.warning('充值金额必须是大于 0 的整数')
@@ -122,6 +260,40 @@ export function ShopPanel() {
       )
     })
   }
+  // 手机 H5 支付会跳走再回来，页面重新加载后凭落盘订单号自动确认（最多等 30 秒）。
+  useEffect(() => {
+    const pending = readPendingOrder()
+    if (!pending || paymentChannel !== 'xunhupay' || !token) return
+    let stopped = false
+    let tries = 0
+    let timer: ReturnType<typeof setInterval> | null = null
+    const check = () => {
+      queryXuHuPayOrder(pending.outTradeNo)
+        .then((res: any) => {
+          if (stopped) return
+          if (normalizePayload<any>(res).paid) {
+            stopped = true
+            if (timer) clearInterval(timer)
+            clearPendingOrder()
+            message.success('支付成功，余额已到账')
+            setUpdata({})
+            return
+          }
+          tries += 1
+          if (tries >= 8) {
+            if (timer) clearInterval(timer)
+            message.info('支付结果还在确认中，稍后刷新页面可看到最新余额')
+          }
+        })
+        .catch(() => null)
+    }
+    timer = setInterval(check, 4000)
+    check()
+    return () => {
+      stopped = true
+      if (timer) clearInterval(timer)
+    }
+  }, [paymentChannel, token])
   useEffect(()=>{
     userBillInfo({userId:user_info?.data?.bodyMessage?.userId}).then((res)=>{
       console.log(res);
@@ -139,9 +311,7 @@ export function ShopPanel() {
         userId:Number(user_info?.data?.bodyMessage?.userId),
         page_num:tableObj.pageSize
       }
-      let res = await userBillList(params);
-      console.log(res);
-      
+      const res = await userBillList(params);
       if(res?.code === 0){
         setBillList(res.data.user_bill_list)
         setListTotal(res.data.totalNum)
@@ -224,26 +394,39 @@ export function ShopPanel() {
   }
   return (
     <div className={styles.shopPanel}>
-        <Modal title="微信支付" open={moneyObj.visiblePop} onOk={handleOk} onCancel={handleCancel}>
-
-        <div style={{display:'flex',justifyContent:'center'}}>
-        <Spin spinning={moneyObj.loading}>
-        <Image
-        preview={false}
-          width={200}
-          height={200}
-          src={moneyObj.url}
-          fallback="data:image/png;base64,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"
-        />
-
-        </Spin>
-        </div>
-        {supportPhone && (
-          <>
-            <div>若支付出现问题请联系客服:</div>
-            <a href={`tel:${supportPhone}`}>{supportPhone}</a>
-          </>
-        )}
+        <Modal
+          title="微信支付"
+          open={moneyObj.visiblePop}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          okText="我已完成支付"
+          cancelText="稍后再付"
+          width={420}
+          centered
+        >
+          <div className={styles.payModalBody}>
+            <div className={styles.payAmountRow}>
+              <span>本次充值</span>
+              <strong>¥{moneyObj.amount.toFixed(2)}</strong>
+            </div>
+            <div className={styles.qrShell}>
+              <Spin spinning={moneyObj.loading}>
+                {moneyObj.url ? (
+                  <Image preview={false} width={200} height={200} src={moneyObj.url} alt="支付二维码" />
+                ) : (
+                  <div className={styles.qrPlaceholder}>
+                    {moneyObj.loading ? '正在生成二维码…' : '二维码暂未生成，请重试'}
+                  </div>
+                )}
+              </Spin>
+            </div>
+            <p className={styles.payHint}>请用微信「扫一扫」完成支付，支付成功后余额自动到账</p>
+            {supportPhone && (
+              <p className={styles.paySupport}>
+                支付遇到问题？联系客服 <a href={`tel:${supportPhone}`}>{supportPhone}</a>
+              </p>
+            )}
+          </div>
         </Modal>
         <div className={styles.goodsPay_container}>
           <Space direction="vertical" style={{ width: '100%' }}>
@@ -251,7 +434,11 @@ export function ShopPanel() {
             <UserInfoCard info={user_info} data={{num4:num4,num:askNum,avatar:user_info?.data?.bodyMessage?.userName.slice(0,1)}} />
             {/* 卡密充值区 */}
             <div className={styles.goodsPay_card}>
-              <h4>充值选项 冲多少花多少(手机端需要保存图片在微信扫码支付哦～手机端可左右滑动屏幕观看更多支付选项，电脑端需要按鼠标中键左右拖动)</h4>
+              <h4>
+                {paymentChannel === 'xunhupay'
+                  ? '充多少到账多少：手机端自动跳转微信支付，电脑端扫码支付。'
+                  : '充多少到账多少：电脑端扫码支付，手机端可保存二维码后在微信扫码。'}
+              </h4>
               <div className={styles.goodsPay_card_item_box}>
              {renderMoneyList()}
              </div>
