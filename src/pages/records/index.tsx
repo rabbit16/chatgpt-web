@@ -29,16 +29,6 @@ function RecordsPage() {
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
-          <header className={styles.head}>
-            <p className={styles.kicker}>
-              <BarChartOutlined /> 账号数据
-            </p>
-            <h1>用量与任务</h1>
-            <p className={styles.lead}>
-              「用量记录」按请求展示 Token 消耗、扣费与扣后余额；未完成的请求会被归并为「任务」，便于后续跟进。
-            </p>
-          </header>
-
           <PillTabs
             ariaLabel="用量与任务"
             value={tab}
@@ -48,6 +38,16 @@ function RecordsPage() {
               { key: 'tasks', label: '任务', icon: <ProfileOutlined /> }
             ]}
           />
+
+          <header className={styles.head}>
+            <p className={styles.kicker}>
+              <BarChartOutlined /> 账号数据
+            </p>
+            <h1>用量与任务</h1>
+            <p className={styles.lead}>
+              「用量记录」按请求展示 Token 消耗、扣费与扣后余额；未完成的请求会被归并为「任务」，便于后续跟进。
+            </p>
+          </header>
 
           {tab === 'usage' ? <UsagePanel /> : <TasksPanel />}
         </div>

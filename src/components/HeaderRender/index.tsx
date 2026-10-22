@@ -145,7 +145,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                     icon: <FileTextOutlined />,
                     label: '我的发票',
                     onClick: () => {
-                      navigate('/invoice')
+                      navigate('/price?tab=invoice')
                     }
                   },
                   {
@@ -153,7 +153,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                     icon: <PayCircleOutlined />,
                     label: '我的钱包',
                     onClick: () => {
-                      navigate('/shop')
+                      navigate('/price?tab=wallet')
                     }
                   },
                   {

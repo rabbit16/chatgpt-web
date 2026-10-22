@@ -24,7 +24,6 @@ const GuidePage = React.lazy(() => import('@/pages/guide'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const NoticePage = React.lazy(() => import('@/pages/notice'))
 const ProfilePage = React.lazy(() => import('@/pages/profile'))
-const InvoicePage = React.lazy(() => import('@/pages/invoice'))
 const LoginPage = React.lazy(() => import('@/pages/login'))
 const ResultPage = React.lazy(() => import('@/pages/result'))
 const Page404 = React.lazy(() => import('@/pages/404'))
@@ -51,7 +50,7 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: false,
       public: true,
-      title: '开源项目',
+      title: '软件商城',
       role: ['user', 'administrator']
     }
   },
@@ -74,7 +73,7 @@ export const webRouter: RouteOptions[] = [
     children: [],
     configure: {
       verifToken: false,
-      title: '模型体验',
+      title: 'AI 工作台',
       role: ['user', 'administrator']
     }
   },
@@ -119,7 +118,7 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: false,
       public: true,
-      title: '模型价格',
+      title: '充值商城',
       role: ['user', 'administrator']
     }
   },
@@ -219,13 +218,14 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'InvoicePage',
+    // 老地址兼容：发票已并入「充值商城」第三个页签，跳到对应页签
+    id: 'InvoiceRedirect',
     path: '/invoice',
-    element: <InvoicePage />,
+    element: <Navigate to="/price?tab=invoice" replace />,
     children: [],
     configure: {
       verifToken: true,
-      title: '开发票',
+      title: '我的发票',
       role: ['user', 'administrator']
     }
   },
@@ -325,6 +325,17 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: true,
       title: '开票审核',
+      role: ['administrator']
+    }
+  },
+  {
+    id: 'AdminProjectsPage',
+    path: '/admin/projects',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '软件审核',
       role: ['administrator']
     }
   },

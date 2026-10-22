@@ -190,6 +190,86 @@ export async function submitProject(payload: SubmitProjectPayload): Promise<{ ok
   }
 }
 
+/* ------------------------------------------------------------------
+ * 后台审核（站长用）
+ * ------------------------------------------------------------------
+ * 用户提交后 status = pending，只有站长在后台通过才会出现在公开列表。
+ * 接口未上线时，后台会把「本机暂存的提交」也列出来，方便本地验收流程。
+ * 契约见 docs/后端接口-开源项目.md 第 4 节。
+ * ------------------------------------------------------------------ */
+
+export interface AdminProjectSubmission extends OpenSourceProject {
+  /** 审核备注 / 驳回原因 */
+  reviewer_note?: string
+  /** 提交人（后台展示用） */
+  user_id?: number
+  user_name?: string
+}
+
+/**
+ * 后台待审列表
+ * GET /admin/open-source/projects?status=pending
+ */
+export async function getAdminProjectSubmissions(params: {
+  status?: 'pending' | 'approved' | 'rejected' | 'all'
+  page?: number
+  page_num?: number
+}): Promise<{ list: AdminProjectSubmission[]; total: number; local: boolean }> {
+  const localPending = readLocal<OpenSourceProject[]>(LOCAL_KEY, []).filter(
+    (item) => item.id.startsWith('local-') && item.status === 'pending'
+  )
+  try {
+    const res: any = await request.get(
+      '/admin/open-source/projects',
+      {
+        status: params.status && params.status !== 'all' ? params.status : undefined,
+        page: params.page || 1,
+        page_num: params.page_num || 20
+      },
+      authHeaders()
+    )
+    const payload = res?.data || {}
+    const list = (payload.list || []) as AdminProjectSubmission[]
+    // 接口通了也要把本机还没同步的提交带上，避免站长看不到刚测的那条
+    const merged = [...localPending.map((item) => ({ ...item, local: true } as any)), ...list]
+    return { list: merged, total: Number(payload.total || merged.length), local: false }
+  } catch {
+    return { list: localPending as AdminProjectSubmission[], total: localPending.length, local: true }
+  }
+}
+
+/**
+ * 审核：通过 / 驳回
+ * POST /admin/open-source/review  { id, action: 'approve' | 'reject', note }
+ */
+export async function reviewProjectSubmission(params: {
+  id: number | string
+  action: 'approve' | 'reject'
+  note?: string
+}): Promise<{ ok: boolean; local: boolean }> {
+  // 本机暂存的提交：直接在 localStorage 里改状态，方便本地跑通流程
+  if (String(params.id).startsWith('local-')) {
+    const list = readLocal<OpenSourceProject[]>(LOCAL_KEY, [])
+    const next = list.map((item) =>
+      item.id === params.id
+        ? { ...item, status: params.action === 'approve' ? 'approved' : 'rejected' }
+        : item
+    ) as OpenSourceProject[]
+    writeLocal(LOCAL_KEY, next)
+    return { ok: true, local: true }
+  }
+  try {
+    await request.post('/admin/open-source/review', {
+      id: params.id,
+      action: params.action,
+      note: params.note || ''
+    })
+    return { ok: true, local: false }
+  } catch {
+    return { ok: false, local: false }
+  }
+}
+
 export const PLATFORM_LABEL: Record<ProjectPlatform, string> = {
   windows: 'Windows',
   macos: 'macOS',

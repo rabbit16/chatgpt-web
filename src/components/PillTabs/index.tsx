@@ -18,7 +18,7 @@ type Props<T extends string> = {
 /**
  * 页签（药丸式）
  * ------------------------------------------------------------
- * 全站统一：模型体验、价格/充值、公告/留言都用这一套，避免每页自己写一份。
+ * 全站统一：AI 工作台、充值商城、公告/留言都用这一套，避免每页自己写一份。
  */
 function PillTabs<T extends string>({ items, value, onChange, ariaLabel }: Props<T>) {
   return (

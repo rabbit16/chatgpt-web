@@ -11,16 +11,23 @@ import {
   PictureOutlined,
   SettingOutlined
 } from '@ant-design/icons'
-import { Button, message } from 'antd'
+import { Button, Select, message } from 'antd'
 import Layout from '@/components/Layout'
 import IconBadge from '@/components/IconBadge'
 import { DocsPanel } from '@/pages/docs'
 import ApiKeyPanel from '@/pages/agent/ApiKeyPanel'
 import { getSoftwareList, type SoftwareItem } from '@/request/api'
-import { PUBLIC_MODEL_IDS } from '@/data/publicPricing'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
 import { CC_HAHA_RELEASES, RELAY_HOST, RELAY_URL } from '@/utils/relay'
+import {
+  defaultGuideModel,
+  findModel,
+  groupModels,
+  protocolMeta,
+  providerLabel,
+  type GuideModel
+} from './models'
 import styles from './index.module.less'
 
 /**
@@ -34,11 +41,6 @@ import styles from './index.module.less'
  * 其他客户端不逐一展开：同样三样值填进去即可，统一说「参照执行」。
  */
 
-const GPT_MODEL = PUBLIC_MODEL_IDS.includes('gpt-6.1-sol') ? 'gpt-6.1-sol' : PUBLIC_MODEL_IDS[0] || 'gpt-6.1-sol'
-/** Claude-haha 默认走 Anthropic 原生格式，主模型要填 claude- 开头 */
-const CLAUDE_MODEL = PUBLIC_MODEL_IDS.includes('claude-sonnet-5')
-  ? 'claude-sonnet-5'
-  : PUBLIC_MODEL_IDS.find((id) => /^claude-sonnet/i.test(id)) || 'claude-sonnet-5'
 /** cc-haha 自带的图片生成走 OpenAI 兼容 Images，用本站的 gpt-image 模型 */
 const IMAGE_MODEL = 'gpt-image-2'
 
@@ -148,7 +150,8 @@ function ClientDownloads() {
 
 /* ---------------- 第 3 步：Claude-haha 界面示意 ---------------- */
 
-function HahaMock() {
+function HahaMock({ model }: { model: GuideModel }) {
+  const meta = protocolMeta(model.provider)
   return (
     <div className={styles.mock} aria-label="Claude-haha 添加模型界面示意">
       <div className={styles.mockBar}>
@@ -166,16 +169,18 @@ function HahaMock() {
           </div>
         </div>
         <MockField no={2} label="配置名称" value="RabbitJ" />
-        <MockField no={3} label="接口地址" value={RELAY_HOST} mono />
+        <MockField no={3} label="接口地址" value={meta.baseUrl} mono />
         <MockField no={4} label="API 密钥" value="sk-••••••••••••" mono />
-        <MockField no={5} label="主模型" value={CLAUDE_MODEL} mono />
+        <MockField no={5} label="主模型" value={model.id} mono />
         <div className={styles.mockDefault}>
           <span>模型映射</span>
-          <em>Fable 留空 · Haiku / Sonnet / Opus 保持「与主模型相同」</em>
+          <em>{meta.mappingLabel}</em>
         </div>
         <div className={styles.mockDefault}>
           <span>下方默认项</span>
-          <em>API 格式 Anthropic Messages（原生）· 认证变量 Bearer Token · 其余不动</em>
+          <em>
+            API 格式 {meta.formatLabel} · 认证变量 {meta.authLabel} · 其余不动
+          </em>
         </div>
         <p className={styles.mockNote}>填完点「获取模型」可直接从列表里选，再点「添加」。</p>
         <div className={styles.mockActions}>
@@ -207,7 +212,12 @@ function GuidePage() {
   const [key, setKey] = useState(llm_api_key || '')
   // 密钥管理默认收起，完全由用户点击控制；没密钥时密钥行会出现「新建密钥」按钮
   const [manageOpen, setManageOpen] = useState(false)
+  // 主模型由用户选，协议/地址/默认项全部跟着它走
+  const [modelId, setModelId] = useState(() => defaultGuideModel()?.id || '')
   const copy = useCopy()
+  const model = findModel(modelId) || defaultGuideModel()
+  const protocol = protocolMeta(model?.provider || 'anthropic')
+  const modelOptions = useMemo(() => groupModels(), [])
 
   useEffect(() => {
     if (llm_api_key) setKey(llm_api_key)
@@ -234,9 +244,9 @@ function GuidePage() {
       {
         no: 3,
         label: '接口地址',
-        display: RELAY_HOST,
-        copy: RELAY_HOST,
-        tip: 'Claude-haha 用这条，不要带 /v1'
+        display: protocol.baseUrl,
+        copy: protocol.baseUrl,
+        tip: protocol.why
       },
       {
         no: 4,
@@ -248,19 +258,19 @@ function GuidePage() {
       {
         no: 5,
         label: '主模型',
-        display: CLAUDE_MODEL,
-        copy: CLAUDE_MODEL,
-        tip: 'claude- 开头；点「获取模型」也能从列表里选'
+        display: model?.id || '',
+        copy: model?.id || '',
+        tip: `已按 ${providerLabel(model?.provider || 'anthropic')} 自动选好协议，换模型这里会跟着变`
       },
       {
         no: 6,
         label: '其余模型映射',
-        display: 'Fable 留空 · Haiku / Sonnet / Opus 保持默认',
+        display: protocol.mappingLabel,
         copy: '',
         tip: '默认就是「与主模型相同」，不用改'
       }
     ],
-    [key]
+    [key, model, protocol]
   )
 
   return (
@@ -273,7 +283,8 @@ function GuidePage() {
             </p>
             <h1>接入指南</h1>
             <p className={styles.lead}>
-              三件事：<b>装客户端</b>、<b>复制地址和密钥</b>、<b>照着界面填 4 个框</b>。这一页就是全部，不用再翻别处。
+              全程按 <b>Claude-haha</b> 的实际界面走：装 Claude-haha → 复制本站地址和密钥 → 照着 Claude-haha 的「添加模型」
+              窗口填 4 个框。其他客户端最后附一句对照，不用来回翻。
             </p>
           </header>
 
@@ -282,8 +293,8 @@ function GuidePage() {
             <div className={styles.stepHead}>
               <span className={styles.stepNo}>1</span>
               <div>
-                <h2>先装一个客户端</h2>
-                <p>推荐 Claude-haha：写代码、画图一个软件就够用，免费。装好再回来做第 2 步。</p>
+                <h2>先装 Claude-haha</h2>
+                <p>本站教程默认用 Claude-haha：写代码、画图一个软件就够用，免费。装好再回来做第 2 步。</p>
               </div>
             </div>
             <ClientDownloads />
@@ -354,16 +365,29 @@ function GuidePage() {
                         )}
                       </div>
                     </div>
-                    <details
-                      className={styles.manage}
-                      open={manageOpen}
-                      onToggle={(event) => setManageOpen((event.currentTarget as HTMLDetailsElement).open)}
+                    <button
+                      type="button"
+                      className={[styles.manageBtn, manageOpen ? styles.manageBtnOpen : ''].join(' ')}
+                      aria-expanded={manageOpen}
+                      onClick={() => setManageOpen((open) => !open)}
                     >
-                      <summary>管理密钥（新建 / 禁用 / 删除）</summary>
+                      <KeyOutlined />
+                      <span>
+                        {key ? '管理密钥（新建 / 禁用 / 删除）' : '点这里生成个人密钥'}
+                      </span>
+                      <em>{manageOpen ? '收起' : '展开'}</em>
+                    </button>
+                    {!key ? (
+                      <p className={styles.manageHint}>
+                        第一次来？点上面这个按钮 → 填个备注（比如「家里电脑」）→ 点「生成密钥」→ 复制那串 sk- 开头的，
+                        填进 Claude-haha 的第 4 个框。
+                      </p>
+                    ) : null}
+                    {manageOpen ? (
                       <div className={styles.manageBody}>
                         <ApiKeyPanel embedded onKeyChange={setKey} />
                       </div>
-                    </details>
+                    ) : null}
                   </>
                 )}
                 <p className={styles.colHint}>
@@ -378,16 +402,42 @@ function GuidePage() {
             <div className={styles.stepHead}>
               <span className={styles.stepNo}>3</span>
               <div>
-                <h2>照着这张界面填 4 个框</h2>
+                <h2>在 Claude-haha 里填这 4 个框</h2>
                 <p>
-                  Claude-haha 里打开「添加模型」，左边是窗口示意，右边是对照表。弹窗下面还有一长串默认项，<b>不用改</b>，只
-                  在要画图时补一组。
+                  打开 Claude-haha 的「添加模型」窗口，左边就是它的界面示意，右边照着填。弹窗下面还有一长串默认项，
+                  <b>不用改</b>，只在要画图时补一组。
                 </p>
               </div>
             </div>
 
+            {/* 模型选择：全站模型都在这里，选完协议/地址/默认项自动变 */}
+            <div className={styles.modelPick}>
+              <div className={styles.modelPickHead}>
+                <IconBadge icon={<ApiOutlined />} tone="brand" size="sm" />
+                <div>
+                  <strong>先选你要用的主模型</strong>
+                  <p>本站所有模型都在这里。选哪个，下面的接口地址、API 格式、模型映射就自动变成它该用的那一套。</p>
+                </div>
+              </div>
+              <div className={styles.modelPickRow}>
+                <Select
+                  showSearch
+                  value={model?.id}
+                  options={modelOptions}
+                  style={{ minWidth: 260, flex: '1 1 260px' }}
+                  onChange={setModelId}
+                  optionFilterProp="value"
+                  placeholder="搜索或选择模型"
+                />
+                <span className={styles.protocolTag}>
+                  {providerLabel(model?.provider || 'anthropic')} · {protocol.formatLabel}
+                </span>
+              </div>
+              <p className={styles.modelPickWhy}>{protocol.why}</p>
+            </div>
+
             <div className={styles.fillGrid}>
-              <HahaMock />
+              {model ? <HahaMock model={model} /> : null}
               <ol className={styles.fillList}>
                 {fillRows.map((row) => (
                   <li key={row.no} className={styles.fillRow}>
@@ -411,11 +461,11 @@ function GuidePage() {
             </div>
 
             <div className={styles.defaultStrip}>
-              <span className={styles.defaultLead}>下面这些保持默认，不要动</span>
-              <span>API 格式 · Anthropic Messages（原生）</span>
-              <span>认证变量 · Bearer Token</span>
+              <span className={styles.defaultLead}>下面这些按当前模型自动定，其余保持默认</span>
+              <span>API 格式 · {protocol.formatLabel}</span>
+              <span>认证变量 · {protocol.authLabel}</span>
+              <span>模型映射 · {protocol.mappingLabel}</span>
               <span>回复输出预算 · 自动</span>
-              <span>备注 · 可空</span>
               <span>上下文与自动压缩 · 高级里别碰</span>
             </div>
 
@@ -458,8 +508,20 @@ function GuidePage() {
             </div>
 
             <p className={styles.altNote}>
-              想用 GPT 系模型写代码？把「API 格式」换成 OpenAI 兼容，接口地址改填 <code>{RELAY_URL}</code>，主模型填{' '}
-              <code>{GPT_MODEL}</code>，其他不用动。
+              换模型不用自己改协议：上面选好模型，这套值就会自动切。
+              {protocol.key === 'anthropic' ? (
+                <>
+                  {' '}
+                  想用 GPT / Gemini / DeepSeek 系？在上面下拉里换一个，地址会变成带 <code>/v1</code> 的那条，格式换成 OpenAI
+                  兼容。
+                </>
+              ) : (
+                <>
+                  {' '}
+                  想用 Claude 系？在上面下拉里换一个 claude- 开头的，地址会变回不带 <code>/v1</code> 的那条，格式换成
+                  Anthropic Messages。
+                </>
+              )}
             </p>
 
             <div className={styles.otherNote}>
@@ -488,7 +550,7 @@ function GuidePage() {
               <h2>发一句话试试</h2>
               <p>
                 新建对话，发「用 Python 写一个猜数字游戏」。能正常回话就说明接通了，可以去{' '}
-                <Link to="/price">价格与充值</Link> 看用量。
+                <Link to="/price">充值商城</Link> 看用量。
               </p>
               <p className={styles.tryHint}>
                 报 401 → 密钥没复制全；提示找不到模型 → 模型名和价目页差一个字都不行。
@@ -517,7 +579,7 @@ function GuidePage() {
                 </li>
                 <li>
                   <strong>找不到模型</strong>
-                  模型名要和「价格与充值」页完全一致，大小写、后缀都算。
+                  模型名要和「充值商城」页完全一致，大小写、后缀都算。
                 </li>
                 <li>
                   <strong>连接超时 / 提示 404</strong>

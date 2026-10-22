@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Form, Input, Modal, Radio, message } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
 import IconBadge from '@/components/IconBadge'
-import { createInvoice, type InvoiceTitleType } from '@/request/invoice'
-import { normalizePayload } from '@/utils/payment'
+import { submitInvoiceApplication, type InvoiceTitleType } from '@/request/invoice'
+import { userStore } from '@/store'
 import styles from './index.module.less'
 
 /**
@@ -30,6 +30,7 @@ type Props = {
 }
 
 function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: Props) {
+  const { user_info } = userStore()
   const [form] = Form.useForm()
   const [titleType, setTitleType] = useState<InvoiceTitleType>('company')
   const [submitting, setSubmitting] = useState(false)
@@ -46,7 +47,7 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
     try {
       const values = await form.validateFields()
       setSubmitting(true)
-      const res: any = await createInvoice({
+      const result = await submitInvoiceApplication({
         bill_id: String(bill.bill_id),
         // amount / order_no 只为兼容旧后端，金额以后端按订单核验为准
         amount: Number(bill.pay),
@@ -55,14 +56,19 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
         title: String(values.title || '').trim(),
         tax_no: values.title_type === 'company' ? String(values.tax_no || '').trim() : undefined,
         email: String(values.email || '').trim(),
-        remark: values.remark ? String(values.remark).trim() : undefined
+        remark: values.remark ? String(values.remark).trim() : undefined,
+        userId: (user_info as any)?.data?.bodyMessage?.userId ?? (user_info as any)?.userId,
+        userName: (user_info as any)?.data?.bodyMessage?.userName ?? (user_info as any)?.userName
       })
-      const data = normalizePayload<any>(res)
-      if (String(data.code ?? '') !== '0') {
-        message.error(data.codeMsg || '提交失败，请稍后再试')
+      if (result.channel === 'failed') {
+        message.error('提交失败：网络异常，请稍后重试，或在「公告留言」里直接留言')
         return
       }
-      message.success('已提交，审核通过后电子发票会发到邮箱')
+      message.success(
+        result.channel === 'feedback'
+          ? '申请已送达站长（留言通道），开好后电子发票发到你的邮箱'
+          : '已提交，审核通过后电子发票会发到邮箱'
+      )
       onSubmitted?.()
       onClose()
     } catch (error: any) {

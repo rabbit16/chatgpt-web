@@ -29,16 +29,6 @@ function NoticePage() {
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
-          <header className={styles.head}>
-            <p className={styles.kicker}>
-              <NotificationOutlined /> 站点动态
-            </p>
-            <h1>公告与留言</h1>
-            <p className={styles.lead}>
-              站点通知与问题反馈集中于此：公告按时间排序；遇到问题或希望新增模型，可在此留言，支持匿名提交。
-            </p>
-          </header>
-
           <div className={styles.tabs} role="tablist" aria-label="公告与留言">
             <button
               type="button"
@@ -61,6 +51,16 @@ function NoticePage() {
               留言墙
             </button>
           </div>
+
+          <header className={styles.head}>
+            <p className={styles.kicker}>
+              <NotificationOutlined /> 站点动态
+            </p>
+            <h1>公告与留言</h1>
+            <p className={styles.lead}>
+              站点通知与问题反馈集中于此：公告按时间排序；遇到问题或希望新增模型，可在此留言，支持匿名提交。
+            </p>
+          </header>
 
           {tab === 'notice' ? <AnnouncementPanel /> : <FeedbackPanel />}
         </div>

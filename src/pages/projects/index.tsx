@@ -45,7 +45,7 @@ type FormValues = {
 }
 
 /**
- * 开源项目（新）
+ * 软件商城
  * ------------------------------------------------------------
  * 目的：把站点周边的小工具（第一个是「余额兔」）集中展示，三平台可下载；
  * 注册用户都能上传新项目或给自己的项目发新版本，但**必须经过站长审核**才上架。
@@ -193,15 +193,25 @@ function ProjectsPage() {
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
+          <PillTabs
+            ariaLabel="软件商城"
+            value={tab}
+            onChange={(next) => setTab(next as TabKey)}
+            items={[
+              { key: 'all', label: '全部项目' },
+              { key: 'mine', label: '我的提交' }
+            ]}
+          />
+
           <header className={styles.head}>
             <p className={styles.kicker}>
-              <GithubOutlined /> 社区共建
+              <GithubOutlined /> 官方客户端与社区工具
             </p>
-            <h1>开源项目</h1>
+            <h1>软件商城</h1>
             <p className={styles.lead}>
-              本站自研及社区贡献的客户端与工具集中展示于此。首个项目为「余额兔」：常驻桌面的小工具，可随时查看账户余额与当日
-              Token 用量。所有项目开源且免费下载；注册用户亦可提交自己的项目或发布新版本，
-              <strong>每个版本均需经站长审核</strong>后方可上架。
+              像应用商店一样，在这里挑客户端和工具下载。首个项目为「余额兔」：常驻桌面的小工具，可随时查看余额与当日 Token
+              用量。所有项目开源、免费下载；注册用户也能提交自己的项目或发布新版本，
+              <strong>提交后进入后台待审核，站长通过才会出现在这里</strong>。
             </p>
             <div className={styles.headActions}>
               <Button type="primary" icon={<CloudUploadOutlined />} onClick={openUpload}>
@@ -212,16 +222,6 @@ function ProjectsPage() {
               </Button>
             </div>
           </header>
-
-          <PillTabs
-            ariaLabel="开源项目"
-            value={tab}
-            onChange={(next) => setTab(next as TabKey)}
-            items={[
-              { key: 'all', label: '全部项目' },
-              { key: 'mine', label: '我的提交' }
-            ]}
-          />
 
           <Spin spinning={loading}>
             {tab === 'all' ? (

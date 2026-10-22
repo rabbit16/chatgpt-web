@@ -147,3 +147,78 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* 留言里的开票申请：单独排版，站长一眼看到订单号和金额 */
+.invoiceAsk {
+	margin: 8px 0 4px;
+	padding: 12px 14px;
+	border: 1px solid var(--border-soft);
+	border-left: 3px solid var(--warning, #d97706);
+	border-radius: 10px;
+	background: var(--surface-sunken);
+}
+
+.invoiceAskHead {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+
+	strong {
+		font-family: var(--font-mono);
+		font-size: 17px;
+		font-variant-numeric: tabular-nums;
+		color: var(--text-1);
+	}
+
+	span {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--text-4);
+	}
+}
+
+.invoiceAskGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 10px 16px;
+	margin: 0;
+
+	div {
+		min-width: 0;
+	}
+
+	dt {
+		font-size: 11.5px;
+		color: var(--text-5);
+	}
+
+	dd {
+		margin: 2px 0 0;
+		font-size: 13px;
+		color: var(--text-2);
+		word-break: break-all;
+	}
+}
+
+.invoiceAskRaw {
+	margin-top: 10px;
+
+	summary {
+		font-size: 11.5px;
+		color: var(--text-5);
+		cursor: pointer;
+	}
+
+	code {
+		display: block;
+		margin-top: 6px;
+		padding: 8px 10px;
+		border-radius: 8px;
+		background: var(--surface);
+		font-size: 11px;
+		color: var(--text-4);
+		word-break: break-all;
+	}
+}

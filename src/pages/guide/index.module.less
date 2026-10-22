@@ -963,3 +963,111 @@
 		justify-self: start;
 	}
 }
+
+/* 管理密钥：做成整行大按钮，第一次来的人一眼看到 */
+.manageBtn {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	margin-top: 10px;
+	padding: 11px 14px;
+	border: 1px solid var(--brand);
+	border-radius: 12px;
+	background: var(--brand-softer);
+	color: var(--brand);
+	font-size: 13.5px;
+	font-weight: 600;
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+
+	span {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	em {
+		flex: 0 0 auto;
+		font-style: normal;
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--text-3);
+	}
+
+	&:hover {
+		background: var(--brand-soft);
+		transform: translateY(-1px);
+	}
+}
+
+.manageBtnOpen {
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+.manageHint {
+	margin: 8px 0 0;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: var(--surface-sunken);
+	color: var(--text-3);
+	font-size: 12.5px;
+	line-height: 1.75;
+}
+
+/* 主模型选择器：第 3 步的入口，选完协议自动跟着变 */
+.modelPick {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 16px;
+	padding: 14px 16px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 14px;
+}
+
+.modelPickHead {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+
+	strong {
+		display: block;
+		font-size: 13.5px;
+		color: var(--text-1);
+	}
+
+	p {
+		margin: 3px 0 0;
+		font-size: 12.5px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+.modelPickRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.protocolTag {
+	flex: 0 0 auto;
+	padding: 4px 11px;
+	border-radius: var(--radius-pill);
+	background: var(--brand-softer);
+	border: 1px solid var(--brand-soft);
+	color: var(--brand);
+	font-size: 12px;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.modelPickWhy {
+	margin: 0;
+	font-size: 12px;
+	color: var(--text-4);
+}

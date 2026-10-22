@@ -538,3 +538,25 @@
     }
   }
 }
+
+/* 计价档位：紧凑药丸，避免 Tag 被 flex 拉成竖长块 */
+.tierBadge {
+	flex: 0 0 auto;
+	align-self: center;
+	display: inline-flex;
+	align-items: center;
+	height: 24px;
+	padding: 0 10px;
+	border-radius: var(--radius-pill);
+	background: var(--brand-soft);
+	color: var(--brand);
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.tierLong {
+	background: var(--warning-soft);
+	color: var(--warning);
+}

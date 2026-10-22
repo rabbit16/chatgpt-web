@@ -1,4 +1,5 @@
 import request from '.'
+import { postFeedback } from './api'
 
 /**
  * 开发票（按充值订单开，前端契约，后端由站长实现）
@@ -80,6 +81,69 @@ export function getInvoiceList(params: InvoiceListQuery) {
 
 export function createInvoice(params: InvoiceFormPayload) {
   return request.post('/user/invoice/create', params)
+}
+
+/* ------------------------------------------------------------------
+ * 提交申请：专用接口 → 留言通道 双保险
+ * ------------------------------------------------------------------
+ * 现状：/user/invoice/* 后端还没写（返回 {"detail":"Not Found"}）。
+ * 但站长必须「马上能收到并处理」，所以做两条路：
+ *   1. 先试专用接口 /user/invoice/create（后端上线后自动走这条，无需改前端）
+ *   2. 接口不通 → 把申请整包塞进「留言」提交（后台「留言」已上线，站长立刻可见）
+ * 留言正文第一行是固定标记，管理员页靠它把留言还原成开票申请。
+ * ------------------------------------------------------------------ */
+
+/** 留言通道里的开票申请标记，改动需同步 admin/invoices */
+export const INVOICE_MARKER = '【发票申请】'
+
+export interface InvoiceSubmitResult {
+  /** invoice = 走正式接口；feedback = 降级走留言；failed = 两条都不通 */
+  channel: 'invoice' | 'feedback' | 'failed'
+  id?: number
+  codeMsg?: string
+}
+
+export async function submitInvoiceApplication(
+  payload: InvoiceFormPayload & { userId?: number; userName?: string }
+): Promise<InvoiceSubmitResult> {
+  // 1) 正式接口
+  try {
+    const res: any = await createInvoice(payload)
+    const data = res?.data ?? res
+    if (String(data?.code ?? '') === '0') {
+      return { channel: 'invoice', codeMsg: data?.codeMsg }
+    }
+  } catch {
+    /* 接口不存在或网络异常，继续走留言通道 */
+  }
+
+  // 2) 降级：留言通道（后台可见、可回复）
+  try {
+    const record = {
+      bill_id: payload.bill_id,
+      amount: payload.amount,
+      title_type: payload.title_type,
+      title: payload.title,
+      tax_no: payload.tax_no || '',
+      email: payload.email,
+      remark: payload.remark || ''
+    }
+    const res: any = await postFeedback({
+      content: `${INVOICE_MARKER}${JSON.stringify(record)}`,
+      contact: payload.email,
+      nickname: payload.userName,
+      anonymous: false,
+      userId: payload.userId ?? null
+    })
+    const data = res?.data ?? res
+    if (String(data?.code ?? '') === '0' || data?.id) {
+      return { channel: 'feedback', id: data?.id, codeMsg: data?.codeMsg }
+    }
+  } catch {
+    /* 两条都不通 */
+  }
+
+  return { channel: 'failed' }
 }
 
 export function cancelInvoice(id: number) {

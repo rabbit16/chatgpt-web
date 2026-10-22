@@ -13,6 +13,7 @@ import AdminAnnouncement from './announcement'
 import AdminFeedback from './feedback'
 import AdminOrders from './orders'
 import AdminInvoices from './invoices'
+import AdminProjects from './projects'
 import AdminUsage from './usage'
 import AdminVendors from './vendors'
 import AdminPrompt from './prompt'
@@ -28,6 +29,7 @@ function renderAdminContent(pathname: string) {
   if (pathname.startsWith('/admin/feedback')) return <AdminFeedback />
   if (pathname.startsWith('/admin/orders')) return <AdminOrders />
   if (pathname.startsWith('/admin/invoices')) return <AdminInvoices />
+  if (pathname.startsWith('/admin/projects')) return <AdminProjects />
   if (pathname.startsWith('/admin/usage')) return <AdminUsage />
   if (pathname.startsWith('/admin/tasks')) return <AdminTasks />
   if (pathname.startsWith('/admin/vendors')) return <AdminVendors />

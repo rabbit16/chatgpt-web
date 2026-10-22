@@ -1,7 +1,70 @@
 import { useEffect, useState } from 'react'
 import { Button, Empty, Input, Modal, Pagination, Spin, Switch, Tag, message } from 'antd'
 import { getAdminFeedback, updateAdminFeedback } from '@/request/api'
+import { INVOICE_MARKER } from '@/request/invoice'
 import styles from '../index.module.less'
+
+/**
+ * 开票申请识别
+ * ------------------------------------------------------------
+ * 发票专用接口还没上线，用户提交的申请会以「【发票申请】{...}」的形式落到留言里。
+ * 这里把那段 JSON 解析出来单独排版：订单号、金额、抬头、税号、邮箱一眼可见，
+ * 站长不用去读原始字符串；其他留言照旧显示原文。
+ */
+type InvoicePayload = {
+  bill_id?: string
+  amount?: number
+  title_type?: string
+  title?: string
+  tax_no?: string
+  email?: string
+  remark?: string
+}
+
+function parseInvoice(content: string): InvoicePayload | null {
+  if (!content?.startsWith(INVOICE_MARKER)) return null
+  try {
+    return JSON.parse(content.slice(INVOICE_MARKER.length)) as InvoicePayload
+  } catch {
+    return null
+  }
+}
+
+function InvoiceBody({ data, raw }: { data: InvoicePayload; raw: string }) {
+  return (
+    <div className={styles.invoiceAsk}>
+      <div className={styles.invoiceAskHead}>
+        <Tag color="gold">开票申请</Tag>
+        <strong>¥{Number(data.amount || 0).toFixed(2)}</strong>
+        <span>订单号 {data.bill_id || '-'}</span>
+      </div>
+      <dl className={styles.invoiceAskGrid}>
+        <div>
+          <dt>{data.title_type === 'personal' ? '个人姓名' : '公司名称'}</dt>
+          <dd>{data.title || '-'}</dd>
+        </div>
+        <div>
+          <dt>税号</dt>
+          <dd>{data.tax_no || '（个人抬头无需税号）'}</dd>
+        </div>
+        <div>
+          <dt>收票邮箱</dt>
+          <dd>{data.email || '-'}</dd>
+        </div>
+        {data.remark ? (
+          <div>
+            <dt>备注</dt>
+            <dd>{data.remark}</dd>
+          </div>
+        ) : null}
+      </dl>
+      <details className={styles.invoiceAskRaw}>
+        <summary>查看原始内容</summary>
+        <code>{raw}</code>
+      </details>
+    </div>
+  )
+}
 
 function AdminFeedback() {
   const [loading, setLoading] = useState(false)
@@ -91,7 +154,14 @@ function AdminFeedback() {
                   {row.is_delete ? <Tag color="red">已隐藏</Tag> : null}
                   <time>{row.insert_time}</time>
                 </header>
-                <p className={styles.feedBody}>{row.content}</p>
+                {(() => {
+                  const invoice = parseInvoice(String(row.content || ''))
+                  return invoice ? (
+                    <InvoiceBody data={invoice} raw={String(row.content)} />
+                  ) : (
+                    <p className={styles.feedBody}>{row.content}</p>
+                  )
+                })()}
                 {row.reply ? (
                   <div className={styles.feedReply}>
                     <div className={styles.feedReplyMeta}>

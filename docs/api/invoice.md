@@ -4,6 +4,20 @@
 > 前端代码：`src/request/invoice.ts`、`src/components/InvoiceApplyModal/`、`src/pages/shop/`（支付记录）、`src/pages/invoice/`（我的发票）、`src/pages/admin/invoices/`（审核）。
 > 前端已按本契约实现并做了降级：接口未上线时不报错、不产生脏数据。
 
+## 零、当前状态与临时通道（2026-10-23 更新）
+
+**后端尚未实现**：`POST /user/invoice/summary`、`/user/invoice/list`、`/user/invoice/create` 目前都返回 `{"detail":"Not Found"}`（已用测试账号实测）。
+
+为了不让用户填完表就石沉大海，前端已做**双通道提交**（`src/request/invoice.ts` → `submitInvoiceApplication`）：
+
+1. 先请求正式接口 `/user/invoice/create`；
+2. 接口不通时，把整包申请写进**已有的留言接口** `POST /user/feedback`，正文固定前缀 `【发票申请】` + JSON；
+3. 留言会立刻出现在**后台「留言」页**，且该页已识别这个前缀，单独排版出「订单号 / 金额 / 抬头 / 税号 / 收票邮箱」，站长不用读原始字符串；
+4. 隐私保护：留言墙（`/notice?tab=feedback`）是**游客免登录可见**的，所以前端已把带该前缀的留言从公开列表里过滤掉，条数也同步扣除。
+
+> 站长按本文实现正式接口后，前端无需改代码：`submitInvoiceApplication` 会自动走第 1 条，留言通道自然不再使用。
+> 在那之前，用户看到的提示是「申请已送达站长（留言通道），开好后电子发票发到你的邮箱」。
+
 ## 一、三条硬规则（后端必须兜底）
 
 1. **必须绑定订单**：申请时传 `bill_id`（`user_bill_list` 里的订单号），金额由后端按这笔订单取，**不信任前端传的金额**。

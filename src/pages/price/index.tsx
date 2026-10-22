@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
-import { Link, useSearchParams } from 'react-router-dom'
-import { ExportOutlined, FileTextOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import { useSearchParams } from 'react-router-dom'
+import { ExportOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
 import ShopPanel from '@/pages/shop'
+import InvoicePanel from '@/pages/invoice'
 import { getUserPricing, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
@@ -30,6 +31,9 @@ import {
 import styles from './index.module.less'
 
 type TabKey = 'all' | ModelProvider
+
+/** 充值商城的三个页签 */
+type ViewTab = 'price' | 'wallet' | 'invoice'
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'all', label: '全部' },
@@ -76,14 +80,30 @@ function longContextGate(rate: UserModelRate['long_context']) {
 }
 
 function PricePage() {
-  // 价格与充值合并在同一页：?tab=shop 看余额与套餐
+  // 充值商城：三个页签同页切换（模型价格 / 我的钱包 / 我的发票），URL 用 ?tab= 记住位置
   const [searchParams, setSearchParams] = useSearchParams()
-  const viewTab = searchParams.get('tab') === 'shop' ? 'shop' : 'price'
+  const rawTab = searchParams.get('tab')
+  const viewTab: ViewTab = rawTab === 'wallet' || rawTab === 'invoice' ? rawTab : 'price'
   const switchTab = (next: string) => {
     const nextParams = new URLSearchParams(searchParams)
-    if (next === 'shop') nextParams.set('tab', 'shop')
-    else nextParams.delete('tab')
+    if (next === 'price') nextParams.delete('tab')
+    else nextParams.set('tab', next)
     setSearchParams(nextParams, { replace: true })
+  }
+
+  const TAB_META: Record<ViewTab, { title: string; lead: string }> = {
+    price: {
+      title: '模型价格',
+      lead: '按当前供应商可用模型展示 · 美元（USD）/ 百万 Tokens · 新模型优先'
+    },
+    wallet: {
+      title: '我的钱包',
+      lead: '当前余额、充值与支付记录都在这里；充值到账后可直接给某一笔开票'
+    },
+    invoice: {
+      title: '我的发票',
+      lead: '选一笔已支付充值开电子普通发票；一单一票，已开票的订单不能重复申请'
+    }
   }
   const { token, user_info, setLoginModal, llm_api_key } = userStore()
   const info = user_info as { data?: { bodyMessage?: { telephone?: string } }; telephone?: string } | undefined
@@ -310,14 +330,21 @@ function PricePage() {
     <div className={styles.pricePage}>
       <Layout>
         <div className={styles.wrap}>
+          <PillTabs
+            ariaLabel="充值商城"
+            value={viewTab}
+            onChange={switchTab}
+            items={[
+              { key: 'price', label: '模型价格' },
+              { key: 'wallet', label: '我的钱包' },
+              { key: 'invoice', label: '我的发票' }
+            ]}
+          />
+
           <header className={styles.pageHead}>
             <div>
-              <h1>{viewTab === 'shop' ? '余额与充值' : '模型价格'}</h1>
-              <p>
-                {viewTab === 'shop'
-                  ? '查看当前余额、选择充值套餐，历史订单在下方列表里'
-                  : '按当前供应商可用模型展示 · 美元（USD）/ 百万 Tokens · 新模型优先'}
-              </p>
+              <h1>{TAB_META[viewTab].title}</h1>
+              <p>{TAB_META[viewTab].lead}</p>
             </div>
             {viewTab === 'price' && token && (
               <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadPricing()}>
@@ -326,34 +353,14 @@ function PricePage() {
             )}
           </header>
 
-          <PillTabs
-            ariaLabel="价格与充值"
-            value={viewTab}
-            onChange={switchTab}
-            items={[
-              { key: 'price', label: '模型价格' },
-              { key: 'shop', label: '余额与充值' }
-            ]}
-          />
-
-          {viewTab === 'shop' ? (
+          {viewTab !== 'price' ? (
             token ? (
-              <>
-                <ShopPanel />
-                <section className={styles.invoiceEntry}>
-                  <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
-                  <div>
-                    <strong>发票按订单开</strong>
-                    <span>在下方「支付记录」里选一笔已支付充值申请；一单一票，已开票的不能重复开。</span>
-                  </div>
-                  <Link to="/invoice">
-                    <Button>我的发票</Button>
-                  </Link>
-                </section>
-              </>
+              viewTab === 'wallet' ? <ShopPanel /> : <InvoicePanel />
             ) : (
               <div className={styles.publicNote}>
-                <span className={styles.publicNoteText}>登录后可以查看余额、选择套餐充值</span>
+                <span className={styles.publicNoteText}>
+                  {viewTab === 'wallet' ? '登录后可以查看余额、选择套餐充值' : '登录后可以查看充值记录并申请开票'}
+                </span>
                 <Button type="primary" onClick={() => setLoginModal(true)}>
                   登录 / 注册
                 </Button>
@@ -458,7 +465,9 @@ function PricePage() {
                 </div>
                 <div className={styles.calcFooter}>
                   {selectedRate?.long_context ? (
-                    <Tag color={useLong ? 'orange' : 'blue'}>{useLong ? '长上下文' : '短上下文'}</Tag>
+                    <span className={[styles.tierBadge, useLong ? styles.tierLong : ''].join(' ')}>
+                      {useLong ? '长上下文' : '短上下文'}
+                    </span>
                   ) : null}
                   <div className={styles.calcBreakdown}>
                     <span>输入 {formatPrice(input)}</span>

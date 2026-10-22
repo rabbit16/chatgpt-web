@@ -2,7 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, Empty, Form, Input, Pagination, Spin, Switch, Tag, message } from 'antd'
 import { userStore } from '@/store'
 import { getFeedbackList, postFeedback } from '@/request/api'
+import { INVOICE_MARKER } from '@/request/invoice'
 import styles from './index.module.less'
+
+/**
+ * 开票申请不能出现在公开留言墙上
+ * ------------------------------------------------------------
+ * 发票申请含税号、邮箱，属于个人敏感信息；留言墙游客不登录也能看。
+ * 所以提交时虽然借用了留言通道（后台可见），但公开展示一律过滤掉，
+ * 用户自己要看申请进度去「我的发票」，站长在后台「留言」里处理。
+ */
+function isInvoiceApplication(content?: string) {
+  return Boolean(content && content.startsWith(INVOICE_MARKER))
+}
 
 type FeedbackForm = {
   content: string
@@ -79,19 +91,23 @@ export function FeedbackPanel() {
     }
   }
 
+  // 公开墙不显示开票申请（含税号/邮箱），条数也要跟着减
+  const visible = list.filter((item) => !isInvoiceApplication(item.content))
+  const visibleCount = Math.max(total - (list.length - visible.length), visible.length)
+
   return (
           <div className={styles.board}>
             <section className={`${styles.card} ${styles.listCard}`}>
               <div className={styles.listHead}>
                 <h2>全部留言</h2>
-                <span>共 {total} 条，按最新在前</span>
+                <span>共 {visibleCount} 条，按最新在前</span>
               </div>
               <Spin spinning={loading}>
                 {list.length === 0 ? (
                   <Empty description="还没有留言，来写第一条吧" />
                 ) : (
                   <div className={styles.list}>
-                    {list.map((item) => (
+                    {visible.map((item) => (
                       <article key={item.id} className={styles.item}>
                         <div className={styles.itemMeta}>
                           <strong>{item.nickname}</strong>
