@@ -138,7 +138,28 @@
 
 .typeTitle {
   margin-bottom: 4px;
-  color: rgba(0, 0, 0, 0.88);
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+/* 「管理 Key」抽屉里的小标题（新增/编辑 Key 那一块）
+   原来写的是内联 style，和页面其它区块的间距、字色对不齐，抽成类名统一管。 */
+.keyDrawerAlert {
+  margin-bottom: 16px;
+}
+
+.keyFormTitle {
+  margin: 24px 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.keyFormHint {
+  margin: -4px 0 16px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-4);
 }
 
 .typeHint {

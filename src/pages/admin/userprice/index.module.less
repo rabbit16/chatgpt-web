@@ -1,3 +1,6 @@
+/* 用户专属价（/admin/userprice）
+   站长 9036bd4 带来的页面，样式骨架与我们 paychannel / vendors 一致，
+   只把硬编码色值换成了设计 token，深色模式下才不会出现白底黑字。 */
 .page {
   max-width: 1180px;
 }
@@ -12,14 +15,15 @@
   h1 {
     margin: 0 0 6px;
     font-size: 22px;
-    color: #101828;
+    color: var(--text-1);
   }
 
   p {
     margin: 0;
     font-size: 13px;
-    color: #667085;
+    color: var(--text-4);
     line-height: 1.6;
+    max-width: 720px;
   }
 }
 
@@ -31,9 +35,18 @@
   margin-top: 24px;
 }
 
+/* 价格数字用等宽，右对齐后小数点自然对齐，扫一眼能比大小 */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
 .code {
-  color: #667085;
+  color: var(--text-4);
   font-size: 12px;
+  font-family: var(--font-mono);
 }
 
 @media (max-width: 600px) {

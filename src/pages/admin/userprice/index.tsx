@@ -282,12 +282,12 @@ function AdminUserPrice() {
         pagination={{ pageSize: 20, hideOnSinglePage: true }}
         dataSource={filtered}
         locale={{ emptyText: '还没有设置用户专属价' }}
-        scroll={{ x: 1080 }}
+        scroll={{ x: 940 }}
         columns={[
           {
             title: '用户',
             dataIndex: 'user',
-            width: 240,
+            width: 180,
             render: (_: unknown, row: UserModelPriceRule) => <span>{userLabel(row.user)}</span>
           },
           {
@@ -303,13 +303,13 @@ function AdminUserPrice() {
           {
             title: '档位',
             dataIndex: 'service_tier',
-            width: 90,
+            width: 76,
             render: (value: string) => <Tag>{value === 'fast' ? 'Fast' : '标准'}</Tag>
           },
-          { title: '输入', dataIndex: 'input', width: 100, render: (v: number) => `$${v}` },
-          { title: '输出', dataIndex: 'output', width: 100, render: (v: number) => `$${v}` },
-          { title: '缓存读', dataIndex: 'cache_read', width: 100, render: (v: number) => `$${v}` },
-          { title: '缓存写', dataIndex: 'cache_write', width: 100, render: (v: number) => `$${v}` },
+          { title: '输入', dataIndex: 'input', width: 84, align: 'right' as const, render: (v: number) => <span className={styles.num}>$${v}</span> },
+          { title: '输出', dataIndex: 'output', width: 84, align: 'right' as const, render: (v: number) => <span className={styles.num}>$${v}</span> },
+          { title: '缓存读', dataIndex: 'cache_read', width: 84, align: 'right' as const, render: (v: number) => <span className={styles.num}>$${v}</span> },
+          { title: '缓存写', dataIndex: 'cache_write', width: 84, align: 'right' as const, render: (v: number) => <span className={styles.num}>$${v}</span> },
           {
             title: '生效',
             dataIndex: 'is_active',
@@ -321,7 +321,7 @@ function AdminUserPrice() {
           { title: '备注', dataIndex: 'note' },
           {
             title: '操作',
-            width: 160,
+            width: 150,
             render: (_: unknown, row: UserModelPriceRule) => (
               <Space>
                 <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(row)}>

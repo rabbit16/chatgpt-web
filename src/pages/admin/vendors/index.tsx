@@ -2260,7 +2260,7 @@ function AdminVendors() {
         <Alert
           showIcon
           type="info"
-          style={{ marginBottom: 16 }}
+          className={styles.keyDrawerAlert}
           message="一个供应商可以保存多把命名 Key"
           description="模型路由里直接选「用哪把 Key」，换 Key 时只在这里改，不用重建路由。Key 只显示掩码，想换只能重新输入。"
         />
@@ -2317,8 +2317,8 @@ function AdminVendors() {
             }
           ]}
         />
-        <div style={{ marginTop: 24 }}>
-          <h3 style={{ marginBottom: 8 }}>{editingKey ? `编辑「${editingKey.name}」` : '新增 Key'}</h3>
+        <div>
+          <h3 className={styles.keyFormTitle}>{editingKey ? `编辑「${editingKey.name}」` : '新增 Key'}</h3>
           <Form form={keyForm} layout="vertical">
             <Form.Item
               name="name"
