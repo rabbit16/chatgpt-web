@@ -18,6 +18,76 @@
   gap: 20px;
 }
 
+
+/* 充值条：站长反馈「很难注意到在哪里充钱」，所以放在页签下面常驻。
+   用品牌渐变底 + 左侧钱包图标做视觉锚点，右侧一个主按钮，别的地方不再重复放充值入口。 */
+.rechargeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--brand-soft);
+  background: linear-gradient(96deg, var(--tint-brand) 0%, var(--brand-softer) 100%);
+
+  /* 窄屏：文案和按钮上下排，按钮占满整行更好点 */
+  @media (max-width: 720px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+}
+
+.rechargeLead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-1);
+  }
+
+  p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-3);
+  }
+}
+
+.rechargeIcon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--brand);
+  color: var(--text-inverse);
+  font-size: 18px;
+}
+
+.rechargeActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 720px) {
+    :global(.ant-btn) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
 .pageHead {
   display: flex;
   align-items: center;
