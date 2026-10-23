@@ -373,6 +373,17 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
+    id: 'AdminUserPricePage',
+    path: '/admin/userprice',
+    element: <AdminPage />,
+    children: [],
+    configure: {
+      verifToken: true,
+      title: '用户专属价',
+      role: ['administrator']
+    }
+  },
+  {
     id: 'AdminPromptPage',
     path: '/admin/prompt',
     element: <AdminPage />,

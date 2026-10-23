@@ -7,6 +7,7 @@ import {
   CloudServerOutlined,
   CodeOutlined,
   DashboardOutlined,
+  DollarOutlined,
   ExperimentOutlined,
   FileTextOutlined,
   FormOutlined,
@@ -116,12 +117,12 @@ const admin = {
     { path: '/admin/usage', name: '请求用量', icon: <BarChartOutlined /> },
     { path: '/admin/tasks', name: '代理任务', icon: <ProfileOutlined /> },
     { path: '/admin/vendors', name: '供应商', icon: <CloudServerOutlined /> },
+    { path: '/admin/userprice', name: '用户专属价', icon: <DollarOutlined /> },
     { path: '/admin/prompt', name: 'Prompt 注入', icon: <BulbOutlined /> },
     { path: '/admin/pricing', name: '费率设置', icon: <SettingOutlined /> },
     { path: '/admin/software', name: '软件下载', icon: <CloudDownloadOutlined /> },
     { path: '/admin/profile', name: '个人资料', icon: <UserOutlined /> },
-    { path: '/admin/shop', name: '商城', icon: <ShopOutlined /> }
-  ]
+    { path: '/admin/shop', name: '商城', icon: <ShopOutlined /> }  ]
 }
 
 export default {

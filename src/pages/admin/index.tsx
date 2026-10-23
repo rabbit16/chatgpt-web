@@ -21,6 +21,7 @@ import AdminPricing from './pricing'
 import AdminSoftware from './software'
 import AdminTasks from './tasks'
 import AdminPayChannel from './paychannel'
+import AdminUserPrice from './userprice'
 
 function renderAdminContent(pathname: string) {
   if (pathname.startsWith('/admin/users')) return <AdminUsers />
@@ -33,6 +34,7 @@ function renderAdminContent(pathname: string) {
   if (pathname.startsWith('/admin/usage')) return <AdminUsage />
   if (pathname.startsWith('/admin/tasks')) return <AdminTasks />
   if (pathname.startsWith('/admin/vendors')) return <AdminVendors />
+  if (pathname.startsWith('/admin/userprice')) return <AdminUserPrice />
   if (pathname.startsWith('/admin/prompt')) return <AdminPrompt />
   if (pathname.startsWith('/admin/pricing')) return <AdminPricing />
   if (pathname.startsWith('/admin/software')) return <AdminSoftware />
