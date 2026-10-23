@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
 import { useSearchParams } from 'react-router-dom'
-import { ExportOutlined, ImportOutlined, ReloadOutlined, ThunderboltOutlined } from '@ant-design/icons'
+import {
+  ArrowRightOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  ReloadOutlined,
+  ThunderboltOutlined,
+  WalletOutlined
+} from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
 import ShopPanel from '@/pages/shop'
 import InvoicePanel from '@/pages/invoice'
-import { getUserPricing, type UserModelRate, type UserPricing } from '@/request/api'
+import { getUserPricing, userBillInfo, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
   PUBLIC_IMAGE_MODELS,
@@ -63,6 +70,14 @@ function formatPrice(amount: number) {
   return formatUsd(amount) === '$0.00' ? `$${amount.toExponential(2)}` : formatUsd(amount)
 }
 
+/** 人民币余额：小额也保留有效数字，避免显示成 ¥0.00 */
+function formatMoney(value: number) {
+  if (value >= 1) return `¥${value.toFixed(2)}`
+  if (value >= 0.01) return `¥${value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
+  if (value === 0) return '¥0'
+  return `¥${value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`
+}
+
 function standardRate(rates: UserModelRate[]) {
   return rates.find((item) => item.service_tier === 'standard') || rates[0]
 }
@@ -112,6 +127,8 @@ function PricePage() {
     (llm_api_key || '').startsWith('sk-') || /^1[3-9]\d{9}$/.test(llm_api_key || '')
       ? llm_api_key
       : phone || ''
+  // 页头充值条用：余额取一次，点「去充值」直接切到钱包页签
+  const [balance, setBalance] = useState<number | null>(null)
   const requestRef = useRef(0)
   const [pricing, setPricing] = useState<UserPricing | null>(null)
   const [loading, setLoading] = useState(false)
@@ -141,6 +158,27 @@ function PricePage() {
       if (request === requestRef.current && !signal?.aborted) setLoading(false)
     }
   }
+
+  // 页头充值条要显示余额，所以单独取一次用户信息（失败就不显示余额，不影响页面）
+  useEffect(() => {
+    if (!token) {
+      setBalance(null)
+      return
+    }
+    const userId = (user_info as any)?.data?.bodyMessage?.userId
+    if (!userId) return
+    let cancelled = false
+    userBillInfo({ userId: String(userId) })
+      .then((res: any) => {
+        if (cancelled || res?.code !== 0) return
+        const raw = res?.data?.userMessage?.balance ?? res?.data?.userMessage?.money
+        if (typeof raw === 'number' && Number.isFinite(raw)) setBalance(raw)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [token, user_info])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -340,6 +378,43 @@ function PricePage() {
               { key: 'invoice', label: '我的发票' }
             ]}
           />
+
+          {/* 充值条：站长反馈「很难注意到在哪里充钱」。
+              常驻在价格页顶部，不点进「我的钱包」也能看见余额 + 一键去充值。 */}
+          <div className={styles.rechargeBar}>
+            <div className={styles.rechargeLead}>
+              <span className={styles.rechargeIcon}>
+                <WalletOutlined />
+              </span>
+              <div>
+                <strong>
+                  {token
+                    ? balance != null
+                      ? `当前余额 ${formatMoney(balance)}`
+                      : '充值后即可调用全部 58 个模型'
+                    : '充值后即可调用全部 58 个模型'}
+                </strong>
+                <p>按实际用量扣费，充多少到账多少，最低 1 元起</p>
+              </div>
+            </div>
+            <div className={styles.rechargeActions}>
+              <Button
+                type="primary"
+                icon={<WalletOutlined />}
+                onClick={() => {
+                  if (token) switchTab('wallet')
+                  else setLoginModal(true)
+                }}
+              >
+                {token ? '立即充值' : '登录并充值'}
+              </Button>
+              {token ? (
+                <Button type="text" onClick={() => switchTab('invoice')}>
+                  我的发票 <ArrowRightOutlined />
+                </Button>
+              ) : null}
+            </div>
+          </div>
 
           <header className={styles.pageHead}>
             <div>

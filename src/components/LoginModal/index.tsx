@@ -23,6 +23,8 @@ const ANONYMOUS_NOTICE =
 type Props = {
   open: boolean
   onCancel: () => void
+  /** 登录/注册成功时触发；onCancel 只关弹窗，成功回调用来做提示和跳转 */
+  onSuccess?: () => void
 }
 
 type LoginType = 'code' | 'password' | 'register' | 'reset' | string
@@ -501,6 +503,13 @@ function LoginModal(props: Props) {
     loginForm.resetFields()
   }
 
+  /** 登录/注册成功：先关弹窗，再交给上层做提示与跳转（两者语义不同，不能共用 onCancel） */
+  const handleLoggedIn = () => {
+    props.onCancel()
+    loginForm.resetFields()
+    props.onSuccess?.()
+  }
+
   return (
     <Modal
       open={props.open}
@@ -516,7 +525,7 @@ function LoginModal(props: Props) {
     >
       <LoginCard
         form={loginForm}
-        onSuccess={onCancel}
+        onSuccess={handleLoggedIn}
         title="登录 anyGPT"
         subTitle="登录后继续对话、查看用量与余额"
       />

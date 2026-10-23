@@ -82,13 +82,29 @@
 		align-items: center;
 		margin-left: 16px;
 		gap: 8px;
+		/* 移动端主菜单入口：原来只有九宫格图标，没有文字，用户不知道是什么。
+		   现在图标 + 「菜单」两个字，做成小药丸，点起来也更明确。 */
 		&_menu{
-			font-size: 20px;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
 			margin-left: 4px;
+			padding: 5px 10px;
+			border-radius: var(--radius-pill);
+			font-size: 17px;
 			color: var(--text-3);
 			cursor: pointer;
+			transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+
+			span {
+				font-size: 12px;
+				line-height: 1;
+				white-space: nowrap;
+			}
+
 			&:hover{
 				color: var(--brand);
+				background: var(--brand-soft);
 			}
 		}
 	}
