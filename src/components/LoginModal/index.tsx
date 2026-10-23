@@ -510,7 +510,9 @@ function LoginModal(props: Props) {
       width={460}
       centered
       className={styles.modal}
-      styles={{ body: { padding: '28px 28px 20px' } }}
+      // antd 5.7.3 的 Modal 没有 styles.body（5.22 才加），原写法被静默忽略，
+      // 弹窗内边距一直是默认值。改用 5.7.3 支持的 bodyStyle 才真正生效。
+      bodyStyle={{ padding: '28px 28px 20px' }}
     >
       <LoginCard
         form={loginForm}
