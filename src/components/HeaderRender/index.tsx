@@ -204,8 +204,9 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               return <MenuList mode="inline" />
             }}
           >
-            <div className={styles.header__actives_menu}>
+            <div className={styles.header__actives_menu} title="打开菜单" aria-label="打开菜单">
               <AppstoreOutlined />
+              <span>菜单</span>
             </div>
           </Dropdown>
         )}
