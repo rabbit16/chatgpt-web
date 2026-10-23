@@ -5,11 +5,12 @@ import LoginModal from '../LoginModal'
 import ConfigModal from '../ConfigModal'
 import AnnouncementPopup from '../AnnouncementPopup'
 import { userStore } from '@/store'
-import { notification } from 'antd'
+import { message, notification } from 'antd'
 import React from 'react'
 import { getGPTListMessage, getSession } from '../../request/api'
 import { syncCredential } from '@/utils/llmCredential'
 import { normalizeChatList, sanitizeHtml } from '@/utils'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 type Props = {
   children: React.ReactElement
@@ -26,6 +27,8 @@ function readUserId() {
 }
 
 function Global(props: Props) {
+  const navigate = useNavigate()
+  const location = useLocation()
   const models = configStore((state) => state.models)
   const config = configStore((state) => state.config)
   const configModal = configStore((state) => state.configModal)
@@ -229,6 +232,31 @@ function Global(props: Props) {
     // configAsync.fetchConfig()
   }, [token, upglobal, page])
 
+  /**
+   * 登录/注册成功：给一个明确反馈 + 自动离开登录态
+   * ------------------------------------------------------------
+   * 站长反馈「登录成功要有提示，然后可以跳转到对话界面或充值界面，
+   * 这样客户能知道是登录成功了」。
+   * 以前成功后只是把弹窗一关，页面没任何变化，用户不确定有没有登上。
+   *
+   * 跳转到哪：从哪来回哪去；没有来源页（直接点登录）时按当前页面判断——
+   *   在价格/钱包相关页 → 留在原页（充值动线，别把人带走）
+   *   其他页面 → 去对话页，登录后最自然的下一步
+   */
+  const handleLoggedIn = () => {
+    message.success('登录成功，欢迎回来')
+    const from = `${location.pathname}${location.search}`
+    const onMoneyPage = /^\/(price|shop|invoice)/.test(location.pathname)
+    if (onMoneyPage) {
+      // 已经在充值动线上，不跳走；轻推一下余额入口
+      if (!location.search.includes('tab=wallet')) message.info('余额与充值在「我的钱包」页签')
+      return
+    }
+    if (from === '/login' || from === '') {
+      navigate('/chat')
+    }
+  }
+
   useLayoutEffect(() => {
     onOpenNotifications()
   }, [notification])
@@ -241,6 +269,7 @@ function Global(props: Props) {
         onCancel={() => {
           setLoginModal(false)
         }}
+        onSuccess={handleLoggedIn}
       />
       <AnnouncementPopup />
       <ConfigModal
