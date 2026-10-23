@@ -24,6 +24,7 @@ import {
   defaultGuideModel,
   findModel,
   groupModels,
+  guideModelSummary,
   protocolMeta,
   providerLabel,
   type GuideModel
@@ -218,6 +219,7 @@ function GuidePage() {
   const model = findModel(modelId) || defaultGuideModel()
   const protocol = protocolMeta(model?.provider || 'anthropic')
   const modelOptions = useMemo(() => groupModels(), [])
+  const modelSummary = useMemo(() => guideModelSummary(), [])
 
   useEffect(() => {
     if (llm_api_key) setKey(llm_api_key)
@@ -402,12 +404,22 @@ function GuidePage() {
             <div className={styles.stepHead}>
               <span className={styles.stepNo}>3</span>
               <div>
-                <h2>在 Claude-haha 里填这 4 个框</h2>
+                <h2>在客户端里填这 4 个框</h2>
                 <p>
-                  打开 Claude-haha 的「添加模型」窗口，左边就是它的界面示意，右边照着填。弹窗下面还有一长串默认项，
-                  <b>不用改</b>，只在要画图时补一组。
+                  <b>以 Claude-haha 为例</b>：打开它的「添加模型」窗口，左边就是那个窗口的示意，右边照着填。
+                  弹窗下面还有一长串默认项，<b>不用改</b>，只在要画图时补一组。
                 </p>
               </div>
+            </div>
+
+            {/* 醒目提示：这里只是「以 Claude-haha 为例」，别的客户端一样填 */}
+            <div className={styles.exampleCallout}>
+              <IconBadge icon={<SettingOutlined />} tone="brand" size="sm" />
+              <p>
+                <b>下面全部以 Claude-haha 为例。</b>
+                用 Codex、Cursor、ChatBox、Cherry Studio 或其他客户端？填的东西是完全一样的三样：
+                <b>接口地址 + API 密钥 + 模型名</b>，照着同样的位置填进去就行，界面长得不一样不影响。
+              </p>
             </div>
 
             {/* 模型选择：全站模型都在这里，选完协议/地址/默认项自动变 */}
@@ -416,7 +428,10 @@ function GuidePage() {
                 <IconBadge icon={<ApiOutlined />} tone="brand" size="sm" />
                 <div>
                   <strong>先选你要用的主模型</strong>
-                  <p>本站所有模型都在这里。选哪个，下面的接口地址、API 格式、模型映射就自动变成它该用的那一套。</p>
+                  <p>
+                    本站全部 <b>{modelSummary.total} 个</b>可对话模型都在这里，按厂商分组（共 {modelSummary.providers} 家）。
+                    选哪个，下面的接口地址、API 格式、模型映射就自动变成它该用的那一套。
+                  </p>
                 </div>
               </div>
               <div className={styles.modelPickRow}>

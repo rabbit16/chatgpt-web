@@ -1,19 +1,22 @@
 /**
  * 公开参考价快照（自动生成，勿手改）
  * ------------------------------------------------------------
- * 生成时间：2026-10-21
+ * 生成时间：2026-10-23
  * 数据来源：站点价目接口 `GET /v1/pricing/models`（匿名访问 401，故用密钥离线抓取后入库）
  * 换算规则：接口返回的是"当前账号折扣后价"，这里把价格字段除以折扣还原成**标准价**，
  *          所以访客看到的价 >= 登录后实际价，不会出现"标低了却收更多"。
+ * 本次抓取折扣：discount = 0.7
  * 用途：未登录访客在价格页也能看到模型与单价，解决"看不到价格就走"的转化漏洞。
- * 刷新：价格变动时重新抓一次覆盖本文件即可（见 docs/网站定位与改造路线.md 的 S1）。
+ * 刷新：**不要手改**，跑 `node scripts/sync-public-pricing.mjs`（工作区文档：
+ *      docs/公开价目快照-刷新方法.md）。改完 npm run build，未登录打开 /price 核对一遍。
+ * 供应商：TeamoRouter（teamo）· 同步于 2026-10-23T01:48:51
  */
 import type { UserModelRate, UserImageModelRate } from '@/request/api'
 
-export const PUBLIC_PRICING_UPDATED_AT = '2026-10-21'
+export const PUBLIC_PRICING_UPDATED_AT = '2026-10-23'
 export const PUBLIC_PRICING_NOTE = '参考价（站内标准倍率），登录后显示你的实际单价与折扣'
 
-export const PUBLIC_MODEL_IDS: string[] = ["MiniMax-M3", "claude-fable-5", "claude-fable-5-1", "claude-haiku-4-5", "claude-haiku-4-5-20251001", "claude-haiku-5-5", "claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-opus-5", "claude-opus-5-5", "claude-sonnet-4-6", "claude-sonnet-5", "claude-sonnet-5-5", "deepseek-flash", "deepseek-flash-1017", "deepseek-flash-free", "deepseek-v4-flash", "deepseek-v4-flash-free", "deepseek-v4-flash-vision-exp", "deepseek-v4-pro", "deepseek-v4-pro-260425", "doubao-seed-2.0-lite", "doubao-seed-2.1-pro", "gemini-3.1-pro-preview", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-4-argon", "gg(cursor)-46", "gg(cursor)-47", "glm-5.2", "glm-5.3", "glm-5.3-flash", "glm-5.3-flash-free", "gpt-5.4", "gpt-5.4 (fast)", "gpt-5.4-mini", "gpt-5.4-mini (fast)", "gpt-5.5", "gpt-5.6-luna", "gpt-5.6-luna (fast)", "gpt-5.6-sol", "gpt-5.6-sol (fast)", "gpt-5.6-terra", "gpt-5.6-terra (fast)", "gpt-6-astra", "gpt-6-astra (fast)", "gpt-6-luna", "gpt-6-sol", "gpt-6.1-sol", "grok-4.6", "grok-4.7", "kimi-k3", "qwen3.8-max"]
+export const PUBLIC_MODEL_IDS: string[] = ["MiniMax-M3","claude-fable-5","claude-fable-5-1","claude-haiku-4-5","claude-haiku-4-5-20251001","claude-haiku-5-5","claude-opus-4-6","claude-opus-4-7","claude-opus-4-8","claude-opus-5","claude-opus-5-5","claude-sonnet-4-6","claude-sonnet-5","claude-sonnet-5-5","deepseek-flash","deepseek-flash-1017","deepseek-flash-free","deepseek-v4-flash","deepseek-v4-flash-free","deepseek-v4-flash-vision-exp","deepseek-v4-pro","deepseek-v4-pro-260425","doubao-seed-2.0-lite","doubao-seed-2.1-pro","gemini-3.1-pro-preview","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-3.6-flash","gemini-3.7-flash","gemini-3.8-flash","gemini-4-argon","gg(cursor)-46","gg(cursor)-47","glm-5.2","glm-5.3","glm-5.3-flash","glm-5.3-flash-free","gpt-5.4","gpt-5.4 (fast)","gpt-5.4-mini","gpt-5.4-mini (fast)","gpt-5.5","gpt-5.6-luna","gpt-5.6-luna (fast)","gpt-5.6-sol","gpt-5.6-sol (fast)","gpt-5.6-terra","gpt-5.6-terra (fast)","gpt-6-astra","gpt-6-astra (fast)","gpt-6-luna","gpt-6-sol","gpt-6.1-sol","grok-4.6","grok-4.7","kimi-k3","qwen3.7-flash","qwen3.8-max"]
 
 export const PUBLIC_MODELS: UserModelRate[] = [
   {
@@ -25,7 +28,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.42,
     "output": 1.68,
     "cache_read": 0.084,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -37,7 +40,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 5.2,
-    "output": 26.0,
+    "output": 26,
     "cache_read": 0.52,
     "cache_write": 6.5,
     "original_input": null,
@@ -51,7 +54,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.26,
     "cache_write": 3.25,
     "original_input": null,
@@ -65,7 +68,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 5.2,
-    "output": 26.0,
+    "output": 26,
     "cache_read": 0.13,
     "cache_write": 6.5,
     "original_input": null,
@@ -79,7 +82,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.065,
     "cache_write": 3.25,
     "original_input": null,
@@ -92,10 +95,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "anthropic",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.2954,
-    "output": 1.477,
-    "cache_read": 0.02954,
-    "cache_write": 0.36925,
+    "input": 0.2814,
+    "output": 1.407,
+    "cache_read": 0.02814,
+    "cache_write": 0.35175,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -106,10 +109,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "anthropic",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.3612,
-    "output": 1.806,
-    "cache_read": 0.03612,
-    "cache_write": 0.4515,
+    "input": 0.3416,
+    "output": 1.708,
+    "cache_read": 0.03416,
+    "cache_write": 0.427,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -130,8 +133,8 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 100000,
       "op": "gt",
-      "input_multiplier": 5.0,
-      "output_multiplier": 5.0,
+      "input_multiplier": 5,
+      "output_multiplier": 5,
       "input": 0.26,
       "output": 1.3,
       "cache_read": 0.026,
@@ -154,8 +157,8 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 100000,
       "op": "gt",
-      "input_multiplier": 5.0,
-      "output_multiplier": 5.0,
+      "input_multiplier": 5,
+      "output_multiplier": 5,
       "input": 0.13,
       "output": 0.65,
       "cache_read": 0.013,
@@ -169,7 +172,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.26,
     "cache_write": 3.25,
     "original_input": null,
@@ -197,7 +200,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.26,
     "cache_write": 3.25,
     "original_input": null,
@@ -225,7 +228,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.26,
     "cache_write": 3.25,
     "original_input": null,
@@ -253,7 +256,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 2.6,
-    "output": 13.0,
+    "output": 13,
     "cache_read": 0.26,
     "cache_write": 3.25,
     "original_input": null,
@@ -392,10 +395,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "deepseek",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.1785,
-    "output": 0.714,
-    "cache_read": 0.00357,
-    "cache_write": 0.0,
+    "input": 0.357,
+    "output": 1.428,
+    "cache_read": 0.00714,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -406,12 +409,12 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "deepseek",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.21428571,
-    "output": 0.85714286,
-    "cache_read": 0.00428571,
-    "cache_write": 0.0,
-    "original_input": 0.15,
-    "original_output": 0.6,
+    "input": 0.3218571429,
+    "output": 0.7285714286,
+    "cache_read": 0.0064371429,
+    "cache_write": 0,
+    "original_input": null,
+    "original_output": 0.7285714286,
     "billing_basis": "original"
   },
   {
@@ -420,10 +423,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "deepseek",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.00021,
-    "output": 0.00084,
-    "cache_read": 4.2e-06,
-    "cache_write": 0.0,
+    "input": 0.00042,
+    "output": 0.00168,
+    "cache_read": 0.0000084,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -437,7 +440,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.5236,
     "output": 1.5708,
     "cache_read": 0.01666,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -450,8 +453,8 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "unit": "USD per 1M tokens",
     "input": 0.000616,
     "output": 0.001848,
-    "cache_read": 1.96e-05,
-    "cache_write": 0.0,
+    "cache_read": 0.0000196,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -462,10 +465,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "deepseek",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.2618,
-    "output": 0.7854,
-    "cache_read": 0.00833,
-    "cache_write": 0.0,
+    "input": 0.5236,
+    "output": 1.5708,
+    "cache_read": 0.01666,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -476,10 +479,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "deepseek",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.792792,
-    "output": 2.378376,
-    "cache_read": 0.0264264,
-    "cache_write": 0.0,
+    "input": 1.5708,
+    "output": 4.7124,
+    "cache_read": 0.05236,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -493,7 +496,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 2.0706,
     "output": 4.1412,
     "cache_read": 0.17255,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -504,10 +507,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "bytedance",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.089985,
-    "output": 0.540015,
-    "cache_read": 0.017955,
-    "cache_write": 0.0,
+    "input": 0.0971838,
+    "output": 0.5832162,
+    "cache_read": 0.0193914,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -518,10 +521,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "bytedance",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.899955,
-    "output": 4.499978,
-    "cache_read": 0.17997,
-    "cache_write": 0.0,
+    "input": 0.9719514,
+    "output": 4.859988,
+    "cache_read": 0.1943676,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -532,22 +535,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 1.1368,
-    "output": 6.8208,
-    "cache_read": 0.11368,
-    "cache_write": 0.0,
+    "input": 1.2796,
+    "output": 7.6776,
+    "cache_read": 0.12796,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 200000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 2.2736,
-      "output": 10.2312,
-      "cache_read": 0.22736,
-      "cache_write": 0.0
+      "input": 2.5592,
+      "output": 11.5164,
+      "cache_read": 0.25592,
+      "cache_write": 0
     }
   },
   {
@@ -556,10 +559,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.6972,
-    "output": 4.1832,
-    "cache_read": 0.06972,
-    "cache_write": 0.0,
+    "input": 0.693,
+    "output": 4.158,
+    "cache_read": 0.0693,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -573,7 +576,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.1218,
     "output": 1.015,
     "cache_read": 0.01218,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -584,10 +587,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.3045,
-    "output": 1.5225,
-    "cache_read": 0.03045,
-    "cache_write": 0.0,
+    "input": 0.34545,
+    "output": 1.72725,
+    "cache_read": 0.034545,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -598,10 +601,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.3066,
-    "output": 1.533,
-    "cache_read": 0.03066,
-    "cache_write": 0.0,
+    "input": 0.3171,
+    "output": 1.5855,
+    "cache_read": 0.03171,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -612,10 +615,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.3045,
-    "output": 1.5225,
-    "cache_read": 0.03045,
-    "cache_write": 0.0,
+    "input": 0.32025,
+    "output": 1.60125,
+    "cache_read": 0.032025,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -626,10 +629,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "Google",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.8372,
-    "output": 4.186,
-    "cache_read": 0.04186,
-    "cache_write": 0.8372,
+    "input": 0.812,
+    "output": 4.06,
+    "cache_read": 0.0406,
+    "cache_write": 0.812,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -643,7 +646,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 1.764,
     "output": 5.544,
     "cache_read": 0.3276,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -654,10 +657,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "zhipu",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 1.764,
-    "output": 5.544,
-    "cache_read": 0.3276,
-    "cache_write": 0.0,
+    "input": 1.96,
+    "output": 6.16,
+    "cache_read": 0.364,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -671,7 +674,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.14364,
     "output": 0.504,
     "cache_read": 0.0378,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -684,8 +687,8 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "unit": "USD per 1M tokens",
     "input": 0.0001596,
     "output": 0.00056,
-    "cache_read": 4.2e-05,
-    "cache_write": 0.0,
+    "cache_read": 0.000042,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -696,22 +699,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 2.1,
-    "output": 12.6,
-    "cache_read": 0.21,
-    "cache_write": 0.0,
+    "input": 1.75,
+    "output": 10.5,
+    "cache_read": 0.175,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 4.2,
-      "output": 18.9,
-      "cache_read": 0.42,
-      "cache_write": 0.0
+      "input": 3.5,
+      "output": 15.75,
+      "cache_read": 0.35,
+      "cache_write": 0
     }
   },
   {
@@ -723,7 +726,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.7,
     "output": 4.2,
     "cache_read": 0.07,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -734,10 +737,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.63,
-    "output": 3.78,
-    "cache_read": 0.063,
-    "cache_write": 0.0,
+    "input": 0.525,
+    "output": 3.15,
+    "cache_read": 0.0525,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -751,19 +754,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.21,
     "output": 1.26,
     "cache_read": 0.021,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 0.42,
       "output": 1.89,
       "cache_read": 0.042,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -775,7 +778,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 1.12,
     "output": 6.72,
     "cache_read": 0.112,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -786,22 +789,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 3.563,
-    "output": 21.378,
-    "cache_read": 0.3563,
-    "cache_write": 0.0,
+    "input": 3.535,
+    "output": 21.21,
+    "cache_read": 0.3535,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 7.126,
-      "output": 32.067,
-      "cache_read": 0.7126,
-      "cache_write": 0.0
+      "input": 7.07,
+      "output": 31.815,
+      "cache_read": 0.707,
+      "cache_write": 0
     }
   },
   {
@@ -813,19 +816,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.56,
     "output": 3.36,
     "cache_read": 0.056,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 1.12,
       "output": 5.04,
       "cache_read": 0.112,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -844,7 +847,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 0.336,
       "output": 1.512,
@@ -868,7 +871,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 0.112,
       "output": 0.504,
@@ -882,22 +885,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
-    "input": 1.44,
-    "output": 7.2,
-    "cache_read": 0.144,
-    "cache_write": 1.8,
+    "input": 1.248,
+    "output": 6.24,
+    "cache_read": 0.1248,
+    "cache_write": 1.56,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 2.88,
-      "output": 10.8,
-      "cache_read": 0.288,
-      "cache_write": 3.6
+      "input": 2.496,
+      "output": 9.36,
+      "cache_read": 0.2496,
+      "cache_write": 3.12
     }
   },
   {
@@ -906,22 +909,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.72,
-    "output": 3.6,
-    "cache_read": 0.072,
-    "cache_write": 0.9,
+    "input": 0.624,
+    "output": 3.12,
+    "cache_read": 0.0624,
+    "cache_write": 0.78,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 1.44,
-      "output": 5.4,
-      "cache_read": 0.144,
-      "cache_write": 1.8
+      "input": 1.248,
+      "output": 4.68,
+      "cache_read": 0.1248,
+      "cache_write": 1.56
     }
   },
   {
@@ -940,7 +943,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 2.24,
       "output": 10.08,
@@ -957,19 +960,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 5.6,
     "output": 33.6,
     "cache_read": 0.56,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 11.2,
       "output": 50.4,
       "cache_read": 1.12,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -978,22 +981,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.4788,
-    "output": 2.8728,
-    "cache_read": 0.04788,
-    "cache_write": 0.5985,
+    "input": 0.5936,
+    "output": 3.5616,
+    "cache_read": 0.05936,
+    "cache_write": 0.742,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 0.9576,
-      "output": 4.3092,
-      "cache_read": 0.09576,
-      "cache_write": 1.197
+      "input": 1.1872,
+      "output": 5.3424,
+      "cache_read": 0.11872,
+      "cache_write": 1.484
     }
   },
   {
@@ -1002,22 +1005,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.952,
-    "output": 5.712,
-    "cache_read": 0.0952,
-    "cache_write": 1.19,
+    "input": 0.56,
+    "output": 3.36,
+    "cache_read": 0.056,
+    "cache_write": 0.7,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 1.904,
-      "output": 8.568,
-      "cache_read": 0.1904,
-      "cache_write": 2.38
+      "input": 1.12,
+      "output": 5.04,
+      "cache_read": 0.112,
+      "cache_write": 1.4
     }
   },
   {
@@ -1027,7 +1030,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "service_tier": "fast",
     "unit": "USD per 1M tokens",
     "input": 3.6,
-    "output": 18.0,
+    "output": 18,
     "cache_read": 0.36,
     "cache_write": 4.5,
     "original_input": null,
@@ -1036,12 +1039,12 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 7.2,
-      "output": 27.0,
+      "output": 27,
       "cache_read": 0.72,
-      "cache_write": 9.0
+      "cache_write": 9
     }
   },
   {
@@ -1050,22 +1053,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 1.8,
-    "output": 9.0,
-    "cache_read": 0.18,
-    "cache_write": 2.25,
+    "input": 1.56,
+    "output": 7.8,
+    "cache_read": 0.156,
+    "cache_write": 1.95,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 3.6,
-      "output": 13.5,
-      "cache_read": 0.36,
-      "cache_write": 4.5
+      "input": 3.12,
+      "output": 11.7,
+      "cache_read": 0.312,
+      "cache_write": 3.9
     }
   },
   {
@@ -1084,7 +1087,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 9.576,
       "output": 35.91,
@@ -1108,7 +1111,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 0.072,
       "output": 0.27,
@@ -1132,7 +1135,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 0.28,
       "output": 1.05,
@@ -1156,7 +1159,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 1.44,
       "output": 5.4,
@@ -1170,22 +1173,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.36,
-    "output": 1.8,
-    "cache_read": 0.036,
-    "cache_write": 0.45,
+    "input": 0.312,
+    "output": 1.56,
+    "cache_read": 0.0312,
+    "cache_write": 0.39,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 0.72,
-      "output": 2.7,
-      "cache_read": 0.072,
-      "cache_write": 0.9
+      "input": 0.624,
+      "output": 2.34,
+      "cache_read": 0.0624,
+      "cache_write": 0.78
     }
   },
   {
@@ -1204,7 +1207,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
       "input": 1.44,
       "output": 5.4,
@@ -1215,25 +1218,25 @@ export const PUBLIC_MODELS: UserModelRate[] = [
   {
     "model": "gpt-6.1-sol",
     "display_name": "gpt-6.1-sol",
-    "owned_by": "",
+    "owned_by": "openai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.39,
-    "output": 1.95,
-    "cache_read": 0.13,
-    "cache_write": 0.4875,
+    "input": 0.36,
+    "output": 1.8,
+    "cache_read": 0.018,
+    "cache_write": 0.45,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 272000,
       "op": "gt",
-      "input_multiplier": 2.0,
+      "input_multiplier": 2,
       "output_multiplier": 1.5,
-      "input": 0.78,
-      "output": 2.925,
-      "cache_read": 0.26,
-      "cache_write": 0.975
+      "input": 0.72,
+      "output": 2.7,
+      "cache_read": 0.036,
+      "cache_write": 0.9
     }
   },
   {
@@ -1245,19 +1248,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.78,
     "output": 2.34,
     "cache_read": 0.195,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 200000,
       "op": "ge",
-      "input_multiplier": 2.0,
-      "output_multiplier": 2.0,
+      "input_multiplier": 2,
+      "output_multiplier": 2,
       "input": 1.56,
       "output": 4.68,
       "cache_read": 0.39,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -1269,19 +1272,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.2,
     "output": 0.6,
     "cache_read": 0.05,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 200000,
       "op": "ge",
-      "input_multiplier": 2.0,
-      "output_multiplier": 2.0,
+      "input_multiplier": 2,
+      "output_multiplier": 2,
       "input": 0.4,
       "output": 1.2,
       "cache_read": 0.1,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -1293,19 +1296,19 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.78,
     "output": 2.34,
     "cache_read": 0.195,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 200000,
       "op": "ge",
-      "input_multiplier": 2.0,
-      "output_multiplier": 2.0,
+      "input_multiplier": 2,
+      "output_multiplier": 2,
       "input": 1.56,
       "output": 4.68,
       "cache_read": 0.39,
-      "cache_write": 0.0
+      "cache_write": 0
     }
   },
   {
@@ -1314,22 +1317,22 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "xai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.2,
-    "output": 0.6,
-    "cache_read": 0.05,
-    "cache_write": 0.0,
+    "input": 0.246,
+    "output": 0.738,
+    "cache_read": 0.0615,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost",
     "long_context": {
       "threshold": 200000,
       "op": "ge",
-      "input_multiplier": 2.0,
-      "output_multiplier": 2.0,
-      "input": 0.4,
-      "output": 1.2,
-      "cache_read": 0.1,
-      "cache_write": 0.0
+      "input_multiplier": 2,
+      "output_multiplier": 2,
+      "input": 0.492,
+      "output": 1.476,
+      "cache_read": 0.123,
+      "cache_write": 0
     }
   },
   {
@@ -1338,10 +1341,24 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "moonshot",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 3.4986,
-    "output": 17.493,
-    "cache_read": 0.34986,
-    "cache_write": 0.0,
+    "input": 3.486,
+    "output": 17.43,
+    "cache_read": 0.3486,
+    "cache_write": 0,
+    "original_input": null,
+    "original_output": null,
+    "billing_basis": "cost"
+  },
+  {
+    "model": "qwen3.7-flash",
+    "display_name": "Qwen3.7 Flash",
+    "owned_by": "qwen",
+    "service_tier": "standard",
+    "unit": "USD per 1M tokens",
+    "input": 0.04004,
+    "output": 0.16002,
+    "cache_read": 0.00798,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1355,7 +1372,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 2.40002,
     "output": 7.20006,
     "cache_read": 0.30002,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1369,7 +1386,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.78,
     "output": 2.34,
     "cache_read": 0.195,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1380,10 +1397,10 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "owned_by": "xai",
     "service_tier": "standard",
     "unit": "USD per 1M tokens",
-    "input": 0.2,
-    "output": 0.6,
-    "cache_read": 0.05,
-    "cache_write": 0.0,
+    "input": 0.246,
+    "output": 0.738,
+    "cache_read": 0.0615,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1397,7 +1414,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.78,
     "output": 2.34,
     "cache_read": 0.195,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1411,7 +1428,7 @@ export const PUBLIC_MODELS: UserModelRate[] = [
     "input": 0.2,
     "output": 0.6,
     "cache_read": 0.05,
-    "cache_write": 0.0,
+    "cache_write": 0,
     "original_input": null,
     "original_output": null,
     "billing_basis": "cost"
@@ -1420,15 +1437,26 @@ export const PUBLIC_MODELS: UserModelRate[] = [
 
 export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = [
   {
+    "model": "gemini-3-pro-image",
+    "display_name": "Gemini 3 Pro Image",
+    "owned_by": "google",
+    "service_tier": "standard",
+    "billing": "token",
+    "unit": "USD per 1M tokens",
+    "text_input": 0.812,
+    "image_input": 0,
+    "output": 48.72
+  },
+  {
     "model": "gemini-3.1-flash-image",
     "display_name": "Gemini 3.1 Flash Image",
     "owned_by": "google",
     "service_tier": "standard",
     "billing": "token",
     "unit": "USD per 1M tokens",
-    "text_input": 0.3129,
-    "image_input": 0.0,
-    "output": 37.548
+    "text_input": 0.336,
+    "image_input": 0,
+    "output": 40.32
   },
   {
     "model": "gemini-nano-banana-2.1",
@@ -1439,7 +1467,7 @@ export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = [
     "unit": "USD per 1M tokens",
     "text_input": 1.05,
     "image_input": 1.05,
-    "output": 21.0
+    "output": 21
   },
   {
     "model": "gpt-image-2",
@@ -1452,9 +1480,9 @@ export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = [
     "image_input": 1.12,
     "output": 4.2,
     "per_image_tiers": {
-      "1k": 0.0196,
-      "2k": 0.0196,
-      "4k": 0.028027999999999997
+      "1k": 0.028,
+      "2k": 0.03388,
+      "4k": 0.04004
     }
   },
   {
@@ -1468,9 +1496,9 @@ export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = [
     "image_input": 1.12,
     "output": 4.2,
     "per_image_tiers": {
-      "1k": 0.0196,
-      "2k": 0.0196,
-      "4k": 0.028027999999999997
+      "1k": 0.028,
+      "2k": 0.028,
+      "4k": 0.05992
     }
   },
   {
@@ -1484,9 +1512,9 @@ export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = [
     "image_input": 1.12,
     "output": 4.2,
     "per_image_tiers": {
-      "1k": 0.0196,
-      "2k": 0.0196,
-      "4k": 0.028027999999999997
+      "1k": 0.028,
+      "2k": 0.028,
+      "4k": 0.05348
     }
   }
 ]

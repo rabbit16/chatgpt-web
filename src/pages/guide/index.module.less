@@ -1016,6 +1016,31 @@
 	line-height: 1.75;
 }
 
+/* 「以下全部以 Claude-haha 为例」的醒目提示条
+   用浅品牌底 + 左侧竖条，比普通段落显眼，又不像警告框那样打断阅读 */
+.exampleCallout {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin-bottom: 16px;
+	padding: 12px 14px 12px 12px;
+	background: var(--tint-brand);
+	border-left: 3px solid var(--brand);
+	border-radius: 12px;
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.75;
+		color: var(--text-2);
+
+		b {
+			color: var(--brand);
+			font-weight: 600;
+		}
+	}
+}
+
 /* 主模型选择器：第 3 步的入口，选完协议自动跟着变 */
 .modelPick {
 	display: flex;

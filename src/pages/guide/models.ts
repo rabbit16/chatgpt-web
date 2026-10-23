@@ -1,5 +1,5 @@
-import { PUBLIC_MODELS } from '@/data/publicPricing'
-import { resolveProvider, type ModelProvider } from '@/data/modelPricing'
+import { PUBLIC_MODEL_IDS, PUBLIC_MODELS } from '@/data/publicPricing'
+import { compareModelNewestFirst, resolveProvider, type ModelProvider } from '@/data/modelPricing'
 import { RELAY_HOST, RELAY_URL } from '@/utils/relay'
 
 /**
@@ -73,17 +73,41 @@ const PROVIDER_LABEL: Record<ModelProvider, string> = {
   other: '其他'
 }
 
+/** 下拉里分组的先后顺序：主力厂商在前，认不出的归「其他」放最后 */
+const PROVIDER_ORDER: ModelProvider[] = ['openai', 'anthropic', 'google', 'deepseek', 'xai', 'zhipu', 'other']
+
 export function providerLabel(provider: ModelProvider) {
   return PROVIDER_LABEL[provider]
 }
 
-/** 价格页同源的模型清单（去掉图片模型，只留能对话的） */
-export const GUIDE_MODELS: GuideModel[] = PUBLIC_MODELS.map((item) => {
-  const provider = resolveProvider(item.model, item.owned_by)
-  return { id: item.model, provider, protocol: protocolOf(provider) }
-})
+/**
+ * 本站全部可对话模型（价格页同源快照，去掉图片模型）
+ * ------------------------------------------------------------
+ * 这里必须**按模型去重**：价目快照是按 `model + service_tier` 一行一行的，
+ * 同一个 claude-opus-5-5 会同时有 standard 和 fast 两行。
+ * 以前直接把 81 行全铺进下拉，于是同一个模型出现 2~3 次、列表里几乎全是 Claude。
+ * 现在：先按 model 去重，再按「供应商分组 + 新→旧」排。
+ */
+export const GUIDE_MODELS: GuideModel[] = (() => {
+  // model_ids 是供应商给的顺序，也用来兜底补齐（快照里没有的 id 也能出现）
+  const byId = new Map<string, string | undefined>()
+  for (const item of PUBLIC_MODELS) {
+    if (!item?.model) continue
+    if (!byId.has(item.model)) byId.set(item.model, item.owned_by)
+  }
+  for (const id of PUBLIC_MODEL_IDS) {
+    if (!byId.has(id)) byId.set(id, undefined)
+  }
 
-/** 按供应商分组，给「选模型」下拉做分栏 */
+  return [...byId.entries()]
+    .map(([id, ownedBy]) => {
+      const provider = resolveProvider(id, ownedBy)
+      return { id, provider, protocol: protocolOf(provider) }
+    })
+    .sort((a, b) => compareModelNewestFirst(a.id, b.id))
+})()
+
+/** 按供应商分组，给「选模型」下拉做分栏；每组标题带数量，一眼看出本站有哪些模型 */
 export function groupModels(models: GuideModel[] = GUIDE_MODELS) {
   const groups = new Map<ModelProvider, GuideModel[]>()
   for (const model of models) {
@@ -91,13 +115,22 @@ export function groupModels(models: GuideModel[] = GUIDE_MODELS) {
     if (list) list.push(model)
     else groups.set(model.provider, [model])
   }
-  return [...groups.entries()].map(([provider, list]) => ({
-    label: PROVIDER_LABEL[provider],
-    options: list.map((model) => ({
-      value: model.id,
-      label: `${model.id} · ${protocolOf(provider) === 'anthropic' ? 'Anthropic' : 'OpenAI 兼容'}`
-    }))
-  }))
+  return PROVIDER_ORDER.filter((provider) => groups.has(provider)).map((provider) => {
+    const list = groups.get(provider)!
+    return {
+      label: `${PROVIDER_LABEL[provider]} · ${list.length} 个`,
+      options: list.map((model) => ({
+        value: model.id,
+        label: `${model.id} · ${protocolOf(provider) === 'anthropic' ? 'Anthropic' : 'OpenAI 兼容'}`
+      }))
+    }
+  })
+}
+
+/** 本站模型总数与厂商数，页面上用一句话说清「这里真的是全站模型」 */
+export function guideModelSummary(models: GuideModel[] = GUIDE_MODELS) {
+  const providers = new Set(models.map((model) => model.provider))
+  return { total: models.length, providers: providers.size }
 }
 
 /** 推荐默认：优先 Claude 主力款，没有就退到第一个可用模型 */
