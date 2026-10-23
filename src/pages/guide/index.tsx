@@ -180,10 +180,12 @@ function HahaMock({ model }: { model: GuideModel }) {
         <div className={styles.mockDefault}>
           <span>下方默认项</span>
           <em>
-            API 格式 {meta.formatLabel} · 认证变量 {meta.authLabel} · 其余不动
+            API 格式 <b>{meta.formatLabel}</b> · 认证变量 <b>{meta.authLabel}</b> · 其余不动
           </em>
         </div>
-        <p className={styles.mockNote}>填完点「获取模型」可直接从列表里选，再点「添加」。</p>
+        <p className={styles.mockNote}>
+          填完点<b>「获取模型」</b>可直接从列表里选，再点<b>「添加」</b>。
+        </p>
         <div className={styles.mockActions}>
           <span className={styles.mockGhost}>取消</span>
           <span className={styles.mockPrimary}>添加</span>

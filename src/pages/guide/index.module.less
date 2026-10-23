@@ -87,7 +87,14 @@
 		max-width: 62em;
 		font-size: 13px;
 		line-height: 1.7;
-		color: var(--text-4);
+		color: var(--text-3);
+
+		/* 重点词（如「以 Claude-haha 为例」「不用改」）：提到标题色 + 加粗，
+		   原来只是浏览器默认的 bold、颜色还是灰的，扫过去看不见重点 */
+		b {
+			color: var(--text-1);
+			font-weight: 700;
+		}
 	}
 }
 
@@ -422,7 +429,8 @@
 
 .mockLabel {
 	font-size: 11.5px;
-	color: var(--text-4);
+	font-weight: 500;
+	color: var(--text-3);
 
 	i {
 		color: var(--danger);
@@ -495,28 +503,47 @@
 	justify-content: center;
 }
 
-.mockNote {
-	margin: 0;
-	font-size: 11px;
-	line-height: 1.6;
-	color: var(--text-5);
-}
-
+/* 示意界面底部「模型映射 / 下方默认项」这两行
+   原来 11px 灰字（--text-5），在截图里几乎看不见，用户反馈要醒目些。
+   现在改成浅品牌底的独立小条：左侧竖条 + 深色标签 + 正文色取值，
+   和页面上其它"注意这里"的样式（.exampleCallout）是同一套语言。 */
 .mockDefault {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: baseline;
 	gap: 4px 8px;
-	font-size: 11px;
-	line-height: 1.6;
+	padding: 7px 10px;
+	background: var(--tint-brand);
+	border-left: 2px solid var(--brand);
+	border-radius: 8px;
+	font-size: 12px;
+	line-height: 1.65;
 
 	span {
 		flex: 0 0 auto;
-		color: var(--text-5);
+		font-weight: 600;
+		color: var(--text-1);
 	}
 
 	em {
 		font-style: normal;
-		color: var(--text-4);
+		color: var(--text-2);
+	}
+}
+
+/* 「填完点获取模型再点添加」这类操作提示：不再是占位灰，改成可读的次要正文 */
+.mockNote {
+	margin: 0;
+	padding: 6px 10px;
+	background: var(--surface-muted);
+	border-radius: 8px;
+	font-size: 12px;
+	line-height: 1.65;
+	color: var(--text-2);
+
+	b {
+		color: var(--text-1);
+		font-weight: 700;
 	}
 }
 
@@ -1036,7 +1063,7 @@
 
 		b {
 			color: var(--brand);
-			font-weight: 600;
+			font-weight: 700;
 		}
 	}
 }
@@ -1068,7 +1095,13 @@
 		margin: 3px 0 0;
 		font-size: 12.5px;
 		line-height: 1.7;
-		color: var(--text-4);
+		color: var(--text-3);
+
+		/* 「58 个」「7 家」这类数字要压得住说明文字 */
+		b {
+			color: var(--text-1);
+			font-weight: 700;
+		}
 	}
 }
 
