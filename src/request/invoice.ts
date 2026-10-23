@@ -1,5 +1,4 @@
 import request from '.'
-import { postFeedback } from './api'
 
 /**
  * 开发票（按充值订单开，前端契约，后端由站长实现）
@@ -84,21 +83,29 @@ export function createInvoice(params: InvoiceFormPayload) {
 }
 
 /* ------------------------------------------------------------------
- * 提交申请：专用接口 → 留言通道 双保险
+ * 提交申请：只走专用接口，失败就如实告诉用户
  * ------------------------------------------------------------------
- * 现状：/user/invoice/* 后端还没写（返回 {"detail":"Not Found"}）。
- * 但站长必须「马上能收到并处理」，所以做两条路：
- *   1. 先试专用接口 /user/invoice/create（后端上线后自动走这条，无需改前端）
- *   2. 接口不通 → 把申请整包塞进「留言」提交（后台「留言」已上线，站长立刻可见）
- * 留言正文第一行是固定标记，管理员页靠它把留言还原成开票申请。
+ * 2026-10-23 站长反馈的 bug：点「开发票」会往**公开留言墙**投一条实名消息。
+ *
+ * 原设计是「专用接口不通 → 把申请塞进留言接口」当双保险。问题在于：
+ *   1. 留言接口本身是公开的（/notice?tab=feedback 游客免登录可见），
+ *      而开票申请含**税号 + 邮箱 + 真实姓名**，属于个人敏感信息；
+ *   2. 前端虽然按前缀过滤了公开列表，但那只是"不渲染"，
+ *      接口仍会把原始内容返回给任何调用者，等于数据已经出站；
+ *   3. 后端一旦在 content 前加包装（如拼昵称、加空格），
+ *      startsWith 判断失效，敏感内容就直接显示在公开墙上了。
+ *
+ * 结论：隐私数据不能靠"前端过滤"来保护，只能**根本不写进去**。
+ * 现在后端接口没上线时，明确告知用户「暂不可用」，而不是偷偷把资料投到公开墙上。
+ * 等站长按 docs/api/invoice.md 实现 /user/invoice/create 后，这条路径自动生效。
  * ------------------------------------------------------------------ */
 
-/** 留言通道里的开票申请标记，改动需同步 admin/invoices */
+/** @deprecated 留言通道已停用，仅保留标记供后台历史数据识别 */
 export const INVOICE_MARKER = '【发票申请】'
 
 export interface InvoiceSubmitResult {
-  /** invoice = 走正式接口；feedback = 降级走留言；failed = 两条都不通 */
-  channel: 'invoice' | 'feedback' | 'failed'
+  /** invoice = 走正式接口；unavailable = 后端未实现；failed = 网络异常 */
+  channel: 'invoice' | 'unavailable' | 'failed'
   id?: number
   codeMsg?: string
 }
@@ -106,44 +113,22 @@ export interface InvoiceSubmitResult {
 export async function submitInvoiceApplication(
   payload: InvoiceFormPayload & { userId?: number; userName?: string }
 ): Promise<InvoiceSubmitResult> {
-  // 1) 正式接口
   try {
     const res: any = await createInvoice(payload)
     const data = res?.data ?? res
-    if (String(data?.code ?? '') === '0') {
+    const code = String(data?.code ?? '')
+    if (code === '0') {
       return { channel: 'invoice', codeMsg: data?.codeMsg }
     }
-  } catch {
-    /* 接口不存在或网络异常，继续走留言通道 */
-  }
-
-  // 2) 降级：留言通道（后台可见、可回复）
-  try {
-    const record = {
-      bill_id: payload.bill_id,
-      amount: payload.amount,
-      title_type: payload.title_type,
-      title: payload.title,
-      tax_no: payload.tax_no || '',
-      email: payload.email,
-      remark: payload.remark || ''
-    }
-    const res: any = await postFeedback({
-      content: `${INVOICE_MARKER}${JSON.stringify(record)}`,
-      contact: payload.email,
-      nickname: payload.userName,
-      anonymous: false,
-      userId: payload.userId ?? null
-    })
-    const data = res?.data ?? res
-    if (String(data?.code ?? '') === '0' || data?.id) {
-      return { channel: 'feedback', id: data?.id, codeMsg: data?.codeMsg }
+    // 后端返回了业务错误（如「该订单已开过发票」），如实透传给用户
+    if (code && code !== '404') {
+      return { channel: 'unavailable', codeMsg: data?.codeMsg }
     }
   } catch {
-    /* 两条都不通 */
+    /* 接口不存在或网络异常 */
   }
 
-  return { channel: 'failed' }
+  return { channel: 'unavailable' }
 }
 
 export function cancelInvoice(id: number) {

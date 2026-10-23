@@ -61,14 +61,17 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
         userName: (user_info as any)?.data?.bodyMessage?.userName ?? (user_info as any)?.userName
       })
       if (result.channel === 'failed') {
-        message.error('提交失败：网络异常，请稍后重试，或在「公告留言」里直接留言')
+        message.error('提交失败：网络异常，请稍后重试')
         return
       }
-      message.success(
-        result.channel === 'feedback'
-          ? '申请已送达站长（留言通道），开好后电子发票发到你的邮箱'
-          : '已提交，审核通过后电子发票会发到邮箱'
-      )
+      if (result.channel === 'unavailable') {
+        // 后端发票接口还没上线。不写留言墙（含税号/邮箱，公开可见），如实告知。
+        message.warning(
+          result.codeMsg || '发票申请通道暂未开通，站长开通后即可在线提交，届时电子发票直接发到你的邮箱'
+        )
+        return
+      }
+      message.success(result.codeMsg || '已提交，审核通过后电子发票会发到你的邮箱')
       onSubmitted?.()
       onClose()
     } catch (error: any) {
