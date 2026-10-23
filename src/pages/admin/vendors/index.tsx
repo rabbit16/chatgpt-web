@@ -240,8 +240,11 @@ function AdminVendors() {
   const [replaceKey, setReplaceKey] = useState('')
   const [replacingKeys, setReplacingKeys] = useState(false)
   const [routeForm] = Form.useForm<{
+    route_mode?: 'single' | 'group'
     model: string
     match_prefix?: boolean
+    models?: string
+    group_name?: string
     vendor_code: string
     api_key_id?: number | null
     is_active: boolean
@@ -251,6 +254,7 @@ function AdminVendors() {
     user_ids?: number[]
   }>()
   const matchPrefix = Form.useWatch('match_prefix', routeForm)
+  const routeMode = Form.useWatch('route_mode', routeForm) as string | undefined
   const routeVendorCode = Form.useWatch('vendor_code', routeForm)
   const [keyDrawer, setKeyDrawer] = useState<{ open: boolean; vendor: UpstreamVendor | null }>({
     open: false,
@@ -1173,7 +1177,10 @@ function AdminVendors() {
     setEditingRoute(null)
     setRouteUserOptions([])
     routeForm.setFieldsValue({
+      route_mode: 'single',
       model: '',
+      models: '',
+      group_name: '',
       match_prefix: false,
       vendor_code: vendors.find((item) => item.code !== currentVendor)?.code || vendors[0]?.code,
       is_active: true,
@@ -1191,7 +1198,10 @@ function AdminVendors() {
     setRouteUserOptions(row.users || [])
     const prefix = Boolean(wildcardPrefix(row.model))
     routeForm.setFieldsValue({
+      route_mode: 'single',
       model: prefix ? wildcardPrefix(row.model) : row.model,
+      models: '',
+      group_name: row.group_name || '',
       match_prefix: prefix,
       vendor_code: row.vendor_code,
       api_key_id: row.api_key_id ?? undefined,
@@ -1204,14 +1214,36 @@ function AdminVendors() {
     setRouteOpen(true)
   }
 
+  /** 把一行一个的模型名列表整理成后端要的数组（支持 gemini* 这类前缀写法）。 */
+  const parseModelLines = (text?: string): string[] =>
+    Array.from(
+      new Set(
+        (text || '')
+          .split(/[\n,，;；\s]+/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+      )
+    )
+
   const saveRoute = async () => {
     const values = await routeForm.validateFields()
+    const isGroup = values.route_mode === 'group'
     let model = ''
-    try {
-      model = composeModelPattern(values.model, Boolean(values.match_prefix))
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : '模型名不正确')
-      return
+    let models: string[] | undefined
+    if (isGroup) {
+      models = parseModelLines(values.models)
+      if (!models.length) {
+        message.error('请至少填一个模型名')
+        return
+      }
+      model = models[0]
+    } else {
+      try {
+        model = composeModelPattern(values.model, Boolean(values.match_prefix))
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : '模型名不正确')
+        return
+      }
     }
     const typedKey = (values.api_key || '').trim()
     setRouteSaving(true)
@@ -1219,6 +1251,8 @@ function AdminVendors() {
       const data = await upsertAdminModelRoute({
         id: editingRoute?.id,
         model,
+        models,
+        group_name: (values.group_name || '').trim(),
         vendor_code: values.vendor_code,
         is_active: values.is_active,
         note: values.note,
@@ -1618,10 +1652,11 @@ function AdminVendors() {
             {
               title: '模型 / 关键字',
               dataIndex: 'model',
-              render: (value: string) => (
+              render: (value: string, row: ModelRouteRule) => (
                 <Space size={6}>
                   <code>{value}</code>
                   {wildcardPrefix(value) ? <Tag color="purple">前缀</Tag> : null}
+                  {row.group_name ? <Tag color="cyan">{row.group_name}</Tag> : null}
                 </Space>
               )
             },
@@ -1922,9 +1957,48 @@ function AdminVendors() {
       >
         <Form form={routeForm} layout="vertical">
           <Form.Item
+            name="route_mode"
+            label="规则形态"
+            extra="分组批量：一次填多个对外模型名，共用一个上游、一把 Key 和同一份用户名单；计价按最终路由到的模型算。"
+            initialValue="single"
+          >
+            <Radio.Group
+              optionType="button"
+              buttonStyle="solid"
+              options={[
+                { value: 'single', label: '单模型规则' },
+                { value: 'group', label: '分组批量（一对多）' }
+              ]}
+            />
+          </Form.Item>
+          <Form.Item
+            name="group_name"
+            label="分组名"
+            extra="同一分组名下的模型在列表里折叠显示，方便一起改上游。留空表示不分组。"
+          >
+            <Input placeholder="例如 gemini 全家桶" />
+          </Form.Item>
+          {routeMode === 'group' ? (
+            <>
+              <Form.Item
+                name="models"
+                label="对外模型名（一行一个）"
+                rules={[{ required: true, message: '请至少填一个模型名' }]}
+                extra="可批量粘贴。以 * 结尾表示前缀匹配，例如 gemini* 会命中所有 gemini 开头的模型。"
+              >
+                <Input.TextArea rows={6} placeholder={'gemini-3.8-flash\ngemini-3.1-pro-preview\ngemini*'} />
+              </Form.Item>
+            </>
+          ) : (
+            <>
+          <Form.Item
             name="model"
             label="模型名或关键字"
-            rules={[{ required: true, message: '请输入模型名' }]}
+            rules={
+              routeMode === 'group'
+                ? []
+                : [{ required: true, message: '请输入模型名' }]
+            }
             extra={
               matchPrefix
                 ? '只填前缀本身，例如 gemini。保存后 gemini-3.8-flash、gemini-3.1-pro-preview 都会走这条规则。更长的前缀优先。'
@@ -1941,6 +2015,8 @@ function AdminVendors() {
           >
             <Switch />
           </Form.Item>
+            </>
+          )}
           <Form.Item name="vendor_code" label="改走哪个代理" rules={[{ required: true, message: '请选择供应商' }]}>
             <Select
               options={vendors.map((item) => ({

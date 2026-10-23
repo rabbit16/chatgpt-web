@@ -1088,6 +1088,8 @@ export type ModelRouteRule = {
   /** 空数组表示全部用户 */
   user_ids?: number[]
   users?: ModelRouteUser[]
+  /** 分组批量规则的分组名；空表示单模型规则 */
+  group_name?: string
   note?: string
   created_at?: string
   updated_at?: string
@@ -1113,6 +1115,10 @@ export async function upsertAdminModelRoute(payload: {
   api_key_id?: number
   /** 不传表示保持原名单；空数组表示全部用户 */
   user_ids?: number[]
+  /** 分组名：同组共用 vendor/Key/用户名单 */
+  group_name?: string
+  /** 分组批量：一次把多个对外模型名指向同一上游；传了它就以它为准 */
+  models?: string[]
 }): Promise<{ ok: boolean; route: ModelRouteRule; routes: ModelRouteRule[] }> {
   const response = await llmFetch(
     '/admin/model-routes',
@@ -1128,6 +1134,62 @@ export async function upsertAdminModelRoute(payload: {
 
 export async function deleteAdminModelRoute(id: number): Promise<void> {
   await llmFetch(`/admin/model-routes/${id}`, { method: 'DELETE' }, '删除模型路由')
+}
+
+export type UserModelPriceRule = {
+  id: number
+  user_id: number
+  model: string
+  service_tier: string
+  /** 以下均为 USD / 1M tokens，命中后即用户最终应付价（计时只再乘汇率） */
+  input: number
+  output: number
+  cache_read: number
+  cache_write: number
+  text_input: number
+  image_input: number
+  per_image_tiers?: Record<string, number> | null
+  is_active: boolean
+  note?: string
+  user?: { user_id: number; name?: string; telephone?: string; email?: string }
+  created_at?: string
+  updated_at?: string
+}
+
+export async function getAdminUserModelPrices(signal?: AbortSignal): Promise<{ prices: UserModelPriceRule[] }> {
+  const response = await llmFetch('/admin/user-model-prices', { method: 'GET', signal }, '读取用户专属价')
+  return response.json()
+}
+
+export async function upsertAdminUserModelPrice(payload: {
+  id?: number
+  user_id: number
+  model: string
+  service_tier?: string
+  input_price: number
+  output_price: number
+  cache_read_price?: number
+  cache_write_price?: number
+  text_input_price?: number
+  image_input_price?: number
+  per_image_tiers?: Record<string, number> | null
+  is_active?: boolean
+  note?: string
+}): Promise<{ ok: boolean; price: UserModelPriceRule; prices: UserModelPriceRule[] }> {
+  const response = await llmFetch(
+    '/admin/user-model-prices',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    '保存用户专属价'
+  )
+  return response.json()
+}
+
+export async function deleteAdminUserModelPrice(id: number): Promise<void> {
+  await llmFetch(`/admin/user-model-prices/${id}`, { method: 'DELETE' }, '删除用户专属价')
 }
 
 export type ModelRewriteRule = {

@@ -6,6 +6,7 @@ import {
   BulbOutlined,
   CommentOutlined,
   DashboardOutlined,
+  DollarOutlined,
   ProfileOutlined,
   FormOutlined,
   HistoryOutlined,
@@ -135,6 +136,11 @@ const admin = {
       path: '/admin/vendors',
       name: '供应商',
       icon: <CloudServerOutlined />
+    },
+    {
+      path: '/admin/userprice',
+      name: '用户专属价',
+      icon: <DollarOutlined />
     },
     {
       path: '/admin/prompt',
