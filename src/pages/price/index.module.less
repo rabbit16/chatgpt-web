@@ -135,7 +135,7 @@
   justify-content: space-between;
   gap: 16px;
 
-  h1 { margin: 0 0 6px; font-size: 26px; }
+  h1 { margin: 0; font-size: var(--fs-title-1); line-height: 1.25; letter-spacing: -0.01em; }
   p { margin: 0; color: var(--text-4); font-size: 13px; line-height: 1.6; }
 
   /* 窄屏：标题与说明靠左，主按钮不占满整行（原来 100% 宽把这块撑到 135px） */
@@ -144,8 +144,7 @@
     gap: 10px;
 
     h1 {
-      margin-bottom: 4px;
-      font-size: 22px;
+      font-size: var(--fs-title-1-narrow);
     }
 
     p {
@@ -429,29 +428,40 @@
   margin-bottom: 16px;
 }
 
+/* 模型筛选页签（2026-10-24 视觉验收 P8）
+   原来和全站的 PillTabs 是两套语言：这里是 8px 方角槽 + 白底选中 + 13.3333px
+   默认字号，PillTabs 是全圆槽 + 浅蓝选中 + 13px，同屏并排像两个产品。
+   现在统一：全圆槽、高 36px、13px、选中浅蓝底 + 品牌色 600。 */
 .tabs {
   display: flex;
-  padding: 4px;
-  border-radius: var(--radius-xs);
-  background: var(--border-soft);
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
   flex-wrap: wrap;
   gap: 2px;
 
   button {
     border: 0;
     background: transparent;
-    padding: 6px 14px;
+    min-height: 30px;
+    padding: 4px 14px;
     border-radius: var(--radius-pill);
-    color: var(--text-4);
+    color: var(--text-3);
+    font-size: 13px;
+    line-height: 1.4;
     cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      color: var(--brand);
+    }
   }
 }
 
 .tabActive {
-  background: var(--surface) !important;
+  background: var(--brand-soft) !important;
   color: var(--brand) !important;
   font-weight: 600;
-  box-shadow: var(--shadow-card);
 }
 
 .modelCellName {

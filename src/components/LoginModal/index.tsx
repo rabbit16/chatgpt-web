@@ -526,7 +526,7 @@ function LoginModal(props: Props) {
       <LoginCard
         form={loginForm}
         onSuccess={handleLoggedIn}
-        title="登录 anyGPT"
+        title="登录 rabbitJ"
         subTitle="登录后继续对话、查看用量与余额"
       />
     </Modal>

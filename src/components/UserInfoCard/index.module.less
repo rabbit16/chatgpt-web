@@ -31,46 +31,76 @@
             color: #555;
         }
     }
-    &_vip{
+    /* 余额 + 折扣：两项之间给足间距与竖向分隔线，
+       避免被读成「133.7010.7」（2026-10-24 视觉验收 P3/P6） */
+    &_vip {
         margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
 
-        /* 余额与折扣数字挤在一起会被读成「133.7010.7」（2026-10-24 视觉验收第 8 条）：
-           两项之间给足间距，并加一条竖向分隔线，让它们明确是两个不同的数。 */
-        :global(.ant-space) {
-            gap: 20px !important;
-            align-items: center;
+    &_balance {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        &__label {
+            font-size: 13px;
+            color: var(--text-4);
         }
 
-        :global(.ant-statistic) + :global(.ant-statistic) {
-            padding-left: 20px;
-            border-left: 1px solid var(--border);
+        /* 余额是这一屏最该被看见的数字：品牌蓝 + 等宽 */
+        &__value {
+            font-size: 26px;
+            line-height: 1.15;
+            font-weight: 700;
+            color: var(--brand);
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
         }
     }
 
-    /* 窄屏：两项不要挤在一行，各占一半，数字才不会粘连 */
+    &_discount {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-left: 20px;
+        border-left: 1px solid var(--border);
+
+        span {
+            font-size: 13px;
+            color: var(--text-4);
+        }
+
+        b {
+            font-size: 18px;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-1);
+        }
+    }
+
+    /* 窄屏：上下排布，余额独占一行，折扣缩成副行 */
     @media (max-width: 640px) {
         &_vip {
             margin-left: 0;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
+            justify-content: space-between;
+            gap: 12px;
+        }
 
-            :global(.ant-space) {
-                display: flex;
-                width: 100%;
-                gap: 12px !important;
-            }
+        &_balance__value {
+            font-size: 24px;
+        }
 
-            :global(.ant-space-item) {
-                flex: 1 1 0;
-                min-width: 0;
-            }
+        &_discount {
+            padding-left: 12px;
 
-            :global(.ant-statistic) + :global(.ant-statistic) {
-                padding-left: 12px;
-            }
-
-            :global(.ant-statistic-content) {
-                font-size: 18px;
+            b {
+                font-size: 16px;
             }
         }
     }

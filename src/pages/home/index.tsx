@@ -350,7 +350,7 @@ function HomePage() {
         </Reveal>
 
         <footer className={styles.footer}>
-          <span>© {new Date().getFullYear()} anyGPT · 中转服务</span>
+          <span>© {new Date().getFullYear()} rabbitJ · 大模型 API 中转服务</span>
           <span className={styles.footerLinks}>
             <Link to="/price">模型价格</Link>
             <Link to="/docs">接入文档</Link>

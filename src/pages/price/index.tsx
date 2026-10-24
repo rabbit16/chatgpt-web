@@ -16,6 +16,7 @@ import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
 import { useNarrow } from '@/hooks/useNarrow'
+import { formatCny } from '@/utils/money'
 import ShopPanel from '@/pages/shop'
 import { getUserPricing, userBillInfo, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
@@ -72,12 +73,9 @@ function formatPrice(amount: number) {
   return formatUsd(amount) === '$0.00' ? `$${amount.toExponential(2)}` : formatUsd(amount)
 }
 
-/** 人民币余额：小额也保留有效数字，避免显示成 ¥0.00 */
+/** 人民币余额：统一走 utils/money，保证全站小数位规则一致 */
 function formatMoney(value: number) {
-  if (value >= 1) return `¥${value.toFixed(2)}`
-  if (value >= 0.01) return `¥${value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
-  if (value === 0) return '¥0'
-  return `¥${value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}`
+  return formatCny(value)
 }
 
 function standardRate(rates: UserModelRate[]) {

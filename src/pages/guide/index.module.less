@@ -15,7 +15,8 @@
 
 .wrap {
 	width: 100%;
-	max-width: 1080px;
+	/* 长文页单独收窄：880px 是中文长文的可读上限，其余页面统一 1200 */
+	max-width: 880px;
 	margin: 0 auto;
 	padding: 28px var(--container-pad) 64px;
 	display: flex;
@@ -26,10 +27,10 @@
 /* ---------------- 头部 ---------------- */
 .head {
 	h1 {
-		margin: 8px 0 10px;
-		font-size: 30px;
-		line-height: 1.24;
-		letter-spacing: -0.02em;
+		margin: 0;
+		font-size: var(--fs-title-1);
+		line-height: 1.25;
+		letter-spacing: -0.01em;
 		color: var(--text-1);
 	}
 }

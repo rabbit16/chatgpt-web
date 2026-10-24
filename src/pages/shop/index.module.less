@@ -97,6 +97,38 @@
 			display: flex;
 			overflow: auto;
 
+			/* 手机端（2026-10-24 视觉验收 P6）：
+			   5 张档位卡各 120px 共 660px，塞进 318px 的容器，第 4、5 张完全
+			   在屏幕外，第二张文案还断成三行半句。窄屏改成纵向列表，
+			   每张占满宽度，金额在左、说明在右，一屏就能看全所有档位。 */
+			@media (max-width: 768px) {
+				flex-direction: column;
+				overflow: visible;
+				gap: 8px;
+
+				.item {
+					min-width: 0;
+					width: 100%;
+					margin: 0;
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: 12px;
+					padding: 14px 16px;
+					min-height: 64px;
+
+					.days {
+						font-size: 20px;
+						margin: 0;
+					}
+
+					.money_box {
+						text-align: right;
+						font-size: 15px;
+					}
+				}
+			}
+
 			.item {
 				min-width: 120px;
 				// height: 40px;

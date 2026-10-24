@@ -58,7 +58,9 @@ function LoginPage({
       <aside className={styles.login__brand}>
         <div className={styles.login__brandInner}>
           <span className={styles.login__glow} aria-hidden="true" />
-          <img className={styles.login__watermark} src="/logo.svg" alt="" aria-hidden="true" />
+          {/* 水印必须是自家标志：原来引的 /logo.svg 是 OpenAI 官方花朵图案，
+              摆在登录页等于自证「套壳中转」，与本站「正规中转、密钥自持」的卖点相反。 */}
+          <img className={styles.login__watermark} src="/logo-rabbit.svg" alt="" aria-hidden="true" />
           <div className={styles.login__logo}>
             <Brand />
             <Link to="/" className={styles.login__back}>
@@ -83,7 +85,7 @@ function LoginPage({
             </ul>
           </div>
 
-          <div className={styles.login__foot}>© {new Date().getFullYear()} anyGPT · 中转服务</div>
+          <div className={styles.login__foot}>© {new Date().getFullYear()} rabbitJ · 大模型 API 中转服务</div>
         </div>
       </aside>
 

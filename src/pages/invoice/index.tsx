@@ -180,17 +180,33 @@ export function InvoicePanel() {
 
   return (
     <>
-      <div className={styles.topGrid}>
-        <section className={styles.summary}>
-          {summaryCards.map((card) => (
-            <div key={card.label} className={styles.summaryCard}>
-              <span>{card.label}</span>
-              <b className={styles.num}>{card.value}</b>
-              <em>{card.hint}</em>
-            </div>
-          ))}
-        </section>
+      {/* 页头（2026-10-24 视觉验收 P2）：
+          这一页原来完全没有 h1，点进来没有任何文字确认「我在开票中心」，
+          首屏 39% 是两个 ¥0.00 的大卡。现在补页标题 + 一句规则说明。 */}
+      <header className={styles.pageHead}>
+        <div>
+          <h1>开票中心</h1>
+          <p>电子发票由站长人工审核，1–3 个工作日发到你填的邮箱；一笔订单只能开一张。</p>
+        </div>
+      </header>
 
+      <div className={styles.summaryRow}>
+        {summaryCards.map((card) => {
+          // 零值降级：¥0.00 用 26px/700 占着页面最大权重，用户会以为「没充上」
+          const isEmpty = card.value === '¥0.00' || card.value === '¥0'
+          return (
+            <div
+              key={card.label}
+              className={styles.summaryCard}
+              data-empty={isEmpty || undefined}
+              data-primary={card.label === '还能开' ? true : undefined}
+            >
+              <span>{card.label}</span>
+              {isEmpty ? <b className={styles.summaryEmpty}>暂无</b> : <b className={styles.num}>{card.value}</b>}
+              {isEmpty ? null : <em>{card.hint}</em>}
+            </div>
+          )
+        })}
       </div>
 
       <div className={styles.bottomGrid}>

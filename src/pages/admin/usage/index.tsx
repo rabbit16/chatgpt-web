@@ -52,7 +52,7 @@ function formatMoney(value: number | null | undefined, highlight = false) {
   if (value == null || Number.isNaN(Number(value))) return '-'
   const text = `¥${Number(value).toFixed(6)}`
   if (!highlight) return text
-  return <span style={{ color: '#067647', fontWeight: 600 }}>{text}</span>
+  return <span style={{ color: 'var(--success)', fontWeight: 600 }}>{text}</span>
 }
 
 function formatToken(value: number | null | undefined) {
@@ -80,7 +80,7 @@ function formatTtfb(value: number | null | undefined) {
 function ttfbText(value: number | null | undefined, alertMs: number) {
   const text = formatTtfb(value)
   if (text === '-' || value == null || value <= alertMs) return text
-  return <span style={{ color: '#b42318', fontWeight: 600 }}>{text}</span>
+  return <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{text}</span>
 }
 
 function rangeToApi(range: [Dayjs, Dayjs] | null): Pick<UsageQueryFilters, 'from' | 'to'> {

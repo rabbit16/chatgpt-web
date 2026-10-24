@@ -1,0 +1,228 @@
+{
+  "home-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "price-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "wallet-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "invoice-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "usage-1440": {
+    "theme": "dark",
+    "lowContrastCount": 12,
+    "lowContrast": [
+      {
+        "t": "¥0.009529",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.006230",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.015905",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.010575",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.005708",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.004760",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "14px",
+        "cls": "_balance_1we0f_117"
+      }
+    ],
+    "whiteBlocks": []
+  },
+  "notice-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "guide-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "projects-1440": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "home-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "price-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "wallet-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "invoice-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "usage-390": {
+    "theme": "dark",
+    "lowContrastCount": 4,
+    "lowContrast": [
+      {
+        "t": "¥0.009529",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "12px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "12px",
+        "cls": "_balance_1we0f_117"
+      },
+      {
+        "t": "¥0.006230",
+        "ratio": 2.79,
+        "color": "rgb(6, 118, 71)",
+        "bg": "rgb(34,34,38)",
+        "fs": "12px",
+        "cls": "_money_1we0f_113"
+      },
+      {
+        "t": "¥",
+        "ratio": 2.65,
+        "color": "rgb(23, 92, 211)",
+        "bg": "rgb(34,34,38)",
+        "fs": "12px",
+        "cls": "_balance_1we0f_117"
+      }
+    ],
+    "whiteBlocks": []
+  },
+  "notice-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "guide-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  },
+  "projects-390": {
+    "theme": "dark",
+    "lowContrastCount": 0,
+    "lowContrast": [],
+    "whiteBlocks": []
+  }
+}

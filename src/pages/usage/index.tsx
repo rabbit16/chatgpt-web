@@ -15,6 +15,7 @@ import {
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
 import Sparkline from './Sparkline'
+import { formatCny } from '@/utils/money'
 import styles from './index.module.less'
 
 const PAGE_SIZE = 20
@@ -39,8 +40,9 @@ const STATUS_OPTIONS = [
 ]
 
 function formatMoney(value: number | null | undefined, highlight = false) {
-  if (value == null || Number.isNaN(Number(value))) return '-'
-  const text = `¥${Number(value).toFixed(6)}`
+  // 统一走 utils/money：≥1 元两位小数 + 千分位，小额四位去尾零。
+  // 原来一律 toFixed(6)，同一笔钱在不同页面会显示成 ¥542.187200 与 ¥542.19（视觉验收 P3）。
+  const text = formatCny(value)
   if (!highlight) return text
   return <span className={styles.money}>{text}</span>
 }
@@ -51,13 +53,14 @@ function formatToken(value: number | null | undefined) {
 }
 
 function formatBalance(value: number | null | undefined) {
+  // 统一金额规约（验收阻塞项 3）：≥1 元两位 + 千分位，小额四位去尾零
   if (value == null || Number.isNaN(Number(value))) return '-'
-  return <span className={styles.balance}>¥{Number(value).toFixed(4)}</span>
+  return <span className={styles.balance}>{formatCny(value)}</span>
 }
 
 function formatRecharge(value: number | null | undefined) {
   if (value == null || Number.isNaN(Number(value))) return '-'
-  return `¥${Number(value).toFixed(2)}`
+  return formatCny(value)
 }
 
 const TTFB_ALERT_MS = 15000
@@ -380,12 +383,12 @@ export function UsagePanel() {
                       ? '…'
                       : charged == null
                         ? '-'
-                        : `¥${Number(charged).toFixed(4)}`}
+                        : formatCny(charged)}
                   </b>
                 </div>
                 <div className={styles.stat}>
                   <label>本页扣费（已计费）</label>
-                  <b>¥{pageCharged.toFixed(4)}</b>
+                  <b>{formatCny(pageCharged)}</b>
                 </div>
               </div>
 

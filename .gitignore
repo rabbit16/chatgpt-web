@@ -75,3 +75,9 @@ next-env.d.ts
 # 审计截图（含测试账号页面，可能带手机号/邮箱，不进公开仓库）
 docs/audit/2026-10-24/mobile/
 docs/audit/2026-10-24/*.png
+# 2026-10-24 两轮审计的截图含账号/订单/邮箱等真实数据，只留本地
+docs/audit/2026-10-24/ui-design/*.png
+docs/audit/2026-10-24/ui-design/*.jpg
+docs/audit/2026-10-24/ui-design/img_prep/
+docs/audit/2026-10-24/final-verify/*.png
+docs/audit/2026-10-24/final-verify/img_prep/

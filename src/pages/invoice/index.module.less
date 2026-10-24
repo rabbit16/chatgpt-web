@@ -4,9 +4,79 @@
   padding: 28px 0 56px;
 }
 
+/* 页头：与全站 H1 刻度一致（P1/P2） */
+.pageHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: var(--fs-title-1);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text-1);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-4);
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: var(--fs-title-1-narrow);
+    }
+  }
+}
+
+/* 汇总卡：三张一行三等分（原来挤在左半列，右半列整块空白） */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+/* 零值卡：整卡降权，读起来是「这块暂时没数」而不是「出问题了」 */
+.summaryCard[data-empty] {
+  background: var(--surface-muted);
+  border-style: dashed;
+}
+
+/* 零值的「暂无」：必须压过 .summaryCard b 的 26px（验收实测曾仍显示 26px） */
+.summaryCard .summaryEmpty {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-4);
+  align-self: center;
+  font-family: inherit;
+}
+
+/* 「还能开」是唯一有数的卡，保留 22px 品牌蓝作为三张里唯一重点 */
+.summaryCard[data-primary] b {
+  font-size: 22px;
+  color: var(--brand);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 .wrap {
   width: 100%;
-  max-width: 1080px;
+  /* 统一栅格：与其它页同宽（原来 1080，宽屏下与相邻页左边界不一致） */
+  max-width: var(--content-max);
   margin: 0 auto;
   padding: 0 var(--container-pad);
   display: flex;

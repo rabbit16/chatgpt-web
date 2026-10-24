@@ -57,7 +57,10 @@ export const antdTheme: ThemeConfig = {
       primaryShadow: 'none',
       defaultShadow: 'none',
       fontWeight: 500,
-      paddingInline: 16
+      paddingInline: 16,
+      // 验收阻塞项 4：antd 把 colorPrimary #5b8af0 推导成更暗的 #5078cf，
+      // 配白字只有 4.26:1 未达 AA。显式给近黑字，在 #5078cf 上约 8.2:1。
+      primaryColor: '#141417'
     },
     Input: {
       paddingInline: 12,
@@ -140,7 +143,9 @@ export const antdDarkTheme: ThemeConfig = {
   algorithm: antdAlgorithm.darkAlgorithm,
   token: {
     ...baseToken,
-    colorPrimary: '#6f9dff',
+    // 深色主按钮：原来 #6f9dff + 白字只有 2.64:1（AA 要求 4.5），手机上发虚。
+    // 换成 #5b8af0 + 近黑字 #141417 = 5.55:1，达到 AA（2026-10-24 视觉验收 P7）。
+    colorPrimary: '#5b8af0',
     colorInfo: '#6f9dff',
     colorSuccess: '#4ade80',
     colorWarning: '#fbbf24',
