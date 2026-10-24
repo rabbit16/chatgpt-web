@@ -91,3 +91,14 @@ docs/audit/2026-10-24/search-design/img_prep/
 docs/audit/2026-10-24/invoice-multi/*.png
 docs/audit/2026-10-24/invoice-multi/img_prep/
 docs/audit/invoice-merge/
+# 接入页截图含真实密钥形态与账号信息，只留本地
+docs/audit/2026-10-24/agent-standalone/shots/
+docs/audit/2026-10-24/agent-standalone/mockup.html
+docs/audit/2026-10-24/agent-standalone/img_prep/
+docs/audit/2026-10-24/agent-standalone/_ref_agent_v1_original.tsx
+
+# 本次修复的截图同样含真实密钥形态与账号信息，只留本地
+docs/audit/2026-10-24/fix-batch2/
+
+# 改动前的文件备份（项目规范要求留版本，但不进仓库）
+versions/

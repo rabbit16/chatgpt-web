@@ -1,3 +1,18 @@
+/**
+ * 接入页样式（/agent，2026-10-24 独立成页）
+ * ------------------------------------------------------------
+ * 规矩（AGENTS.md + tokens.less）：
+ * - 圆角只用 3 档：--radius-sm(12) 控件 / --radius-lg(16) 卡片 / --radius-pill 药丸
+ * - 卡片靠 1px 描边分层，不用重阴影
+ * - 颜色全部走 token，深色模式自动跟着变
+ * - H1 用 --fs-title-1(28)，手机切 --fs-title-1-narrow(22)
+ * - 地址/密钥一律等宽 --font-mono + tabular-nums，数字对齐、好核对
+ * - 可点元素有 hover 反馈；手机端热区 ≥40px
+ *
+ * 文件里仍保留 .keyLine / .keyRow / .embedded 等类：
+ * ApiKeyPanel.tsx 还在用它们，且被接入指南共用，不能删。
+ */
+
 .wrapPanel {
 	display: flex;
 	flex-direction: column;
@@ -5,457 +20,642 @@
 }
 
 .page {
-  min-height: 100%;
-  background: var(--surface-muted);
+	min-height: 100%;
+	background: var(--surface-muted);
 
-  [class*='ant-pro-layout-content'] {
-    padding-block: 0;
-    background: var(--surface-muted) !important;
-  }
+	[class*='ant-pro-layout-content'] {
+		padding-block: 0;
+		background: var(--surface-muted) !important;
+	}
 }
 
 .wrap {
-  width: 100%;
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 24px 16px 56px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+	width: 100%;
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 20px 16px 56px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 
+/* ---------------- 页头 ----------------
+ * 和首页同一套语言：浅色渐变 + 柔光 + 细描边，不用整块深色大横幅。
+ * 为什么不用深色渐变：深色底在深色模式下会糊成一片，浅色 token 两层都好看。
+ */
 .hero {
-  padding: 28px 26px;
-  border-radius: var(--radius-lg);
-  color: #fff;
-  background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 22px 24px;
+	border-radius: var(--radius-lg);
+	background: linear-gradient(180deg, var(--hero-gradient-start) 0%, var(--surface) 100%);
+	border: 1px solid var(--border);
 
-  h1 {
-    margin: 8px 0 10px;
-    font-size: 30px;
-    line-height: 1.25;
-  }
+	/* 右上角柔光：一点品牌色呼吸感，不抢内容 */
+	&::after {
+		content: '';
+		position: absolute;
+		top: -120px;
+		right: -60px;
+		width: 260px;
+		height: 260px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(24, 119, 255, 0.12) 0%, rgba(24, 119, 255, 0) 70%);
+		pointer-events: none;
+	}
+}
+
+.heroMain {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+
+	h1 {
+		margin: 6px 0 8px;
+		font-size: var(--fs-title-1);
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		color: var(--text-1);
+	}
+}
+
+.heroAside {
+	position: relative;
+	z-index: 1;
+	flex: 0 0 auto;
+}
+
+.heroLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 40px;
+	padding: 0 14px;
+	border-radius: var(--radius-pill);
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--text-2);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+		background-color var(--dur) var(--ease);
+
+	&:hover {
+		color: var(--brand);
+		border-color: var(--brand);
+		background: var(--brand-softer);
+	}
 }
 
 .kicker,
 .lead {
-  margin: 0;
+	margin: 0;
 }
 
 .kicker {
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  opacity: 0.8;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	color: var(--brand);
+	text-transform: uppercase;
 }
 
 .lead {
-  max-width: 640px;
-  font-size: 15px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.9);
+	max-width: 560px;
+	font-size: 14px;
+	line-height: 1.7;
+	color: var(--text-4);
 }
 
+/* ---------------- 第一屏核心：地址 + 密钥 ----------------
+ * 为什么单独一张卡、还加品牌色描边：这是客户找了半天的那两个值，
+ * 视觉上必须比其它卡片更"重"，打开页面第一眼看的就是它。
+ */
+.keyCard {
+	padding: 22px;
+	border-radius: var(--radius-lg);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	/* 左侧 3px 品牌线：不用阴影也能一眼认出主卡 */
+	box-shadow: inset 3px 0 0 var(--brand);
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.cardHead {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+
+	h2 {
+		margin: 0;
+		font-size: var(--fs-title-2);
+		line-height: 1.4;
+		color: var(--text-1);
+	}
+
+	p {
+		margin: 4px 0 0;
+		font-size: 13px;
+		line-height: 1.7;
+		color: var(--text-4);
+	}
+}
+
+.valueGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* 一行一个值：左边标签，右边等宽值 + 复制按钮 */
+.copyRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	padding: 12px 14px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-soft);
+	background: var(--surface-sunken);
+	transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+
+	&:hover {
+		border-color: var(--border-strong);
+		background: var(--surface);
+	}
+}
+
+.copyMeta {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+
+	strong {
+		color: var(--text-1);
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	em {
+		color: var(--text-4);
+		font-style: normal;
+		font-size: 12px;
+		line-height: 1.55;
+	}
+}
+
+.copyValue {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	max-width: 60%;
+
+	code {
+		/* 地址带 /v1 这类符号，等宽字体 + tabular-nums 才对齐好核对 */
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+		font-size: 13px;
+		line-height: 1.5;
+		padding: 8px 10px;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text-1);
+		/* 2026-10-24 设计师实测：原来 break-all 让 390 下
+		   https://www.rabbitj.top/v1 折成 3 行，值读不完整、截图很难认。
+		   改成「永远单行 + 横向滚动」：值一定在一行里，宽了用手指滑。
+		   scrollbar-width:none 只是隐藏滚动条外壳，滑动手势照常可用。 */
+		min-width: 0;
+		white-space: nowrap;
+		overflow-x: auto;
+		overflow-y: hidden;
+		word-break: normal;
+		overflow-wrap: normal;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	:global(.ant-btn) {
+		flex: 0 0 auto;
+		/* 手机端热区：按钮本身 40px 高，拇指不点空 */
+		min-height: 40px;
+		border-radius: var(--radius-sm);
+	}
+}
+
+.mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.01em;
+}
+
+/* 还没有密钥时的占位值：弱化成灰，不让它像"已有一个值" */
+.monoEmpty {
+	color: var(--text-5) !important;
+	font-style: normal;
+}
+
+/* 密钥块：比地址多一行说明和底部提示 */
+.keyBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 14px;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border);
+	background: var(--brand-softer);
+
+	.copyValue {
+		max-width: 100%;
+	}
+
+	.copyValue code {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+}
+
+.keyEmpty {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.65;
+		color: var(--text-4);
+	}
+
+	:global(.ant-btn) {
+		min-height: 40px;
+		border-radius: var(--radius-sm);
+	}
+}
+
+.keyFoot {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--text-4);
+}
+
+/* ---------------- 通用卡片 ---------------- */
 .card {
-  padding: 22px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
-  h2 {
-    margin: 0;
-    font-size: 20px;
-  }
-
-  > p {
-    margin: 8px 0 16px;
-    color: var(--text-4);
-    line-height: 1.7;
-  }
+	padding: 22px;
+	border-radius: var(--radius-lg);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
 }
 
-.stepHead {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 4px;
+/* 填哪几个框：三列对照，只讲"模型名长什么样"，教程细节留给 /guide */
+.memory {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
 
-  span {
-    color: var(--brand);
-    font-size: 13px;
-    font-weight: 700;
-  }
+	article {
+		padding: 14px;
+		border-radius: var(--radius-sm);
+		background: var(--surface-sunken);
+		border: 1px solid var(--border-soft);
+		display: grid;
+		gap: 6px;
+		transition: border-color var(--dur) var(--ease);
+
+		&:hover {
+			border-color: var(--border-strong);
+		}
+	}
+
+	strong {
+		font-size: 15px;
+		color: var(--text-1);
+		font-family: var(--font-mono);
+	}
+
+	span {
+		color: var(--brand);
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	code {
+		font-size: 12px;
+		line-height: 1.6;
+		word-break: break-all;
+		color: var(--text-2);
+		background: none;
+		padding: 0;
+	}
+
+	small {
+		color: var(--text-4);
+		font-size: 12px;
+		line-height: 1.55;
+	}
 }
+
+/* 底部引导：这里是全页唯一的"去教程"入口，不重复教程内容 */
+.guideCta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding-top: 14px;
+	border-top: 1px solid var(--border-soft);
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		color: var(--text-4);
+	}
+
+	a {
+		display: inline-flex;
+	}
+
+	:global(.ant-btn) {
+		min-height: 44px;
+		border-radius: var(--radius-pill);
+		padding-inline: 20px;
+	}
+}
+
+.linkLine {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	word-break: break-all;
+
+	:global(.ant-btn) {
+		min-height: 40px;
+		border-radius: var(--radius-sm);
+	}
+}
+
+/* ============================================================
+ * 以下类由 ApiKeyPanel.tsx 使用（接入指南也共用，改动需两页一起看）
+ * ============================================================ */
 
 .phoneBox {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+
+	:global(.ant-btn) {
+		min-height: 40px;
+	}
 }
 
 .keyLine {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 6px;
 
-  code {
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    padding: 4px 8px;
-    border-radius: var(--radius-xs);
-    background: var(--border-soft);
-    color: var(--text-1);
-    font-size: 13px;
-    word-break: break-all;
-    overflow-wrap: anywhere;
-  }
+	code {
+		flex: 1 1 auto;
+		min-width: 0;
+		max-width: 100%;
+		padding: 4px 8px;
+		border-radius: var(--radius-xs);
+		background: var(--border-soft);
+		color: var(--text-1);
+		font-size: 13px;
+		font-family: var(--font-mono);
+		word-break: break-all;
+		overflow-wrap: anywhere;
+	}
 
-  /* 复制按钮必须留在框内：允许按钮换行，不超出 keyLine 宽度 */
-  :global(.ant-btn) {
-    flex: 0 0 auto;
-  }
+	/* 复制按钮必须留在框内：允许按钮换行，不超出 keyLine 宽度 */
+	:global(.ant-btn) {
+		flex: 0 0 auto;
+	}
 }
 
 .keyList {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
+	display: grid;
+	gap: 8px;
+	margin-top: 12px;
 }
 
 .keyRow,
 .keyRowActive {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  background: var(--surface);
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: center;
+	padding: 12px;
+	border-radius: var(--radius-sm);
+	background: var(--surface);
 
-  strong {
-    margin-right: 8px;
-  }
+	strong {
+		margin-right: 8px;
+		color: var(--text-1);
+	}
 
-  span,
-  em {
-    display: block;
-    color: var(--text-4);
-    font-style: normal;
-    font-size: 12px;
-  }
+	span,
+	em {
+		display: block;
+		color: var(--text-4);
+		font-style: normal;
+		font-size: 12px;
+	}
 }
 
 .keyRow {
-  border: 1px solid var(--border);
+	border: 1px solid var(--border);
 }
 
+/* 选中那把密钥：品牌色 2px 描边 + 极浅底，不投影 */
 .keyRowActive {
-  border: 2px solid var(--brand);
-  background: var(--brand-softer);
+	border: 2px solid var(--brand);
+	background: var(--brand-softer);
 }
 
 .keyActions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+	display: flex;
+	gap: 8px;
+	flex-shrink: 0;
+	flex-wrap: wrap;
+
+	:global(.ant-btn) {
+		border-radius: var(--radius-sm);
+	}
 }
 
 .hint,
 .ok {
-  margin: 10px 0 0 !important;
-  font-size: 13px;
+	margin: 10px 0 0 !important;
+	font-size: 13px;
+	color: var(--text-4);
 }
 
 .ok {
-  color: #067647 !important;
+	color: var(--success) !important;
 }
 
-.choiceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.choice,
-.choiceActive {
-  text-align: left;
-  border-radius: var(--radius-md);
-  padding: 14px;
-  cursor: pointer;
-  background: var(--surface);
-
-  strong {
-    display: block;
-    margin: 8px 0 6px;
-    color: var(--text-1);
-    font-size: 16px;
-  }
-
-  span {
-    display: block;
-    color: var(--text-4);
-    font-size: 13px;
-    line-height: 1.6;
-  }
-}
-
-.choice {
-  border: 1px solid var(--border);
-}
-
-.choiceActive {
-  border: 2px solid var(--brand);
-  background: var(--brand-softer);
-}
-
-.moreApps {
-  display: grid;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.linkLine {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 12px 0 0 !important;
-  word-break: break-all;
-}
-
-.jobRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.job,
-.jobActive {
-  border-radius: var(--radius-pill);
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.job {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-3);
-}
-
-.jobActive {
-  border: 1px solid var(--brand);
-  background: var(--brand);
-  color: #fff;
-}
-
-.clickSteps {
-  list-style: none;
-  margin: 0 0 18px;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-
-  li {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  i {
-    flex: 0 0 28px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--brand);
-    color: #fff;
-    font-style: normal;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-  }
-
-  strong {
-    display: block;
-    color: var(--text-1);
-  }
-
-  p {
-    margin: 4px 0 0;
-    color: var(--text-4);
-    line-height: 1.6;
-  }
-}
-
-.fillCard {
-  border: 1px solid #dbe7ff;
-  background: var(--brand-softer);
-  border-radius: var(--radius-md);
-  padding: 16px;
-
-  h3 {
-    margin: 0 0 6px;
-  }
-}
-
-.fillLead {
-  margin: 0 0 12px;
-  color: var(--text-3);
-}
-
-.fillList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-
-  li {
-    display: grid;
-    grid-template-columns: minmax(160px, 220px) 1fr;
-    gap: 12px;
-    padding: 12px;
-    border-radius: var(--radius-md);
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-  }
-}
-
-.fillMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  strong {
-    color: var(--text-1);
-    font-size: 15px;
-  }
-
-  em {
-    color: var(--text-4);
-    font-style: normal;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-}
-
-.fillLabel {
-  color: var(--brand);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.fillValue {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-
-  code {
-    flex: 1;
-    min-width: 0;
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    background: var(--ink-deep);
-    color: #e2e8f0;
-    font-size: 13px;
-    word-break: break-all;
-  }
-}
-
-.warnLine {
-  margin: 14px 0 0 !important;
-  color: #b54708 !important;
-}
-
-.drawNote {
-  margin-top: 16px;
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  background: var(--warning-soft);
-  color: #7a2e0e;
-
-  h3 {
-    margin: 0 0 8px;
-    font-size: 15px;
-  }
-
-  ol {
-    margin: 0;
-    padding-left: 18px;
-    line-height: 1.8;
-  }
-}
-
-.memory {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-
-  article {
-    padding: 14px;
-    border-radius: var(--radius-md);
-    background: var(--surface-sunken);
-    border: 1px solid var(--border-soft);
-    display: grid;
-    gap: 6px;
-  }
-
-  strong {
-    font-size: 16px;
-  }
-
-  span {
-    color: var(--brand);
-    font-size: 13px;
-  }
-
-  code {
-    font-size: 12px;
-    word-break: break-all;
-    color: var(--text-1);
-  }
-
-  small {
-    color: var(--text-4);
-  }
-}
-
-@media (max-width: 800px) {
-  .hero h1 {
-    font-size: 24px;
-  }
-
-  .choiceGrid,
-  .memory,
-  .fillList li,
-  .phoneBox,
-  .keyRow,
-  .keyRowActive {
-    grid-template-columns: 1fr;
-    flex-wrap: wrap;
-  }
-}
-
-/* 第 3 步的引导句：强调只有两个框要填 */
-.cardLead {
-	margin: 0 0 12px;
-	font-size: 13px;
-	line-height: 1.7;
-	color: var(--text-4);
-
-	b {
-		color: var(--text-2);
-		font-weight: 600;
-	}
-}
-
-/* 嵌进接入指南时：去掉卡片外壳，只保留新建/管理密钥的操作区 */
+/* 嵌进外层卡片时：去掉自己的外壳，只留操作区 */
 .embedded {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+}
+
+/* ---------------- 窄屏 ----------------
+ * 390 下的关键取舍：
+ * - 页头改成上下排，标题 22px
+ * - 复制行改成上下两段（标签在上、值+按钮在下），值不再被挤成一条缝
+ * - 值框允许换行，按钮保持 40px 高
+ */
+@media (max-width: 800px) {
+	/* 2026-10-24 视觉验收（P0）：站长要的是「打开就看见地址和密钥」，
+	   但 390×844 下密钥值 top 849、按钮 bottom 889，比视口高 45px —— 地址看到了、
+	   密钥还差一截（iPhone 13/14 的 812 更差）。这里把手机端首屏整体收紧，
+	   让三项值都落在 844 以内；改的是间距与字号，不动信息结构。 */
+	.wrap {
+		padding-top: 8px;
+	}
+
+	.hero {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 12px 14px;
+		gap: 8px;
+	}
+
+	/* 引导语三行占到 ~70px，是首屏里最大的一块可压缩空间。
+	   缩行高不缩字号：13px 在手机上仍可读，但行距从 1.7 收到 1.5 能省出 ~12px。 */
+	.lead {
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	.heroLink {
+		height: 30px;
+		min-height: 30px;
+	}
+
+	.heroMain h1 {
+		font-size: var(--fs-title-1-narrow);
+	}
+
+	.lead {
+		font-size: 13px;
+	}
+
+	.keyCard,
+	.card {
+		padding: 14px;
+	}
+
+	.cardHead p {
+		font-size: 12px;
+		line-height: 1.5;
+	}
+
+	.copyRow {
+		/* 手机端只分成两段：第一行「标题/说明」，第二行「值 + 复制按钮」。
+		   为什么不用 flex-wrap 让它自己折：值框宽度算不准，容易把按钮挤下去。
+		   2026-10-24 二次收紧：原来四段竖排（标题→说明→值→按钮）每项吃掉 175px，
+		   密钥被顶到 889px 之外；改成两段后每项约 100px，才可能进首屏。 */
+		flex-direction: column;
+		align-items: stretch;
+		gap: 6px;
+		padding: 9px 10px;
+	}
+
+	.copyMeta {
+		/* 标题与说明并排一行：说明本来就短，占一行纯属浪费 */
+		flex-direction: row;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 2px 8px;
+
+		strong {
+			font-size: 13px;
+		}
+
+		em {
+			font-size: 11.5px;
+			line-height: 1.4;
+		}
+	}
+
+	.copyValue {
+		/* 手机端最终形态：值独占一行、复制按钮落到下一行并右对齐。
+		   为什么不让值和按钮并排：390 减去内边距后可用 ~332px，按钮要 ~92px，
+		   code 只剩 ~230px，而 `https://www.rabbitj.top/v1` 在 12px 等宽下要 ~219px —
+		   —— 差几像素就会把结尾的 `/v1` 裁掉（实测确实裁了，用户抄错地址必连不上）。
+		   所以宁可多一行，也要保证整串地址完整可见。 */
+		flex: 1 1 100%;
+		max-width: 100%;
+		width: 100%;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 6px;
+
+		code {
+			flex: 1 1 100%;
+			min-width: 0;
+			font-size: 12px;
+			/* 独占整行时可用宽度 ~312px > 域名 219px，完整可见，不会触发滚动 */
+			white-space: nowrap;
+			overflow-x: auto;
+		}
+
+		:global(.ant-btn) {
+			flex: 0 0 auto;
+			align-self: flex-end;
+			/* 32px：既方便点击又不占掉整行高度 */
+			height: 32px;
+			min-height: 32px;
+			padding: 0 12px;
+		}
+	}
+
+	.keyBlock {
+		padding: 12px;
+	}
+
+	.memory {
+		grid-template-columns: 1fr;
+	}
+
+	.guideCta {
+		flex-direction: column;
+		align-items: stretch;
+
+		:global(.ant-btn) {
+			width: 100%;
+		}
+	}
+
+	.phoneBox,
+	.keyRow,
+	.keyRowActive {
+		flex-wrap: wrap;
+	}
 }

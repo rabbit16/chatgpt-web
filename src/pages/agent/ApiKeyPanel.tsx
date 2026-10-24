@@ -40,6 +40,24 @@ function CopyButton({ text, label = '复制' }: { text: string; label?: string }
   )
 }
 
+/**
+ * 密钥/手机号打码（2026-10-24 安全修复）
+ * ------------------------------------------------------------
+ * 原来这里直接把完整密钥渲染进页面文本，截图 OCR 或录屏就能读到全串。
+ * 现在页面只显示打码值，完整值只存在于「复制」按钮的闭包里：
+ * 用户点复制才写到剪贴板，页面上永远没有明文常驻。
+ * 打码格式：sk-xxxx****abcd（前缀留几个便于认出是哪把，尾部留 4 位便于核对）
+ */
+function maskSecret(secret: string) {
+  if (!secret) return ''
+  // 手机号：138****8000
+  if (/^1[3-9]\d{9}$/.test(secret)) {
+    return `${secret.slice(0, 3)}****${secret.slice(-4)}`
+  }
+  if (secret.length <= 12) return `${secret.slice(0, 3)}****`
+  return `${secret.slice(0, 7)}****${secret.slice(-4)}`
+}
+
 function applyCredential(userInfo: any, allowPhoneKey: boolean, keys: UserApiKeyItem[]) {
   const nextKey = syncCredential(userInfo, allowPhoneKey, keys)
   userStore.getState().setLlmAccess({ llm_api_key: nextKey, allow_phone_key: allowPhoneKey })
@@ -218,8 +236,9 @@ export default function ApiKeyPanel({
               <div>
                 <Tag color="gold">旧密钥</Tag>
                 <strong>手机号</strong>
+                {/* 页面只显示打码值；完整手机号只在「复制」按钮里，点了才进剪贴板 */}
                 <div className={styles.keyLine}>
-                  <code>{phone}</code>
+                  <code>{maskSecret(phone)}</code>
                   <CopyButton text={phone} />
                 </div>
               </div>
@@ -239,7 +258,11 @@ export default function ApiKeyPanel({
                     <strong>{item.name || '未命名'}</strong>
                     <em>{item.created_at}</em>
                     <div className={styles.keyLine}>
-                      <code>{secret || item.key_mask}</code>
+                      {/* 安全修复（2026-10-24）：原来这里渲染完整密钥 secret，
+                          截图/录屏就能拿到全串。现在页面上只出现打码值：
+                          优先用后端给的 key_mask，没有就前端打码。
+                          完整密钥仍在右边「复制」按钮的闭包里，点了才复制。 */}
+                      <code>{item.key_mask || maskSecret(secret)}</code>
                       <CopyButton text={secret} />
                     </div>
                   </div>

@@ -542,15 +542,17 @@ function PricePage() {
           ) : !credential ? (
             /* 没密钥的用户在这里是「想用但不知道怎么开始」的准客户，
                原来只有一句不可点击的提示，还用了导航里早已不存在的旧名
-               「Agent 接入」，全页除导航栏外没有任何去接入指南的入口
-               （2026-10-24 流程检验第 2 条：阻塞交易）。 */
+               「Agent 接入」，全页除导航栏外没有任何入口
+               （2026-10-24 流程检验第 2 条：阻塞交易）。
+               落点指 /agent 而不是 /guide：接入值已经独立成页，
+               用户要的是「拿密钥」，教程是「怎么填」，不该再让他多绕一步。 */
             <Alert
               showIcon
               type="warning"
-              message="还没有密钥：先到「接入指南」创建一个 sk- 密钥，再回来看你的个人费率"
+              message="还没有密钥：先到「接入」页创建一个 sk- 密钥，再回来看你的个人费率"
               action={
-                <Button size="small" type="primary" onClick={() => navigate('/guide')}>
-                  去接入指南
+                <Button size="small" type="primary" onClick={() => navigate('/agent')}>
+                  去接入
                 </Button>
               }
             />
@@ -683,42 +685,40 @@ function PricePage() {
                     }}
                   />
                 </div>
-                {/* 厂商页签单独一行（UI 规格 v1：实测 1200 宽下同排会破版换行）。
-                    语义也分开：搜索是「全局检索」，页签是「列表筛选」。 */}
-                <div className={styles.tabs}>
-                  {tabs.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      /* 搜索时始终高亮「全部」：用「范围=全部厂商」表达全局搜索，
-                         而不是把所有页签一起变灰（那会被读成功能坏了） */
-                      className={(searching ? key === 'all' : tab === key) ? styles.tabActive : undefined}
-                      data-muted={(searching && key !== 'all') || undefined}
-                      onClick={() => {
-                        // 点页签 = 退出搜索，回到该厂商列表
-                        if (searching) setSearch('')
-                        setTab(key)
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {/* 搜索命中数：让用户知道「搜到了没有」，而不是盯着空表格发呆 */}
-                {searching ? (
-                  <div className={styles.searchMeta}>
-                    找到 <b>{searched.length}</b> 个模型
-                    {searched.length === 0 ? (
-                      <span>
-                        {' '}
-                        —— 换个更短的关键词；或
-                        <button type="button" onClick={() => setSearch('')}>
-                          清空搜索
-                        </button>
-                        看全部 {models.length} 个
-                      </span>
-                    ) : null}
+                {/* 页签行：厂商页签（语义=列表筛选）+ 搜索命中数（语义=全局检索结果注解）。
+                    为什么合并成一行（2026-10-24 修复「找到 X 个模型」重合）：
+                    命中数原来单独占一行、还用 -6px 负边距向上贴页签，实测压进页签 6px，
+                    下面离「按住表格左右拖动」只剩 12px。改成和页签同一 flex 行之后，
+                    桌面端命中数落在页签右侧（不再多吃一行高度），窄屏由 CSS 换成上下排。
+                    两块之间的间距全部由 .tabRow 的 gap 提供，没有负边距。 */}
+                <div className={styles.tabRow}>
+                  <div className={styles.tabs}>
+                    {tabs.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        /* 搜索时始终高亮「全部」：用「范围=全部厂商」表达全局搜索，
+                           而不是把所有页签一起变灰（那会被读成功能坏了） */
+                        className={(searching ? key === 'all' : tab === key) ? styles.tabActive : undefined}
+                        data-muted={(searching && key !== 'all') || undefined}
+                        onClick={() => {
+                          // 点页签 = 退出搜索，回到该厂商列表
+                          if (searching) setSearch('')
+                          setTab(key)
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                ) : null}
+                  {/* 搜索命中数：让用户知道「搜到了没有」，而不是盯着空表格发呆。
+                      这里只负责「数」——0 已经说明没匹配；为什么不匹配、怎么办，
+                      由下面空状态完整讲一次（两处都说就是重复表达）。 */}
+                  {searching ? (
+                    <div className={styles.searchMeta} role="status" aria-live="polite">
+                      找到 <b>{searched.length}</b> 个模型
+                    </div>
+                  ) : null}
+                </div>
                 {/* 无结果时给一个专门的空状态，不要再让表格自己弹 antd 的
                     「暂无数据」大空框——那会和上方「找到 0 个模型」重复两次。 */}
                 {searching && searched.length === 0 ? (

@@ -15,7 +15,7 @@ import { Button, Select, message } from 'antd'
 import Layout from '@/components/Layout'
 import IconBadge from '@/components/IconBadge'
 import { DocsPanel } from '@/pages/docs'
-import ApiKeyPanel from '@/pages/agent/ApiKeyPanel'
+// 2026-10-24：密钥管理已从教程页移到 /agent，这里不再需要 ApiKeyPanel
 import { getSoftwareList, type SoftwareItem } from '@/request/api'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
@@ -213,8 +213,7 @@ function GuidePage() {
   const [params] = useSearchParams()
   const { token, llm_api_key, setLoginModal } = userStore()
   const [key, setKey] = useState(llm_api_key || '')
-  // 密钥管理默认收起，完全由用户点击控制；没密钥时密钥行会出现「新建密钥」按钮
-  const [manageOpen, setManageOpen] = useState(false)
+  // 第 2 步已不再渲染复制 UI（复制只在 /agent 一处），这里只保留第 3 步填表需要的密钥值
   // 主模型由用户选，协议/地址/默认项全部跟着它走
   const [modelId, setModelId] = useState(() => defaultGuideModel()?.id || '')
   const copy = useCopy()
@@ -290,6 +289,17 @@ function GuidePage() {
               全程按 <b>Claude-haha</b> 的实际界面走：装 Claude-haha → 复制本站地址和密钥 → 照着 Claude-haha 的「添加模型」
               窗口填 4 个框。其他客户端最后附一句对照，不用来回翻。
             </p>
+            {/* 2026-10-24 站长反馈：客户为了找地址和密钥，在教程里翻了半天。
+                这两个值已经搬到独立的「接入」页，这里给它一个显眼的入口，
+                让「在教程里找值」这件事彻底消失。 */}
+            <div className={styles.headCta}>
+              <Link to="/agent">
+                <Button type="primary" size="large" icon={<LinkOutlined />}>
+                  去「接入」页拿地址和密钥
+                </Button>
+              </Link>
+              <span>打开就是那两个值，还能一键复制。这边只讲怎么填。</span>
+            </div>
           </header>
 
           {/* 第 1 步：装客户端（原来是页面最底部的大图卡片，现在挪到最前面，改成紧凑列表） */}
@@ -304,100 +314,35 @@ function GuidePage() {
             <ClientDownloads />
           </section>
 
-          {/* 第 2 步：地址与密钥 */}
+          {/* 第 2 步：拿到地址和密钥
+              ------------------------------------------------------------
+              2026-10-24 站长反馈：客户为了找「接口地址」和「密钥」，在教程里翻了半天。
+              这两个值已独立到 /agent，所以这里**不再渲染任何复制 UI**。
+              为什么连「本页也能复制」也不留（UI 设计师复核意见）：
+              复制界面两处都有，将来换域名/改地址必然漏改一处，教程就会给出旧值。
+              现在全站只有 /agent 一个地方能复制，值永远和代码同源。
+              教程这边只留一句说明 + 一个主按钮，第 3、4 步讲怎么填。 */}
           <section id="key" className={styles.stepCard}>
             <div className={styles.stepHead}>
               <span className={styles.stepNo}>2</span>
               <div>
-                <h2>复制地址和密钥</h2>
-                <p>地址是本站的，密钥是你账号的。两样都复制好，下一步填进软件。</p>
+                <h2>拿到地址和密钥</h2>
+                <p>
+                  这两个值在独立的「接入」页：打开就是它们，还能一键复制。拿到再回来看第 3 步怎么填。
+                </p>
               </div>
             </div>
 
-            <div className={styles.twoCol}>
-              <div className={styles.colBlock}>
-                <p className={styles.colTitle}>接口地址</p>
-                <div className={styles.addrRow}>
-                  <div className={styles.addrMeta}>
-                    <strong>OpenAI 兼容</strong>
-                    <span>Codex、Cursor、ChatBox 等填这条</span>
-                  </div>
-                  <code>{RELAY_URL}</code>
-                  <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(RELAY_URL, '接口地址')}>
-                    复制
-                  </Button>
-                </div>
-                <div className={styles.addrRow}>
-                  <div className={styles.addrMeta}>
-                    <strong>Anthropic 原生</strong>
-                    <span>Claude-haha 默认用这条，不带 /v1</span>
-                  </div>
-                  <code>{RELAY_HOST}</code>
-                  <Button size="small" icon={<CopyOutlined />} onClick={() => void copy(RELAY_HOST, 'Claude 地址')}>
-                    复制
-                  </Button>
-                </div>
-                <p className={styles.colHint}>Claude-haha 照第 3 步填第二条；其他客户端大多填第一条。</p>
+            <div className={styles.takeCard}>
+              <div>
+                <strong>接口地址 + API 密钥</strong>
+                <p>不知道填哪、或者报错了，回来继续看第 3、4 步。</p>
               </div>
-
-              <div className={styles.colBlock}>
-                <p className={styles.colTitle}>API 密钥</p>
-                {!token ? (
-                  <div className={styles.keyEmpty}>
-                    <p>密钥要登录后生成，一个账号可以建多把，一把用在所有软件里。</p>
-                    <Button type="primary" onClick={() => setLoginModal(true)}>
-                      登录 / 注册后生成
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className={styles.keyRow}>
-                      <code>{key ? maskKey(key) : '还没有可用密钥'}</code>
-                      <div className={styles.keyRowActions}>
-                        {key ? (
-                          <Button
-                            size="small"
-                            icon={<CopyOutlined />}
-                            onClick={() => void copy(key, 'API 密钥')}
-                          >
-                            复制
-                          </Button>
-                        ) : (
-                          <Button size="small" type="primary" onClick={() => setManageOpen(true)}>
-                            新建密钥
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className={[styles.manageBtn, manageOpen ? styles.manageBtnOpen : ''].join(' ')}
-                      aria-expanded={manageOpen}
-                      onClick={() => setManageOpen((open) => !open)}
-                    >
-                      <KeyOutlined />
-                      <span>
-                        {key ? '管理密钥（新建 / 禁用 / 删除）' : '点这里生成个人密钥'}
-                      </span>
-                      <em>{manageOpen ? '收起' : '展开'}</em>
-                    </button>
-                    {!key ? (
-                      <p className={styles.manageHint}>
-                        第一次来？点上面这个按钮 → 填个备注（比如「家里电脑」）→ 点「生成密钥」→ 复制那串 sk- 开头的，
-                        填进 Claude-haha 的第 4 个框。
-                      </p>
-                    ) : null}
-                    {manageOpen ? (
-                      <div className={styles.manageBody}>
-                        <ApiKeyPanel embedded onKeyChange={setKey} />
-                      </div>
-                    ) : null}
-                  </>
-                )}
-                <p className={styles.colHint}>
-                  一把密钥能用在所有客户端。换电脑或担心泄露，就新建一把，旧的禁用即可。
-                </p>
-              </div>
+              <Link to="/agent">
+                <Button type="primary" size="large" icon={<LinkOutlined />}>
+                  去接入页拿地址和密钥
+                </Button>
+              </Link>
             </div>
           </section>
 

@@ -81,11 +81,34 @@ const notice = {
   message: '看通知、提建议，匿名也行'
 }
 
+/**
+ * 接入（2026-10-24 独立成导航项）
+ * ------------------------------------------------------------
+ * 群聊原话：「有用户提出单独做一个小按钮」「不要放在教程里面」「客户找了半天」
+ * 「结果在教程里面找到接入接口」「不醒目」。
+ * 所以「拿地址和密钥」这件事必须有自己的一格，而不是藏在接入指南的第 2 步里。
+ * 图标用 ApiOutlined（和 git 历史里第一版「Agent 接入」一致），便于老用户认出来。
+ */
+const agent = {
+  path: '/agent',
+  name: '接入',
+  icon: <ApiOutlined />,
+  message: '接口地址、API 密钥，打开就能复制'
+}
+
+/**
+ * 接入指南（措辞从「接入指南」改为「接入教程」）
+ * ------------------------------------------------------------
+ * 为什么改名：它现在只负责「怎么填 / 报错怎么办」，而「地址和密钥」已经搬到「接入」页。
+ * 两个导航项并存时，「接入」和「接入指南」字数太近容易看混；
+ * 改成「接入教程」既保留了教程的含义，也让两者职责一眼可分（拿值 vs 照着做）。
+ * 页面本身、路径 /guide、内容全部保留，只是导航措辞变了。
+ */
 const guide = {
   path: '/guide',
-  name: '接入指南',
+  name: '接入教程',
   icon: <BookOutlined />,
-  message: '三个值、四步流程、各软件怎么填'
+  message: '装软件、填框、报错排查，一步步来'
 }
 
 const projects = {
@@ -103,17 +126,20 @@ const usage = {
 }
 
 /**
- * 访客导航顺序（漏斗）：认识 → 试 → 价 → 接 → 生态 → 互动
- * 首页 / AI 工作台 / 充值商城 / 使用记录 / 接入指南 / 软件商城 / 公告留言
+ * 访客导航顺序（漏斗）：认识 → 试 → 价 → 拿值 → 照着做 → 生态 → 互动
+ * 首页 / AI 工作台 / 充值商城 / 接入 / 接入教程 / 软件商城 / 公告留言
+ *
+ * 「接入」紧跟「充值商城」：充完钱第一件事就是拿密钥去填软件，
+ * 放在教程前面，用户不用先学会怎么填才能拿到值。
  */
-const guestNav = [home, experience, priceShop, guide, projects, notice]
+const guestNav = [home, experience, priceShop, agent, guide, projects, notice]
 
 /** 登录后导航：多出与账号相关的入口 */
 /**
  * 登录后导航：在「充值商城」后面插入「使用记录」（刚花完钱最想核对账），
- * 其余顺序与访客一致，减少切换身份后的认知跳变。
+ * 「接入 / 接入教程」保持同样的相对位置，减少切换身份后的认知跳变。
  */
-const userNav = [home, experience, priceShop, invoice, usage, guide, projects, notice]
+const userNav = [home, experience, priceShop, invoice, usage, agent, guide, projects, notice]
 
 const admin = {
   path: '/admin',
@@ -145,6 +171,7 @@ export default {
   experience,
   priceShop,
   invoice,
+  agent,
   guide,
   projects,
   usage,

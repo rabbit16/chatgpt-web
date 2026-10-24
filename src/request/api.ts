@@ -609,7 +609,7 @@ function getLlmApiKey(action = '请求 LLM 接口', forModel = false) {
   const allow = state.allow_phone_key ?? info?.data?.bodyMessage?.allow_phone_key
   // 生成过 sk- 后，手机号只能用于价目、用量、列表等，不能再请求模型。
   if (forModel && allow === false) {
-    throw new Error(`请先到「Agent 接入」页创建并选择 sk- 密钥后再${action}`)
+    throw new Error(`请先到「接入」页创建并选择 sk- 密钥后再${action}`)
   }
   if (/^1[3-9]\d{9}$/.test(stored)) return stored
   if (phone) return phone

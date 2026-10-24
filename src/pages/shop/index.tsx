@@ -520,10 +520,12 @@ export function ShopPanel() {
               type="primary"
               onClick={() => {
                 setPaySuccess(null)
-                navigate('/guide')
+                // 2026-10-24：充完钱第一件事是拿密钥去填软件，不是看教程。
+                // 指向独立的接入页 /agent，打开就是地址和密钥。
+                navigate('/agent')
               }}
             >
-              去生成密钥并接入
+              去拿密钥并接入
             </Button>
           ]}
         >
@@ -531,7 +533,7 @@ export function ShopPanel() {
             ¥{Number(paySuccess?.amount || 0).toFixed(2)} 已到账，现在就能用了。
           </p>
           <p className={styles.successText}>
-            下一步：去「接入指南」生成一个密钥，填到你的软件里就能开始调用。
+            下一步：去「接入」页生成一个密钥，填到你的软件里就能开始调用。
             <br />
             需要发票的话，在下方「支付记录」里对这笔充值申请，一单一票。
           </p>

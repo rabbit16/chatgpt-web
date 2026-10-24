@@ -22,6 +22,8 @@ const RecordsPage = React.lazy(() => import('@/pages/records'))
 const PricePage = React.lazy(() => import('@/pages/price'))
 const InvoicePage = React.lazy(() => import('@/pages/invoice/page'))
 const GuidePage = React.lazy(() => import('@/pages/guide'))
+// 接入页独立成一个路由（原来是重定向到 /guide），按全站惯例懒加载
+const AgentPage = React.lazy(() => import('@/pages/agent'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const NoticePage = React.lazy(() => import('@/pages/notice'))
 const ProfilePage = React.lazy(() => import('@/pages/profile'))
@@ -196,14 +198,23 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    id: 'AgentRedirect',
+    /**
+     * 接入页（2026-10-24 恢复成独立页面）
+     * ------------------------------------------------------------
+     * 之前这里是 <Navigate to="/guide?tab=client" />，等于把「拿地址和密钥」
+     * 这件事塞回教程里，客户找不到（群聊反馈「找了半天」「不醒目」）。
+     * 现在真渲染 /agent：打开第一屏就是接口地址和密钥。
+     * 行为变化是预期的：外部旧链接指向 /agent 时，从「跳教程」变成「直接看到接入页」。
+     * public 保持 true —— 没登录也要能看地址；密钥区在页面里引导登录。
+     */
+    id: 'AgentPage',
     path: '/agent',
-    element: <Navigate to="/guide?tab=client" replace />,
+    element: <AgentPage />,
     children: [],
     configure: {
       verifToken: false,
       public: true,
-      title: '接入指南',
+      title: '接入',
       role: ['user', 'administrator']
     }
   },

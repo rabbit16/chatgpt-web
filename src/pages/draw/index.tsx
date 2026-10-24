@@ -22,6 +22,7 @@ import {
   ReloadOutlined,
   UploadOutlined
 } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import ExperienceTabs from '@/components/ExperienceTabs'
 import { userStore } from '@/store'
@@ -492,7 +493,20 @@ function DrawPage() {
               }
             />
           ) : !credential ? (
-            <Alert showIcon type="warning" message="请先到「Agent 接入」页创建 sk- 密钥，再调用绘图" />
+            /* 2026-10-24：「接入」页现在真实存在（/agent），
+               这里补一个按钮直接跳过去，用户不用自己找导航。 */
+            <Alert
+              showIcon
+              type="warning"
+              message="请先到「接入」页创建 sk- 密钥，再调用绘图"
+              action={
+                <Link to="/agent">
+                  <Button size="small" type="primary">
+                    去接入页拿密钥
+                  </Button>
+                </Link>
+              }
+            />
           ) : error && !models.length ? (
             <Alert showIcon type="error" message={error} action={<Button onClick={() => void loadModels()}>重试</Button>} />
           ) : null}

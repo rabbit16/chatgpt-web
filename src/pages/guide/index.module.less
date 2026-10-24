@@ -58,6 +58,99 @@
 	}
 }
 
+/**
+ * 页头的「去接入页拿值」入口（2026-10-24）
+ * ------------------------------------------------------------
+ * 站长反馈客户在教程里翻了半天找密钥。地址和密钥已搬到 /agent，
+ * 这里放一个高对比度的按钮，让「找不到」不再发生。
+ * 只用一个品牌色按钮 + 一句灰字说明，不加第二层强调，避免抢标题。
+ */
+.headCta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 14px;
+
+	:global(.ant-btn) {
+		min-height: 44px;
+		border-radius: var(--radius-pill);
+		padding-inline: 20px;
+
+		/* 2026-10-24 修「按钮文字看不清」：
+		   原来这里的 `span { color: var(--text-4) }` 本意只管按钮右边那句说明文字，
+		   但 antd 按钮内部的文字和图标（.anticon 的 svg）也全是 <span>，
+		   被一起染成 --text-4 灰（浅色 #667085、深色 #a4a4ad），
+		   压在亮蓝底上对比度只有 1.21:1 / 1.07:1，肉眼就是一团糊。
+		   现在把选择器收窄到「按钮外」的说明文字，并让按钮内部继承按钮自身的
+		   文字色（浅色白 / 深色近黑，由 antd + 深色全局规则决定），
+		   不再被外面的灰色规则误伤。 */
+		span,
+		.anticon,
+		svg {
+			color: inherit;
+		}
+	}
+
+	> span {
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--text-4);
+	}
+}
+
+/**
+ * 浅色下页头主按钮再加深一档（2026-10-24）
+ * ------------------------------------------------------------
+ * 修掉灰字后实测：白字压在品牌蓝 #1877ff 上只有 4.1:1，仍差一点到 AA(4.5)。
+ * 这里只在「浅色 + .headCta 内」把底色换成深一档的品牌色 #0b63e5（5.34:1）。
+ * 深色模式不命中（选择器带 data-theme='light'），也不动 global.less 的
+ * 全局主按钮，避免影响全站其它按钮的既有对比度验收结论。
+ */
+:global([data-theme='light']) .headCta :global(.ant-btn-primary:not(:disabled)) {
+	background: var(--brand-hover) !important;
+	border-color: var(--brand-hover) !important;
+	color: #fff !important;
+}
+
+:global([data-theme='light']) .headCta :global(.ant-btn-primary:not(:disabled):hover) {
+	background: var(--brand-active) !important;
+	border-color: var(--brand-active) !important;
+}
+
+/* 第 2 步的「去接入页拿」引导卡：左边说明，右边按钮 */
+.takeCard {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	flex-wrap: wrap;
+	padding: 16px 18px;
+	border-radius: var(--radius-md);
+	/* 浅品牌底 + 品牌描边：是"指路"，不是"警告"，所以不用 warning 色 */
+	background: var(--brand-softer);
+	border: 1px solid var(--brand);
+
+	strong {
+		display: block;
+		font-size: 15px;
+		color: var(--text-1);
+	}
+
+	p {
+		margin: 4px 0 0;
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--text-4);
+	}
+
+	:global(.ant-btn) {
+		min-height: 44px;
+		border-radius: var(--radius-pill);
+		padding-inline: 20px;
+	}
+}
+
 /* ---------------- 步骤卡片 ---------------- */
 .stepCard {
 	display: flex;

@@ -74,7 +74,9 @@ const features = [
     tone: 'brand' as const,
     title: '一个地址，全部模型',
     desc: '三种协议共用一个入口，换模型只改一个字段。',
-    href: '/guide'
+    // 2026-10-24：这张卡讲的就是「地址」，点进去应该直接看到地址和密钥，
+    // 所以从 /guide（教程）改指 /agent（接入页）。
+    href: '/agent'
   },
   {
     icon: <WalletOutlined />,
@@ -88,7 +90,8 @@ const features = [
     tone: 'violet' as const,
     title: '密钥在你手里',
     desc: '自行创建、随时吊销，不经过第三方。',
-    href: '/guide?tab=client'
+    // 同理：这张卡说的是「密钥」，落地页应该是能创建/复制密钥的接入页
+    href: '/agent'
   }
 ]
 

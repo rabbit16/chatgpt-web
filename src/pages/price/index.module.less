@@ -526,25 +526,60 @@
   opacity: 0.55;
 }
 
-/* 搜索命中数 */
+/* 页签 + 搜索命中数：同一行（桌面右对齐注解，移动端落到页签下方）
+   为什么这样改（2026-10-24 站长反馈「找到 X 个模型」和上面/下面的东西重合）：
+   原来 .searchMeta 用 `margin: -6px 0 12px` 去「收紧」页签间距，负边距真的把
+   它抬进了页签 6px（实测 1440/1280/390 三档 overlap=6px），下面又只剩 12px 到
+   「按住表格左右拖动」，两行 13px 小字挨在一起像一句话。
+   现在不再用负边距对冲：两层之间的间距全部交给父级的 gap / margin-bottom，
+   值都是正的；命中数也不再单独占一行去挤压表格。 */
+.tabRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  /* 行内 16px（页签与命中数之间），行下方 16px（到拖动提示/表格）
+     ——站长的要求是「至少 12px 明确间距」，16px 与卡片内其它间距同一档 */
+  gap: 8px 16px;
+  margin-bottom: 16px;
+
+  /* 页签吃掉剩余宽度，保持原来的整行药丸槽；命中数按内容宽度跟在右侧 */
+  > .tabs {
+    flex: 1 1 480px;
+    min-width: 0;
+  }
+
+  /* 窄屏：页签整行铺满，命中数换到下一行。
+     390 下如果强行并排，页签会缩到 ~250px 换行成三排，反而更挤。
+     断点取 820 而不是 768（2026-10-24 视觉验收实测）：769–800 这一段命中数占掉
+     ~105px 后页签槽只剩 494–525px，药丸被挤成两排（tabRowH 36 → 68），比堆叠更难看。
+     820 一次盖住这段，820 以上页签稳定单排。 */
+  @media (max-width: 820px) {
+    flex-direction: column;
+    align-items: stretch;
+    /* 12px：命中数和页签同属一组，但窄屏 13px 小字会贴住药丸槽底边，
+       所以留一条明确可见的缝（原来这里是 -6px，直接压进页签里） */
+    gap: 12px;
+
+    > .tabs {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+/* 搜索命中数
+   不再有负边距：上下间距由 .tabRow 的 gap 和 margin-bottom 统一提供，
+   这样它与页签、与下方「按住表格左右拖动」之间都是可预期的正间距。 */
 .searchMeta {
-  margin: -6px 0 12px;
+  flex: 0 0 auto;
+  margin: 0;
   font-size: 13px;
+  /* 20px 行高让它在 36px 高的页签槽里垂直居中，同排时基线更稳 */
+  line-height: 20px;
   color: var(--text-4);
 
   b {
     color: var(--brand);
     font-variant-numeric: tabular-nums;
-  }
-
-  button {
-    border: 0;
-    background: none;
-    padding: 0 2px;
-    color: var(--brand);
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: underline;
   }
 }
 
