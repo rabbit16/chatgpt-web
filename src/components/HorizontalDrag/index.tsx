@@ -15,6 +15,10 @@ function isDragHandleTarget(target: EventTarget | null) {
 export default function HorizontalDrag({ children, watch }: { children: ReactNode; watch?: unknown }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [scrollMax, setScrollMax] = useState(0)
+  // 触屏（手指）还是鼠标：决定提示文案，也决定滑块要不要放大好点
+  const [coarsePointer] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+  )
   const [scrollLeft, setScrollLeft] = useState(0)
 
   const scroller = () => {
@@ -76,7 +80,9 @@ export default function HorizontalDrag({ children, watch }: { children: ReactNod
     <div>
       {scrollMax > 0 ? (
         <div className={styles.scrollBar}>
-          <span>按住表格左右拖动</span>
+          {/* 触屏上是「手指左右滑」，桌面才是「按住拖动」；
+              提示条在窄屏吸附在表格顶部，滚到表格中段也看得见 */}
+          <span>{coarsePointer ? '左右滑动表格看价格' : '按住表格左右拖动'}</span>
           <div className={styles.scrollTrack}>
             <Slider
               min={0}

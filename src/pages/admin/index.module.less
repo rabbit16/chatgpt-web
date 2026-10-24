@@ -34,8 +34,30 @@
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+
+  /* 窄屏：搜索框/下拉/按钮各占一行，否则 390 下搜索框被压成 40px、
+     下拉被拉成 358px 的竖条，说明文字挤成竖排单字 */
+  @media (max-width: 768px) {
+    gap: 8px;
+
+    :global(.ant-input-search),
+    :global(.ant-select),
+    :global(.ant-btn),
+    :global(.ant-space) {
+      width: 100% !important;
+      max-width: none !important;
+    }
+  }
+}
+
+.toolbarHint {
+  @media (max-width: 768px) {
+    display: none; /* 窄屏先保证筛选控件能点，说明文字放表格下方更合适 */
+  }
 }
 
 .feed {

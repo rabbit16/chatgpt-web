@@ -52,7 +52,21 @@ const priceShop = {
   path: '/price',
   name: '充值商城',
   icon: <MoneyCollectFilled />,
-  message: '模型价格、余额充值、发票申请都在这里'
+  message: '模型价格、余额充值、支付记录都在这里'
+}
+
+/**
+ * 开票中心（2026-10-24 站长要求「开票独立成栏目」）
+ * ------------------------------------------------------------
+ * 以前开票藏在「充值商城 › 我的发票」第三个页签，用户得先猜；
+ * 而且开票申请曾被写进公开留言墙，造成税号/邮箱泄露。
+ * 现在独立成菜单项：申请、进度、被驳回的理由都在自己的页面里。
+ */
+const invoice = {
+  path: '/invoice',
+  name: '开票中心',
+  icon: <FileTextOutlined />,
+  message: '一笔订单开一张电子发票，被驳回能看到原因'
 }
 
 const docs = {
@@ -101,7 +115,7 @@ const guestNav = [home, experience, priceShop, guide, projects, notice]
  * 登录后导航：在「充值商城」后面插入「使用记录」（刚花完钱最想核对账），
  * 其余顺序与访客一致，减少切换身份后的认知跳变。
  */
-const userNav = [home, experience, priceShop, usage, guide, projects, notice]
+const userNav = [home, experience, priceShop, invoice, usage, guide, projects, notice]
 
 const admin = {
   path: '/admin',
@@ -129,6 +143,7 @@ export default {
   home,
   experience,
   priceShop,
+  invoice,
   guide,
   projects,
   usage,

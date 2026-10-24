@@ -3,6 +3,7 @@ import { Alert, Button, DatePicker, Input, Select, Space, Table, Tag, message } 
 import { CopyOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import HorizontalDrag from '@/components/HorizontalDrag'
+import { useNarrow } from '@/hooks/useNarrow'
 import {
   getRequestUsage,
   getUsageSummary,
@@ -90,16 +91,47 @@ function rangeToApi(range: [Dayjs, Dayjs] | null): Pick<UsageQueryFilters, 'from
   }
 }
 
+/**
+ * 生成趋势图要查的 14 个自然日（按**本地时区**，不是 UTC）
+ * ------------------------------------------------------------
+ * 旧代码用 toISOString() 拼桶键，东八区每天 00:00–08:00 的数据会被算到前一天，
+ * 表现为「当天明明用了，图上却没涨」。这里统一用本地年月日，前后端口径一致。
+ */
+function buildTrendDays(days = 14) {
+  const list: { key: string; label: string; from: string; to: string }[] = []
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
+      d.getMinutes()
+    )}:${pad(d.getSeconds())}`
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i, 0, 0, 0)
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i + 1, 0, 0, 0)
+    const key = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`
+    list.push({ key, label: key.slice(5), from: fmt(start), to: fmt(end) })
+  }
+  return list
+}
+
 export function UsagePanel() {
   const { token, user_info, setLoginModal } = userStore()
   const userId = Number(user_info?.data?.bodyMessage?.userId)
   const hasUserId = Number.isFinite(userId) && userId > 0
+  // 窄屏：表格列宽与横向总宽收窄，避免 390 下只露「时间」一列
+  const narrow = useNarrow()
 
   const [loading, setLoading] = useState(false)
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [list, setList] = useState<UsageItem[]>([])
-  // 趋势图单独取最近 200 条（只用于画图，不影响表格分页）
+  // 趋势图数据：
+  // trendPoints  = 按天汇总好的点（首选，14 天走得全）
+  // trendItems   = 汇总接口不可用时的降级来源（最近 200 条原始记录，只够画个大概）
+  // trendDegraded= 降级后被截断，图上必须明说"仅覆盖最近 N 条"，不能假装是全量
+  const [trendPoints, setTrendPoints] = useState<{ day: string; tokens: number }[] | null>(null)
   const [trendItems, setTrendItems] = useState<UsageItem[]>([])
+  const [trendDegraded, setTrendDegraded] = useState(false)
+  const [trendRefreshKey, setTrendRefreshKey] = useState(0)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [summary, setSummary] = useState<UsageSummary | null>(null)
@@ -112,23 +144,56 @@ export function UsagePanel() {
 
   const pageCharged = useMemo(() => sumBilledCharged(list), [list])
 
-  // 趋势图：按当前筛选条件取最近 200 条，聚合到天
+  // 趋势图：按天向 /usage/summary 取 14 天，而不是「最近 200 条」。
+  //
+  // 旧写法 getRequestUsage({ limit: 200 }) 有两个问题（站长 2026-10-24 反馈「近 14 天只统计到 1 天」）：
+  //   1) 200 条是大促/客户端轮询模型列表时的几小时量，14 天窗口里 13 天永远取不到数据；
+  //   2) 它混进 billed/unbilled/failed，趋势图把未计费请求也算进消耗。
+  // 现在按「本地自然日」逐天查汇总（status=billed），天数固定 14，请求数固定 14 次，与总量无关。
   useEffect(() => {
     if (!token || !hasUserId) return
     let alive = true
     void (async () => {
+      const days = buildTrendDays()
       try {
-        const data = await getRequestUsage({ ...applied, userId, limit: 200, offset: 0 })
-        if (alive) setTrendItems(data.items)
+        const summaries = await Promise.all(
+          days.map((day) =>
+            getUsageSummary({
+              userId,
+              status: 'billed',
+              from: day.from,
+              to: day.to
+            })
+              .then((res) => ({
+                day: day.key,
+                tokens: Number(res?.sum_input_tokens || 0) + Number(res?.sum_output_tokens || 0)
+              }))
+              .catch(() => ({ day: day.key, tokens: 0 }))
+          )
+        )
+        if (alive) {
+          setTrendPoints(summaries)
+          setTrendDegraded(false)
+        }
       } catch {
-        /* 趋势图失败不影响主表格 */
+        // 汇总接口整组失败（老后端 404）：退回一次列表查询，并标记为「近似」
+        try {
+          const data = await getRequestUsage({ userId, status: 'billed', limit: 200, offset: 0 })
+          if (alive) {
+            setTrendItems(data.items)
+            setTrendPoints(null)
+            setTrendDegraded(Number(data.total || 0) > 200)
+          }
+        } catch {
+          /* 趋势图失败不影响主表格 */
+        }
       }
     })()
     return () => {
       alive = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applied, token, hasUserId, page])
+  }, [token, hasUserId, trendRefreshKey])
 
   const buildFilters = (): UsageQueryFilters => {
     const filters: UsageQueryFilters = { userId, ...rangeToApi(range) }
@@ -232,7 +297,11 @@ export function UsagePanel() {
             {token ? (
               <Button
                 icon={<ReloadOutlined />}
-                onClick={() => void loadList(page, applied)}
+                onClick={() => {
+                  void loadList(page, applied)
+                  // 趋势图数据源与表格不同（按天查汇总），刷新时一起重新取
+                  setTrendRefreshKey((n) => n + 1)
+                }}
                 loading={loading || summaryLoading}
               >
                 刷新
@@ -285,7 +354,11 @@ export function UsagePanel() {
                 </Space>
               </div>
 
-              <Sparkline items={trendItems.length ? trendItems : list} />
+              <Sparkline
+                points={trendPoints}
+                items={trendPoints ? undefined : trendItems.length ? trendItems : list}
+                degraded={trendDegraded}
+              />
 
               <div className={styles.stats}>
                 <div className={styles.stat}>
@@ -322,7 +395,7 @@ export function UsagePanel() {
                   rowKey="request_id"
                   loading={loading}
                   dataSource={list}
-                  scroll={{ x: 1800 }}
+                  scroll={{ x: narrow ? 980 : 1800 }}
                   locale={{ emptyText: loading ? '加载中…' : '暂无使用记录' }}
                   pagination={{
                     current: page,
@@ -336,7 +409,8 @@ export function UsagePanel() {
                     {
                       title: '时间',
                       dataIndex: 'created_at',
-                      width: 170,
+                      width: narrow ? 132 : 170,
+                      onCell: () => ({ style: { whiteSpace: 'nowrap' as const } }),
                       render: (value: string | null) => value || '-'
                     },
                     {

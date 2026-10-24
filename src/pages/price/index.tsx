@@ -3,6 +3,7 @@ import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowRightOutlined,
+  DownOutlined,
   ExportOutlined,
   ImportOutlined,
   ReloadOutlined,
@@ -13,6 +14,7 @@ import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
+import { useNarrow } from '@/hooks/useNarrow'
 import ShopPanel from '@/pages/shop'
 import InvoicePanel from '@/pages/invoice'
 import { getUserPricing, userBillInfo, type UserModelRate, type UserPricing } from '@/request/api'
@@ -95,6 +97,10 @@ function longContextGate(rate: UserModelRate['long_context']) {
 }
 
 function PricePage() {
+  // 窄屏（≤768）时表格不再固定「模型」列：
+  // 固定列 280px 比 390 屏的表格可视区（约 220px）还宽，会把价格列永久压在下面，
+  // 拖到最右也看不到数字——这正是「拖到边上还是看不到价格」的根因。
+  const narrow = useNarrow()
   // 充值商城：三个页签同页切换（模型价格 / 我的钱包 / 我的发票），URL 用 ?tab= 记住位置
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get('tab')
@@ -129,6 +135,8 @@ function PricePage() {
       : phone || ''
   // 页头充值条用：余额取一次，点「去充值」直接切到钱包页签
   const [balance, setBalance] = useState<number | null>(null)
+  // 窄屏「费用估算」展开/收起（默认收起，先让价格表露出来）
+  const [calcOpen, setCalcOpen] = useState(false)
   const requestRef = useRef(0)
   const [pricing, setPricing] = useState<UserPricing | null>(null)
   const [loading, setLoading] = useState(false)
@@ -171,8 +179,12 @@ function PricePage() {
     userBillInfo({ userId: String(userId) })
       .then((res: any) => {
         if (cancelled || res?.code !== 0) return
-        const raw = res?.data?.userMessage?.balance ?? res?.data?.userMessage?.money
+        // 字段名随接口版本变过：钱包页读的是 token，老接口是 balance / money。
+        // 三个都兜一下，否则登录后充值条余额还是空，看起来像没认出用户。
+        const message = res?.data?.userMessage || {}
+        const raw = message.token ?? message.balance ?? message.money
         if (typeof raw === 'number' && Number.isFinite(raw)) setBalance(raw)
+        else if (typeof raw === 'string' && raw.trim() !== '' && Number.isFinite(Number(raw))) setBalance(Number(raw))
       })
       .catch(() => undefined)
     return () => {
@@ -286,8 +298,9 @@ function PricePage() {
     {
       title: '模型',
       dataIndex: 'name',
-      width: 280,
-      fixed: 'left' as const,
+      // 窄屏不固定、收窄到 200：手机上一屏能同时看到模型名和第一列价格
+      width: narrow ? 200 : 280,
+      fixed: narrow ? undefined : ('left' as const),
       render: (_: string, record: (typeof models)[number]) => (
         <div>
           <div className={styles.modelCellName}>
@@ -491,11 +504,35 @@ function PricePage() {
           {pricing && (
             <>
               <section className={styles.calculator}>
-                <h2>费用估算</h2>
-                <p>
-                  依据当前账号单价估算。若模型设有长短上下文差价，将按非缓存输入、缓存读取与缓存写入的合计自动切换计价档位。
-                </p>
-                {currentModel?.intro ? <p className={styles.modelPickHint}>当前选型：{currentModel.intro}</p> : null}
+                {/* 窄屏默认折叠：这块在 390 下占 793px，把价格表推到 1456px，
+                    首屏完全看不到价格。折叠后只留一行「预计消费」，要算明细再点开。
+                    桌面端始终展开，不受影响。 */}
+                {narrow ? (
+                  <button
+                    type="button"
+                    className={styles.calcToggle}
+                    aria-expanded={calcOpen}
+                    onClick={() => setCalcOpen((v) => !v)}
+                  >
+                    <span>
+                      <b>费用估算</b>
+                      <small>
+                        当前选型 {currentModel?.name || '—'} · 预计 {formatPrice(input + hit + write + output)}
+                      </small>
+                    </span>
+                    <DownOutlined rotate={calcOpen ? 180 : 0} />
+                  </button>
+                ) : (
+                  <>
+                    <h2>费用估算</h2>
+                    <p>
+                      依据当前账号单价估算。若模型设有长短上下文差价，将按非缓存输入、缓存读取与缓存写入的合计自动切换计价档位。
+                    </p>
+                    {currentModel?.intro ? <p className={styles.modelPickHint}>当前选型：{currentModel.intro}</p> : null}
+                  </>
+                )}
+                {/* 窄屏收起时不渲染，display:flex 会让 hidden 失效，所以用条件渲染 */}
+                {narrow && !calcOpen ? null : (
                 <div className={styles.calcRow}>
                   <div className={styles.field}>
                     <label>模型</label>
@@ -538,6 +575,8 @@ function PricePage() {
                     <InputNumber min={0} value={outputTokens} onChange={(value) => setOutputTokens(Number(value || 0))} />
                   </div>
                 </div>
+                )}
+                {narrow && !calcOpen ? null : (
                 <div className={styles.calcFooter}>
                   {selectedRate?.long_context ? (
                     <span className={[styles.tierBadge, useLong ? styles.tierLong : ''].join(' ')}>
@@ -555,6 +594,7 @@ function PricePage() {
                     <strong>{formatPrice(input + hit + write + output)}</strong>
                   </div>
                 </div>
+                )}
               </section>
 
               <section className={styles.tableCard}>
@@ -571,13 +611,16 @@ function PricePage() {
                   </div>
                 </div>
                 <HorizontalDrag watch={list.length + tab}>
+                {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
+                    并加 scroll.y 让表头固定：否则 390 下要滚 960px 才摸到数字、
+                    而且表头早就滚出屏幕，用户不知道每一列是什么。 */}
                 <Table
                   rowKey="id"
                   loading={loading}
                   pagination={{ pageSize: 15, showSizeChanger: false }}
                   columns={columns}
                   dataSource={list}
-                  scroll={{ x: 1180 }}
+                  scroll={{ x: narrow ? 800 : 1180, y: narrow ? 420 : undefined }}
                   expandable={{
                     rowExpandable: (record) => record.rates.length > 1,
                     expandedRowRender: (record) => (
@@ -610,11 +653,12 @@ function PricePage() {
                     loading={loading}
                     pagination={false}
                     dataSource={imageModels}
-                    scroll={{ x: 980 }}
+                    scroll={{ x: narrow ? 720 : 980 }}
                     columns={[
                       {
                         title: '模型',
                         dataIndex: 'name',
+                        width: narrow ? 200 : undefined,
                         render: (_: string, record: (typeof imageModels)[number]) => (
                           <div>
                             <div className={styles.modelCellName}>

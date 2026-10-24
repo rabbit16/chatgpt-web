@@ -95,7 +95,9 @@ function LoginPage({
             subTitle="登录后继续对话、查看用量与余额"
             onSuccess={() => {
               loginForm.resetFields()
-              navigate('/chat')
+              // 站长 2026-10-24：登录后直接去充值页（/price 是「充值商城」，登录后第一件事是充钱）。
+              // 想知道余额、想马上用，都在这条动线上，跳 /chat 反而要多点两下。
+              navigate('/price')
             }}
           />
         </div>

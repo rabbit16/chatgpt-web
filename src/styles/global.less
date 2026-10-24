@@ -263,3 +263,48 @@ samp {
 .ql-snow.ql-toolbar button.ql-active .ql-stroke {
   stroke: var(--brand) !important;
 }
+
+/* ------------------------------------------------------------------
+ * 窄屏可用性兜底（2026-10-24）
+ * ------------------------------------------------------------
+ * 站长反馈手机端「很多东西看不清、按钮点不准」。
+ * 下面两条是 WCAG 的最低要求，放在全局一次兜住，不必逐页改：
+ *   1) 可点元素至少 44×44（手指热区），否则小药丸页签很难点中；
+ *   2) 正文不小于 12px，10/10.5/11px 的辅助字在手机上会糊成一片。
+ * 只作用于 ≤768px，桌面端视觉完全不变。
+ * 弹层里的小图标按钮（关闭 X、下拉箭头）豁免，避免撑坏布局。
+ * ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  /* 触控热区 */
+  .ant-btn,
+  button,
+  [role='button'] {
+    min-height: 40px;
+  }
+
+  .ant-btn-sm,
+  .ant-btn.ant-btn-sm {
+    min-height: 36px;
+  }
+
+  /* 页签类药丸：高度到位但不撑宽 */
+  .ant-tabs-tab {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* 小于 12px 的辅助字统一抬到 12px（只在窄屏） */
+  .ant-table-cell,
+  .ant-table-thead > tr > th {
+    font-size: 12px;
+  }
+
+  /* 行内小号按钮（复制、去创建密钥等）也补到 40px 热区 */
+  .ant-btn.ant-btn-sm,
+  .ant-btn.ant-btn-link.ant-btn-sm,
+  .ant-btn.ant-btn-text.ant-btn-sm {
+    min-height: 40px;
+    padding-block: 8px;
+  }
+}

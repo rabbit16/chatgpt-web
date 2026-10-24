@@ -137,6 +137,23 @@
     font-size: 12px;
     color: var(--text-4);
   }
+
+  /* 窄屏：金额和标签同一行左右对齐，别让 ¥ 和数字隔着一大片空白 */
+  @media (max-width: 640px) {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+
+    b {
+      grid-row: auto;
+      grid-column: 2;
+      justify-self: end;
+      font-size: 18px;
+    }
+
+    em {
+      grid-column: 1 / -1;
+    }
+  }
 }
 
 .num {

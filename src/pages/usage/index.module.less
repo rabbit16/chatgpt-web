@@ -216,7 +216,64 @@
 .trendAxis {
 	display: flex;
 	justify-content: space-between;
-	font-size: 11px;
+	font-size: 12px;
 	color: var(--text-5);
 	font-family: var(--font-mono);
+}
+
+/* 空态：14 天一条记录都没有，别画贴底折线 */
+.trendEmpty {
+	padding: 14px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--surface-muted);
+	font-size: 12.5px;
+	line-height: 1.6;
+	color: var(--text-4);
+}
+
+/* 稀疏态：只有 1 天有数据，折线没意义，改一行摘要 */
+.trendSparse {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 16px;
+	padding: 14px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--surface-muted);
+	font-size: 12.5px;
+	color: var(--text-4);
+
+	b {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-1);
+	}
+}
+
+/* 降级提示：数据被截断时如实说明 */
+.trendDegraded {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--warning-text, #b54708);
+}
+
+@media (max-width: 640px) {
+	.trend {
+		padding: 12px 12px 10px;
+	}
+
+	.trendHead {
+		flex-wrap: wrap;
+		gap: 4px 10px;
+	}
+
+	.trendValue {
+		font-size: 18px;
+	}
+
+	/* 窄屏「峰值 4,365,019 / 天」会被挤成 3 行，改短一点 */
+	.trendPeak {
+		font-size: 12px;
+		white-space: nowrap;
+	}
 }

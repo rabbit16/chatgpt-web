@@ -71,6 +71,13 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
         )
         return
       }
+      if (result.channel === 'business') {
+        // 后端明确拒绝（例如该订单已开过发票）：显示成失败，并刷新列表让按钮状态跟上，
+        // 否则用户会一直点那笔订单的「开发票」。
+        message.error(result.codeMsg || '提交被拒绝，请核对订单信息')
+        onSubmitted?.()
+        return
+      }
       message.success(result.codeMsg || '已提交，审核通过后电子发票会发到你的邮箱')
       onSubmitted?.()
       onClose()

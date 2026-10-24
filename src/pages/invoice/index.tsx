@@ -339,7 +339,8 @@ export function InvoicePanel() {
       </div>
 
       <p className={styles.footerTip}>
-        发票问题也可以在「公告留言」里给站长留言，附上订单号和邮箱，处理更快。需要充值就切到上方「我的钱包」。
+        开票申请在本页「开票记录」里跟进状态，被驳回时会显示站长填写的理由，改完资料可重新提交。
+        需要充值就切到上方「我的钱包」。
       </p>
 
       <InvoiceApplyModal

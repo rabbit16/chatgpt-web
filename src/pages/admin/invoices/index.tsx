@@ -37,6 +37,9 @@ function AdminInvoices() {
   const [reviewing, setReviewing] = useState<InvoiceRecord | null>(null)
   const [invoiceNo, setInvoiceNo] = useState('')
   const [rejectReason, setRejectReason] = useState('')
+  // 先选「通过 / 驳回」再显示对应输入框：原来两个框同时摆着，
+  // 站长很可能把发票号填进驳回原因里——这是唯一会把错误发票发给用户的环节。
+  const [reviewMode, setReviewMode] = useState<'pass' | 'reject'>('pass')
   const [saving, setSaving] = useState(false)
 
   const loadList = async (nextPage = 1, nextStatus: InvoiceStatus | 'all' = status, nextUserId = userId) => {
@@ -69,6 +72,7 @@ function AdminInvoices() {
     setReviewing(record)
     setInvoiceNo(record.invoice_no || '')
     setRejectReason('')
+    setReviewMode('pass')
   }
 
   const submitReview = async (nextStatus: 'issued' | 'rejected') => {
@@ -232,14 +236,22 @@ function AdminInvoices() {
             title: '操作',
             width: 120,
             fixed: 'right',
-            render: (_, record: InvoiceRecord) =>
-              record.status === 'issued' ? (
-                <span style={{ fontSize: 12, opacity: 0.7 }}>{record.invoice_no || '已完成'}</span>
-              ) : (
+            render: (_, record: InvoiceRecord) => {
+              // 只有「待审核 / 开票中」可以操作。
+              // 已开票 / 已驳回不允许再点：否则同一 bill_id 可能被改成两张已开票（一单多票），
+              // 用户被驳回后重新申请会产生新的一条，旧的这条必须锁死。
+              if (record.status === 'issued') {
+                return <span style={{ fontSize: 12, opacity: 0.7 }}>{record.invoice_no || '已完成'}</span>
+              }
+              if (record.status === 'rejected') {
+                return <span style={{ fontSize: 12, opacity: 0.7 }}>已驳回</span>
+              }
+              return (
                 <Button size="small" type="link" onClick={() => openReview(record)}>
                   审核
                 </Button>
               )
+            }
           }
         ]}
       />
@@ -252,12 +264,16 @@ function AdminInvoices() {
           <Button key="cancel" onClick={() => setReviewing(null)}>
             取消
           </Button>,
-          <Button key="reject" danger loading={saving} onClick={() => void submitReview('rejected')}>
-            驳回
-          </Button>,
-          <Button key="ok" type="primary" loading={saving} onClick={() => void submitReview('issued')}>
-            通过并填发票号
-          </Button>
+          // 主按钮跟随上面选的动作，避免「想驳回却点了右边那个」
+          reviewMode === 'pass' ? (
+            <Button key="ok" type="primary" loading={saving} onClick={() => void submitReview('issued')}>
+              确认通过并开票
+            </Button>
+          ) : (
+            <Button key="reject" danger type="primary" loading={saving} onClick={() => void submitReview('rejected')}>
+              确认驳回
+            </Button>
+          )
         ]}
       >
         {reviewing ? (
@@ -274,17 +290,38 @@ function AdminInvoices() {
               ) : null}
               {reviewing.remark ? <div>备注：{reviewing.remark}</div> : null}
             </div>
-            <Input
-              placeholder="发票号（通过时必填，用户可在记录里看到）"
-              value={invoiceNo}
-              onChange={(event) => setInvoiceNo(event.target.value)}
-            />
-            <Input.TextArea
-              rows={2}
-              placeholder="驳回原因（驳回时必填，会原样展示给用户）"
-              value={rejectReason}
-              onChange={(event) => setRejectReason(event.target.value)}
-            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button type={reviewMode === 'pass' ? 'primary' : 'default'} block onClick={() => setReviewMode('pass')}>
+                通过，填发票号
+              </Button>
+              <Button danger type={reviewMode === 'reject' ? 'primary' : 'default'} block onClick={() => setReviewMode('reject')}>
+                驳回，写原因
+              </Button>
+            </div>
+
+            {reviewMode === 'pass' ? (
+              <Input
+                placeholder="发票号（必填，用户可在开票记录里看到）"
+                value={invoiceNo}
+                onChange={(event) => setInvoiceNo(event.target.value)}
+              />
+            ) : (
+              <>
+                <Input.TextArea
+                  rows={3}
+                  placeholder="驳回原因（必填，会原样展示给用户，告诉他怎么改）"
+                  value={rejectReason}
+                  onChange={(event) => setRejectReason(event.target.value)}
+                />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {['抬头与税号不一致', '订单金额不足', '该订单已开过发票', '请补充收票邮箱'].map((preset) => (
+                    <Tag key={preset} style={{ cursor: 'pointer', margin: 0 }} onClick={() => setRejectReason(preset)}>
+                      {preset}
+                    </Tag>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ) : null}
       </Modal>

@@ -20,6 +20,7 @@ const ProjectDetailPage = React.lazy(() => import('@/pages/projects/detail'))
 const ChatPage = React.lazy(() => import('@/pages/chat'))
 const RecordsPage = React.lazy(() => import('@/pages/records'))
 const PricePage = React.lazy(() => import('@/pages/price'))
+const InvoicePage = React.lazy(() => import('@/pages/invoice/page'))
 const GuidePage = React.lazy(() => import('@/pages/guide'))
 const DrawPage = React.lazy(() => import('@/pages/draw'))
 const NoticePage = React.lazy(() => import('@/pages/notice'))
@@ -218,14 +219,15 @@ export const webRouter: RouteOptions[] = [
     }
   },
   {
-    // 老地址兼容：发票已并入「充值商城」第三个页签，跳到对应页签
-    id: 'InvoiceRedirect',
+    // 开票中心：2026-10-24 起独立成栏目（站长要求），不再重定向到价格页页签。
+    // 价格页的「我的发票」页签与老链接 /price?tab=invoice 仍然可用，不影响旧入口。
+    id: 'InvoicePage',
     path: '/invoice',
-    element: <Navigate to="/price?tab=invoice" replace />,
+    element: <InvoicePage />,
     children: [],
     configure: {
       verifToken: true,
-      title: '我的发票',
+      title: '开票中心',
       role: ['user', 'administrator']
     }
   },

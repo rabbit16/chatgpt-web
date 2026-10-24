@@ -104,8 +104,8 @@ export function createInvoice(params: InvoiceFormPayload) {
 export const INVOICE_MARKER = '【发票申请】'
 
 export interface InvoiceSubmitResult {
-  /** invoice = 走正式接口；unavailable = 后端未实现；failed = 网络异常 */
-  channel: 'invoice' | 'unavailable' | 'failed'
+  /** invoice = 走正式接口；unavailable = 后端未实现；business = 后端明确拒绝；failed = 网络异常 */
+  channel: 'invoice' | 'unavailable' | 'business' | 'failed'
   id?: number
   codeMsg?: string
 }
@@ -120,9 +120,11 @@ export async function submitInvoiceApplication(
     if (code === '0') {
       return { channel: 'invoice', codeMsg: data?.codeMsg }
     }
-    // 后端返回了业务错误（如「该订单已开过发票」），如实透传给用户
+    // 后端返回了业务错误（如「该订单已开过发票」）。
+    // 这跟「接口没上线」是两回事：调用方要显示成失败（error）并刷新列表，
+    // 否则那笔订单的「开发票」按钮还在，用户会反复点、反复报错。
     if (code && code !== '404') {
-      return { channel: 'unavailable', codeMsg: data?.codeMsg }
+      return { channel: 'business', codeMsg: data?.codeMsg }
     }
   } catch {
     /* 接口不存在或网络异常 */

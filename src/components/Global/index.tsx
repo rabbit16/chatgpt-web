@@ -245,16 +245,16 @@ function Global(props: Props) {
    */
   const handleLoggedIn = () => {
     message.success('登录成功，欢迎回来')
-    const from = `${location.pathname}${location.search}`
     const onMoneyPage = /^\/(price|shop|invoice)/.test(location.pathname)
     if (onMoneyPage) {
       // 已经在充值动线上，不跳走；轻推一下余额入口
       if (!location.search.includes('tab=wallet')) message.info('余额与充值在「我的钱包」页签')
       return
     }
-    if (from === '/login' || from === '') {
-      navigate('/chat')
-    }
+    // 站长 2026-10-24：登录后直接进充值页（/price），这是转化主路径。
+    // 唯一例外是对话页 /chat：用户正在聊天时弹窗登录，不该把人拽走。
+    if (location.pathname === '/chat') return
+    navigate('/price')
   }
 
   useLayoutEffect(() => {

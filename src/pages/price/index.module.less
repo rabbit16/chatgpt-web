@@ -32,12 +32,51 @@
   border: 1px solid var(--brand-soft);
   background: linear-gradient(96deg, var(--tint-brand) 0%, var(--brand-softer) 100%);
 
-  /* 窄屏：文案和按钮上下排，按钮占满整行更好点 */
+  /* 窄屏：整条压成一行（图标 + 余额 + 按钮），副说明收起。
+     原来上下排长到 169px，把价格表推到手机第二屏之后，看不到价格。 */
   @media (max-width: 720px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 14px 16px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+
+    .rechargeIcon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    .rechargeLead {
+      gap: 8px;
+
+      strong {
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      p {
+        display: none;
+      }
+    }
+
+    .rechargeActions {
+      gap: 4px;
+
+      :global(.ant-btn) {
+        width: auto;
+        height: 36px;
+        padding-inline: 12px;
+        justify-content: center;
+      }
+
+      /* 条内「我的发票」和下方页签重复，窄屏让位给主按钮 */
+      :global(.ant-btn-text) {
+        display: none;
+      }
+    }
   }
 }
 
@@ -97,14 +136,24 @@
   h1 { margin: 0 0 6px; font-size: 26px; }
   p { margin: 0; color: var(--text-4); font-size: 13px; line-height: 1.6; }
 
-  /* 窄屏：按钮换到下一行，别把标题挤成两列 */
+  /* 窄屏：标题与说明靠左，主按钮不占满整行（原来 100% 宽把这块撑到 135px） */
   @media (max-width: 640px) {
-    flex-direction: column;
     align-items: flex-start;
     gap: 10px;
 
+    h1 {
+      margin-bottom: 4px;
+      font-size: 22px;
+    }
+
+    p {
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
     :global(.ant-btn) {
-      width: 100%;
+      width: auto;
+      flex: 0 0 auto;
       justify-content: center;
     }
   }
@@ -253,6 +302,47 @@
 .calculator p {
   margin: 0 0 16px;
   color: var(--text-4);
+}
+
+/* 窄屏「费用估算」折叠按钮：默认收起，只露一行预计消费 */
+.calcToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-1);
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  b {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  small {
+    font-size: 12px;
+    color: var(--text-4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &:hover {
+    border-color: var(--brand-soft);
+    background: var(--tint-brand);
+  }
 }
 
 .calcRow {
@@ -558,6 +648,36 @@
 @media (max-width: 900px) {
 	.moneyFlowFormula {
 		margin-left: 0;
+	}
+}
+
+/* 窄屏：三块并排成三等分，说明收成一行，给价格表腾出首屏空间。
+   改前 390 下这块占 238px、价格表被推到 1922px，首屏一个价格都看不到。 */
+@media (max-width: 640px) {
+	.moneyFlow {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+		padding: 10px;
+	}
+
+	.moneyFlowItem {
+		flex-direction: column;
+		text-align: center;
+		gap: 6px;
+
+		> div strong {
+			font-size: 12.5px;
+		}
+
+		> div span {
+			font-size: 12px;
+			line-height: 1.4;
+		}
+	}
+
+	.moneyFlowFormula {
+		display: none; // 公式说明次要，手机上优先让表头露出来
 	}
 }
 

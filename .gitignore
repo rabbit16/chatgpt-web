@@ -71,3 +71,7 @@ dist_副本
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 审计截图（含测试账号页面，可能带手机号/邮箱，不进公开仓库）
+docs/audit/2026-10-24/mobile/
+docs/audit/2026-10-24/*.png

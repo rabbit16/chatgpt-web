@@ -5,6 +5,7 @@ import React, { useEffect } from 'react'
 import { MenuProps } from 'antd'
 import { configStore } from '@/store'
 import { sanitizeHtml } from '@/utils'
+import { useNarrow } from '@/hooks/useNarrow'
 
 type Props = {
   menuExtraRender?: () => React.ReactNode
@@ -29,6 +30,8 @@ type Props = {
 
 function Layout(props: Props) {
   const { menuExtraRender = () => <></>, menuItemRender = () => undefined } = props
+  // 窄屏布局内边距：与 src/hooks/useNarrow 同一断点，保证各页判断一致
+  const isNarrowLayout = useNarrow()
 
   const website_logo = configStore((state) => state.website_logo)
   const website_title = configStore((state) => state.website_title)
@@ -63,6 +66,16 @@ function Layout(props: Props) {
       headerRender={HeaderRender}
       contentStyle={{
         background: 'var(--surface)'
+      }}
+      /* ProLayout 默认给内容区左右各 40px 内边距，页面自己又加 24px，
+         390 屏上真正可用宽度只剩 262px（理论 342px）。
+         窄屏把框架这层压到 12，配合页面级 .wrap 在窄屏归零，把 80px 还给内容。
+         桌面（>768）保持原值，视觉不变。 */
+      token={{
+        pageContainer: {
+          paddingInlinePageContainerContent: isNarrowLayout ? 12 : 40,
+          paddingBlockPageContainerContent: isNarrowLayout ? 8 : 24
+        }
       }}
       siderMenuType="group"
       style={{
