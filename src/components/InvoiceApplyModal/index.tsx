@@ -30,7 +30,7 @@ type Props = {
 }
 
 function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: Props) {
-  const { user_info } = userStore()
+  const { token, user_info, setLoginModal } = userStore()
   const [form] = Form.useForm()
   const [titleType, setTitleType] = useState<InvoiceTitleType>('company')
   const [submitting, setSubmitting] = useState(false)
@@ -44,6 +44,13 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
 
   const submit = async () => {
     if (!bill) return
+    // 没登录就别提交：后端中间件对「无 token 且无 referer」的请求会回一个
+    // {"code":0} 的空壳，前端会误报「提交成功」，实际什么都没写进库。
+    if (!token) {
+      onClose()
+      setLoginModal(true)
+      return
+    }
     try {
       const values = await form.validateFields()
       setSubmitting(true)
@@ -65,20 +72,20 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
         return
       }
       if (result.channel === 'unavailable') {
-        // 后端发票接口还没上线。不写留言墙（含税号/邮箱，公开可见），如实告知。
-        message.warning(
-          result.codeMsg || '发票申请通道暂未开通，站长开通后即可在线提交，届时电子发票直接发到你的邮箱'
-        )
+        // 请求没拿到任何可识别的业务码（网络中断、网关 5xx 等）。
+        // 不写留言墙（含税号/邮箱，公开可见），提示重试即可。
+        message.error('提交失败：网络异常，请稍后重试')
         return
       }
       if (result.channel === 'business') {
-        // 后端明确拒绝（例如该订单已开过发票）：显示成失败，并刷新列表让按钮状态跟上，
-        // 否则用户会一直点那笔订单的「开发票」。
+        // 后端明确拒绝：原样展示后端原因（如「该订单已开过发票」），
+        // 并刷新列表让按钮状态跟上，否则用户会一直点那笔订单的「开发票」。
         message.error(result.codeMsg || '提交被拒绝，请核对订单信息')
         onSubmitted?.()
         return
       }
-      message.success(result.codeMsg || '已提交，审核通过后电子发票会发到你的邮箱')
+      // 走到这里就是后端返回 code=0，申请已经落库、后台待审核列表里能看到。
+      message.success(result.codeMsg || '申请已提交成功，请等待站长审核，通过后电子发票会发送到你的邮箱')
       onSubmitted?.()
       onClose()
     } catch (error: any) {

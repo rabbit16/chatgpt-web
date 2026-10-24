@@ -117,8 +117,12 @@ export async function submitInvoiceApplication(
     const res: any = await createInvoice(payload)
     const data = res?.data ?? res
     const code = String(data?.code ?? '')
-    if (code === '0') {
-      return { channel: 'invoice', codeMsg: data?.codeMsg }
+    // 成功判定放宽：后端不同版本里 code 可能是数字 0、字符串 "0"，也可能只回了
+    // id / invoice 而没有 code。只要没有明确失败码，就认为申请已落库——
+    // 站长之后能在后台审核列表里看到这条，不该再提示「通道未开通」。
+    const hasPayload = Boolean(data?.id || data?.invoice || (data?.data && data.data.id))
+    if (code === '0' || (!code && hasPayload)) {
+      return { channel: 'invoice', id: data?.id ?? data?.data?.id, codeMsg: data?.codeMsg }
     }
     // 后端返回了业务错误（如「该订单已开过发票」）。
     // 这跟「接口没上线」是两回事：调用方要显示成失败（error）并刷新列表，
