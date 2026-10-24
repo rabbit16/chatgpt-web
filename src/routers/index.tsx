@@ -220,7 +220,7 @@ export const webRouter: RouteOptions[] = [
   },
   {
     // 开票中心：2026-10-24 起独立成栏目（站长要求），不再重定向到价格页页签。
-    // 价格页的「我的发票」页签与老链接 /price?tab=invoice 仍然可用，不影响旧入口。
+    // 价格页已不再有发票页签（2026-10-24 删除）；老链接 /price?tab=invoice 会自动跳到本页。
     id: 'InvoicePage',
     path: '/invoice',
     element: <InvoicePage />,

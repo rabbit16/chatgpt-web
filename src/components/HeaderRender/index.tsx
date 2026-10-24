@@ -5,8 +5,6 @@ import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
 import styles from './index.module.less'
 import {
   AppstoreOutlined,
-  ControlOutlined,
-  FileTextOutlined,
   LogoutOutlined,
   MenuUnfoldOutlined,
   PayCircleOutlined,
@@ -120,32 +118,12 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               trigger={['click']}
               menu={{
                 items: [
-                  ...(isAdmin(user_info)
-                    ? [
-                        {
-                          key: 'admin',
-                          icon: <ControlOutlined />,
-                          label: '后台管理',
-                          onClick: () => {
-                            navigate('/admin')
-                          }
-                        }
-                      ]
-                    : []),
                   {
                     key: 'profile',
                     icon: <UserOutlined />,
                     label: '个人资料',
                     onClick: () => {
                       navigate('/profile')
-                    }
-                  },
-                  {
-                    key: 'invoice',
-                    icon: <FileTextOutlined />,
-                    label: '我的发票',
-                    onClick: () => {
-                      navigate('/price?tab=invoice')
                     }
                   },
                   {
@@ -200,6 +178,13 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
             placement="bottomRight"
             destroyPopupOnHide
             trigger={['click']}
+            /* 手机弹层必须限制宽度：默认会按内容撑开（实测 500px > 390px 屏幕），
+               向右对齐后左边被挤到屏幕外，菜单名和图标全部看不见。
+               这里把弹层最大宽度锁在视口内，内部列表宽 100%。 */
+            overlayStyle={{ maxWidth: 'calc(100vw - 16px)' }}
+            /* 这个类名给下方 CSS 用：窄屏把弹层钉在视口右侧，
+               否则 antd 用压缩前的宽度算偏移，弹层会跑到屏幕外。 */
+            overlayClassName="mobileMenuDropdown"
             dropdownRender={() => {
               return <MenuList mode="inline" />
             }}

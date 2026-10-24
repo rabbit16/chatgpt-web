@@ -10,7 +10,7 @@ import styles from './index.module.less'
  * ------------------------------------------------------------
  * 发票申请含税号、邮箱，属于个人敏感信息；留言墙游客不登录也能看。
  * 所以提交时虽然借用了留言通道（后台可见），但公开展示一律过滤掉，
- * 用户自己要看申请进度去「我的发票」，站长在后台「留言」里处理。
+ * 用户自己要看申请进度去「发票中心」（/invoice），站长在后台「发票管理」里处理。
  */
 function isInvoiceApplication(content?: string) {
   return Boolean(content && content.startsWith(INVOICE_MARKER))

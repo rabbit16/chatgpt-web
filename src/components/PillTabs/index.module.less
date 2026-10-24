@@ -40,6 +40,37 @@
 	box-shadow: var(--shadow-xs);
 }
 
+/**
+ * solid：白底 + 1px 描边 + 品牌色选中态
+ * ------------------------------------------------------------
+ * 用在「页面背景本身也是浅灰」的地方（充值商城 --surface 就是浅灰）。
+ * 默认的 muted 槽色 var(--surface-muted) 与该页背景同色，槽等于不存在，
+ * 未选中项就是几个灰字浮在页面上——站长反馈「看不出这三个能点」。
+ * 这里把槽做成一块真实的白色控件，并给选中项品牌浅底，边界一眼可见。
+ */
+.tabsSolid {
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	box-shadow: var(--shadow-xs);
+	padding: 4px;
+
+	.tab {
+		color: var(--text-3);
+
+		&:hover {
+			color: var(--text-1);
+			background: var(--surface-muted);
+		}
+	}
+
+	.active {
+		background: var(--brand-soft);
+		color: var(--brand);
+		font-weight: 600;
+		box-shadow: none;
+	}
+}
+
 /* 窄屏（≤430px）：三个页签 + 内边距刚好超过 390，收紧后能放下不换行 */
 @media (max-width: 430px) {
 	.tabs {

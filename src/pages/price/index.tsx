@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowRightOutlined,
   DownOutlined,
   ExportOutlined,
+  FileTextOutlined,
   ImportOutlined,
   ReloadOutlined,
   ThunderboltOutlined,
@@ -16,7 +17,6 @@ import Layout from '@/components/Layout'
 import PillTabs from '@/components/PillTabs'
 import { useNarrow } from '@/hooks/useNarrow'
 import ShopPanel from '@/pages/shop'
-import InvoicePanel from '@/pages/invoice'
 import { getUserPricing, userBillInfo, type UserModelRate, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import {
@@ -41,8 +41,8 @@ import styles from './index.module.less'
 
 type TabKey = 'all' | ModelProvider
 
-/** 充值商城的三个页签 */
-type ViewTab = 'price' | 'wallet' | 'invoice'
+/** 充值商城的两个页签（发票已于 2026-10-24 独立成「发票中心」，不再放页签） */
+type ViewTab = 'price' | 'wallet'
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'all', label: '全部' },
@@ -101,10 +101,17 @@ function PricePage() {
   // 固定列 280px 比 390 屏的表格可视区（约 220px）还宽，会把价格列永久压在下面，
   // 拖到最右也看不到数字——这正是「拖到边上还是看不到价格」的根因。
   const narrow = useNarrow()
-  // 充值商城：三个页签同页切换（模型价格 / 我的钱包 / 我的发票），URL 用 ?tab= 记住位置
+  const navigate = useNavigate()
+  // 充值商城：两个页签同页切换（模型价格 / 我的钱包），URL 用 ?tab= 记住位置
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get('tab')
-  const viewTab: ViewTab = rawTab === 'wallet' || rawTab === 'invoice' ? rawTab : 'price'
+
+  // 发票已于 2026-10-24 独立成「发票中心」（/invoice），价格页不再有该页签。
+  // 老链接 /price?tab=invoice 仍会有人用（书签、历史记录），直接转到新页面，不留白屏。
+  useEffect(() => {
+    if (rawTab === 'invoice') navigate('/invoice', { replace: true })
+  }, [rawTab, navigate])
+  const viewTab: ViewTab = rawTab === 'wallet' ? 'wallet' : 'price'
   const switchTab = (next: string) => {
     const nextParams = new URLSearchParams(searchParams)
     if (next === 'price') nextParams.delete('tab')
@@ -120,10 +127,6 @@ function PricePage() {
     wallet: {
       title: '我的钱包',
       lead: '当前余额、充值与支付记录都在这里；充值到账后可直接给某一笔开票'
-    },
-    invoice: {
-      title: '我的发票',
-      lead: '选一笔已支付充值开电子普通发票；一单一票，已开票的订单不能重复申请'
     }
   }
   const { token, user_info, setLoginModal, llm_api_key } = userStore()
@@ -383,12 +386,12 @@ function PricePage() {
         <div className={styles.wrap}>
           <PillTabs
             ariaLabel="充值商城"
+            variant="solid"
             value={viewTab}
             onChange={switchTab}
             items={[
               { key: 'price', label: '模型价格' },
-              { key: 'wallet', label: '我的钱包' },
-              { key: 'invoice', label: '我的发票' }
+              { key: 'wallet', label: '我的钱包' }
             ]}
           />
 
@@ -422,8 +425,10 @@ function PricePage() {
                 {token ? '立即充值' : '登录并充值'}
               </Button>
               {token ? (
-                <Button type="text" onClick={() => switchTab('invoice')}>
-                  我的发票 <ArrowRightOutlined />
+                // 发票已独立成「发票中心」页面，这里做成真跳转（原来是 switchTab，
+                // 页签删掉后就变成了点了没反应的死按钮）
+                <Button type="text" icon={<FileTextOutlined />} onClick={() => navigate('/invoice')}>
+                  发票中心 <ArrowRightOutlined />
                 </Button>
               ) : null}
             </div>
@@ -441,14 +446,13 @@ function PricePage() {
             )}
           </header>
 
+          {/* 页签只剩「模型价格 / 我的钱包」，发票已独立成 /invoice */}
           {viewTab !== 'price' ? (
             token ? (
-              viewTab === 'wallet' ? <ShopPanel /> : <InvoicePanel />
+              <ShopPanel />
             ) : (
               <div className={styles.publicNote}>
-                <span className={styles.publicNoteText}>
-                  {viewTab === 'wallet' ? '登录后可以查看余额、选择套餐充值' : '登录后可以查看充值记录并申请开票'}
-                </span>
+                <span className={styles.publicNoteText}>登录后可以查看余额、选择套餐充值</span>
                 <Button type="primary" onClick={() => setLoginModal(true)}>
                   登录 / 注册
                 </Button>

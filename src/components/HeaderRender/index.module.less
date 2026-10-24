@@ -216,3 +216,24 @@
 		letter-spacing: -0.01em;
 	}
 }
+
+
+/* ------------------------------------------------------------------
+ * 手机端菜单弹层定位修正（2026-10-24）
+ * ------------------------------------------------------------
+ * 现象：点开「菜单」后弹层左边被切掉，只剩说明文字能看见。
+ * 实测：弹层宽度已被压到 366px（屏宽 390），但 antd 是按「没被压缩前」
+ * 的宽度算的右对齐偏移，宽度变小后没有重算，left 落在 -90px。
+ * 这里不跟 antd 的定位算法较劲，直接把弹层钉在视口右侧、离边 8px。
+ * 只在窄屏生效，桌面端完全不受影响。
+ * ------------------------------------------------------------------ */
+@media (max-width: 768px) {
+  :global(.ant-dropdown.mobileMenuDropdown) {
+    position: fixed !important;
+    left: auto !important;
+    right: 8px !important;
+    top: calc(var(--header-h) + 6px) !important;
+    transform: none !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+}
