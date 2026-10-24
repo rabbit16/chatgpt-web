@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Empty, Pagination, Select, Spin, Tag, message } from 'antd'
-import { FileTextOutlined, HistoryOutlined, ReloadOutlined, WalletOutlined } from '@ant-design/icons'
+import { Button, Checkbox, Empty, Pagination, Select, Spin, Tag, message } from 'antd'
+import {
+  FileTextOutlined,
+  HistoryOutlined,
+  MergeCellsOutlined,
+  ReloadOutlined,
+  WalletOutlined
+} from '@ant-design/icons'
 import IconBadge from '@/components/IconBadge'
-import InvoiceApplyModal, { type InvoiceBill } from '@/components/InvoiceApplyModal'
+import InvoiceApplyModal, { type InvoiceBill, type InvoiceSubmittedInfo } from '@/components/InvoiceApplyModal'
 import { userBillList } from '@/request/api'
+import { formatCny, sumCny } from '@/utils/money'
 import { userStore } from '@/store'
 import {
   cancelInvoice,
@@ -31,6 +38,13 @@ const STATUS_META: Record<InvoiceStatus, { label: string; color: string }> = {
 }
 
 const PAGE_SIZE = 8
+
+/**
+ * 一次最多合并多少笔（站长建议值 20）
+ * 防两类问题：①误操作一次并进几十笔，开错票很难撤回；
+ * ②后端合并接口一次性处理太多订单压力大。
+ */
+const MERGE_MAX = 20
 
 const EMPTY_SUMMARY: InvoiceSummary = {
   recharge_total: 0,
@@ -65,6 +79,21 @@ export function InvoicePanel() {
   const [invoiceTarget, setInvoiceTarget] = useState<InvoiceBill | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
+  /**
+   * 合并开票（2026-10-24 站长需求）
+   * ------------------------------------------------------------
+   * selectMode=false 时界面和以前一模一样：没有勾选框，只有每行右侧的「开发票」。
+   * 站长强调单笔开票是高频动作，不能因为新功能把常用路径弄复杂，
+   * 所以勾选框只在用户主动点了「合并开票」后才出现。
+   *
+   * selectedIds 用 Set 而不是数组：勾选/取消是高频操作，
+   * Set.has 是 O(1)，20 笔也感觉不到卡顿。
+   */
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  /** 合并弹窗要开的那些订单（null = 弹窗关闭） */
+  const [mergeBills, setMergeBills] = useState<InvoiceBill[] | null>(null)
+
   const { user_info } = userStore()
   const userEmail = (user_info as any)?.data?.bodyMessage?.email || ''
   const userId = Number((user_info as any)?.data?.bodyMessage?.userId || 0)
@@ -81,6 +110,68 @@ export function InvoicePanel() {
     }
     return map
   }, [records])
+
+  /* ---------------- 合并开票：能不能勾、勾了多少钱 ---------------- */
+
+  /**
+   * 一笔充值能不能参与合并？
+   * 规则（站长确认）：
+   *   - 没有任何开票记录 → 可以
+   *   - 已驳回 rejected → 可以（平台允许重新申请，合并里也一样）
+   *   - 待审核 pending / 开票中 issuing / 已开票 issued → 不行
+   *     （已经开过或正在开的订单再并进新票里，会开出重复发票）
+   * 开票服务没开通时整个入口都不显示，所以这里不用管 backendReady。
+   */
+  const canMergeBill = useCallback(
+    (bill: InvoiceBill) => {
+      const invoice = invoiceByBill.get(String(bill.bill_id))
+      return !invoice || invoice.status === 'rejected'
+    },
+    [invoiceByBill]
+  )
+
+  /** 可参与合并的总笔数：为 0 时「合并开票」按钮没必要显示 */
+  const mergeableCount = useMemo(() => bills.filter((bill) => canMergeBill(bill)).length, [bills, canMergeBill])
+
+  /** 已选中的订单对象（按 bills 顺序，保证明细顺序和列表一致） */
+  const selectedBills = useMemo(
+    () => bills.filter((bill) => selectedIds.includes(String(bill.bill_id))),
+    [bills, selectedIds]
+  )
+
+  /** 合计金额：按分求和，避免浮点误差（详见 utils/money.ts 的 sumCny） */
+  const selectedTotal = useMemo(() => sumCny(selectedBills.map((bill) => bill.pay)), [selectedBills])
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false)
+    setSelectedIds([])
+  }, [])
+
+  /**
+   * 勾选 / 取消勾选
+   * 上限 20 笔：一是后端合并接口压力，二是弹窗明细超过 20 条就没人核对了，
+   * 反而更容易开错票。到上限时给提示并拒绝继续勾，而不是静默忽略。
+   */
+  const toggleBill = useCallback(
+    (bill: InvoiceBill, checked: boolean) => {
+      const id = String(bill.bill_id)
+      setSelectedIds((prev) => {
+        if (!checked) return prev.filter((item) => item !== id)
+        if (prev.includes(id)) return prev
+        if (prev.length >= MERGE_MAX) {
+          message.warning(`一次最多合并 ${MERGE_MAX} 笔，请先取消几笔再选`)
+          return prev
+        }
+        return [...prev, id]
+      })
+    },
+    []
+  )
+
+  const openMergeModal = () => {
+    if (!selectedBills.length) return
+    setMergeBills(selectedBills)
+  }
 
   const loadAll = useCallback(async (nextPage = 1, nextStatus: InvoiceStatus | 'all' = status) => {
     setLoading(true)
@@ -110,6 +201,30 @@ export function InvoicePanel() {
     void loadAll(1, status)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, refreshKey])
+
+  // 开票服务不通时不允许停留在选择态：否则用户勾了半天下拉才发现没有提交入口。
+  useEffect(() => {
+    if (!backendReady) {
+      setSelectMode(false)
+      setSelectedIds([])
+    }
+  }, [backendReady])
+
+  /**
+   * 勾选后如果订单状态变了（比如刚提交成功、或别处又开了一张），
+   * 要把已经"不可合并"的订单从选中列表里剔除，
+   * 否则会出现"明明显示已开票却还在合计里"的错账。
+   * 只在确实有变化时才 setState，避免无限渲染。
+   */
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const next = prev.filter((id) => {
+        const bill = bills.find((item) => String(item.bill_id) === id)
+        return Boolean(bill) && canMergeBill(bill!)
+      })
+      return next.length === prev.length ? prev : next
+    })
+  }, [bills, canMergeBill])
 
   // 充值记录：和充值商城共用同一个接口
   useEffect(() => {
@@ -293,9 +408,20 @@ export function InvoicePanel() {
           <IconBadge icon={<WalletOutlined />} tone="green" size="sm" />
           <div>
             <h2>充值记录</h2>
-            <p>点右侧「开发票」，金额和订单号自动带进弹窗。</p>
+            <p>
+              {selectMode
+                ? `勾选要合并的充值（最多 ${MERGE_MAX} 笔），金额自动相加。已开票/审核中的不能选。`
+                : '点右侧「开发票」，金额和订单号自动带进弹窗。'}
+            </p>
           </div>
           <div className={styles.headActions}>
+            {/* 合并入口只在「有可合并的订单」且「后端已通」时显示：
+                没有可合并的订单却给按钮，点进去全是禁用的，纯属添乱。 */}
+            {!selectMode && backendReady && mergeableCount > 0 ? (
+              <Button icon={<MergeCellsOutlined />} onClick={() => setSelectMode(true)}>
+                合并开票
+              </Button>
+            ) : null}
             <Button icon={<ReloadOutlined />} onClick={() => setRefreshKey((n) => n + 1)} loading={billsLoading}>
               刷新
             </Button>
@@ -307,22 +433,86 @@ export function InvoicePanel() {
             <Empty description="还没有充值记录（充值到账后会出现在这里）" />
           ) : (
             <div className={styles.billList}>
-              {bills.map((bill) => (
-                <article key={bill.bill_id} className={styles.billRow}>
-                  <div className={styles.billMain}>
-                    <strong className={styles.num}>{money(bill.pay)}</strong>
-                    <div className={styles.billMeta}>
-                      <time>{formatTime(bill.generate_time)}</time>
-                      <span>订单号 {bill.bill_id}</span>
-                      {bill.function_name ? <span>{bill.function_name}</span> : null}
+              {bills.map((bill) => {
+                const canMerge = canMergeBill(bill)
+                const checked = selectedIds.includes(String(bill.bill_id))
+                return (
+                  <article
+                    key={bill.bill_id}
+                    className={styles.billRow}
+                    // 选中行高亮描边：勾选后一眼能看出"这几笔要被合并"
+                    data-select={selectMode ? true : undefined}
+                    data-checked={selectMode && checked ? true : undefined}
+                    data-disabled={selectMode && !canMerge ? true : undefined}
+                    // 选择态下整行可点（手机上 20px 的勾选框太难戳），
+                    // 不可参与的行不响应点击，避免误以为能选
+                    onClick={selectMode && canMerge ? () => toggleBill(bill, !checked) : undefined}
+                  >
+                    {selectMode ? (
+                      <Checkbox
+                        checked={checked}
+                        disabled={!canMerge}
+                        // 行本身已经绑了 onClick，这里必须阻止冒泡，否则会触发两次
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => toggleBill(bill, event.target.checked)}
+                        aria-label={`选择订单 ${bill.bill_id}`}
+                      />
+                    ) : null}
+                    <div className={styles.billMain}>
+                      <strong className={styles.num}>{formatCny(bill.pay)}</strong>
+                      <div className={styles.billMeta}>
+                        <time>{formatTime(bill.generate_time)}</time>
+                        <span>订单号 {bill.bill_id}</span>
+                        {bill.function_name ? <span>{bill.function_name}</span> : null}
+                      </div>
                     </div>
-                  </div>
-                  {renderBillAction(bill)}
-                </article>
-              ))}
+                    {/* 选择态下右侧不再放「开发票」按钮：一次只能做一件事，
+                        既避免误点单笔开票，也让勾选界面更干净。
+                        不可合并的行只给一句短提示：写长了在手机上会把金额挤掉。 */}
+                    {selectMode ? (
+                      !canMerge ? <span className={styles.billMuted}>已开票</span> : null
+                    ) : (
+                      renderBillAction(bill)
+                    )}
+                  </article>
+                )
+              })}
             </div>
           )}
         </Spin>
+
+        {/* 选择态操作条：已选笔数 + 合计 + 提交/取消。
+            放在列表下方，视线自然落点，也符合"选完就提交"的顺序。 */}
+        {selectMode ? (
+          <div className={styles.mergeBar}>
+            <div className={styles.mergeSummary}>
+              <span className={styles.mergeCount}>
+                已选 <b>{selectedBills.length}</b> 笔
+              </span>
+              <span className={styles.mergeDivider} aria-hidden="true">
+                ·
+              </span>
+              <span className={styles.mergeTotal}>
+                合计 <b>{formatCny(selectedTotal)}</b>
+              </span>
+              {selectedBills.length >= MERGE_MAX ? (
+                <span className={styles.mergeLimit}>已达上限 {MERGE_MAX} 笔</span>
+              ) : null}
+            </div>
+            <div className={styles.mergeActions}>
+              <Button onClick={exitSelectMode}>取消</Button>
+              {/* 一笔都没选时禁用：合并开票至少需要 2 笔才有意义 */}
+              <Button
+                type="primary"
+                icon={<MergeCellsOutlined />}
+                disabled={selectedBills.length < 2}
+                onClick={openMergeModal}
+              >
+                合并开票
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       </div>
@@ -332,12 +522,31 @@ export function InvoicePanel() {
         需要充值就切到上方「我的钱包」。
       </p>
 
+      {/* 单笔开票弹窗：行为与改动前完全一致（不传 bills） */}
       <InvoiceApplyModal
         open={Boolean(invoiceTarget)}
         bill={invoiceTarget}
         defaultEmail={userEmail}
         onClose={() => setInvoiceTarget(null)}
         onSubmitted={() => setRefreshKey((n) => n + 1)}
+      />
+
+      {/* 合并开票弹窗：传 bills，弹窗显示合计和逐笔明细 */}
+      <InvoiceApplyModal
+        open={Boolean(mergeBills)}
+        bill={null}
+        bills={mergeBills}
+        defaultEmail={userEmail}
+        onClose={() => setMergeBills(null)}
+        onSubmitted={(info?: InvoiceSubmittedInfo) => {
+          setRefreshKey((n) => n + 1)
+          // 只有后端确认成功才退出选择态；业务失败时保留勾选，
+          // 用户改完抬头可以直接重试，不用从头再勾一遍。
+          if (info?.success) {
+            setSelectMode(false)
+            setSelectedIds([])
+          }
+        }}
       />
 
       <section className={styles.card}>

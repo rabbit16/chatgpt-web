@@ -87,3 +87,7 @@ docs/audit/2026-10-24/req-verify/img_prep/
 docs/audit/2026-10-24/req-verify/invalid/
 docs/audit/2026-10-24/search-design/*.png
 docs/audit/2026-10-24/search-design/img_prep/
+# 合并开票的设计稿截图与实测截图（含真实订单号/邮箱）只留本地
+docs/audit/2026-10-24/invoice-multi/*.png
+docs/audit/2026-10-24/invoice-multi/img_prep/
+docs/audit/invoice-merge/

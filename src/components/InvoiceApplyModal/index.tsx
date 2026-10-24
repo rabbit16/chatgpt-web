@@ -1,16 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Form, Input, Modal, Radio, message } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
 import IconBadge from '@/components/IconBadge'
 import { submitInvoiceApplication, type InvoiceTitleType } from '@/request/invoice'
+import { formatCny, sumCny } from '@/utils/money'
 import { userStore } from '@/store'
 import styles from './index.module.less'
 
 /**
- * 发票申请弹窗（按订单开）
+ * 发票申请弹窗（按订单开，支持多笔合并）
  * ------------------------------------------------------------
- * 从「支付记录」里某一笔充值点「开发票」打开，金额和订单号来自这条记录，
+ * 从「开票中心/支付记录」里某一笔充值点「开发票」打开，金额和订单号来自这条记录，
  * 用户只填抬头、税号、邮箱。一单一票，已开票的订单不会再出现这个按钮。
+ *
+ * 2026-10-24 新增「合并开票」：站长要求可以把多笔充值合成一张发票，金额自动相加。
+ * 兼容方式：新增可选 prop `bills`。不传 = 完全走原来的单笔逻辑（价格页/充值商城
+ * 的调用处一行都不用改），传了且多于 1 笔 = 合并模式。
  */
 
 export type InvoiceBill = {
@@ -20,20 +25,63 @@ export type InvoiceBill = {
   function_name?: string
 }
 
+/** 提交结果回传：页面据此决定是否刷新、是否退出选择态、是否做合并结果自检 */
+export type InvoiceSubmittedInfo = {
+  billIds: string[]
+  /** 是否合并提交（多笔） */
+  merged: boolean
+  /** 后端是否确认成功（业务失败时是 false，弹窗会留在原地让用户改完重试） */
+  success: boolean
+}
+
 type Props = {
   open: boolean
+  /** 单笔：要开票的那笔充值 */
   bill: InvoiceBill | null
+  /**
+   * 合并开票：参与合并的充值列表（可选）
+   * 不传时按 `bill` 单笔走，保持向后兼容。
+   */
+  bills?: InvoiceBill[] | null
   /** 默认带上账号邮箱，用户可改 */
   defaultEmail?: string
   onClose: () => void
-  onSubmitted?: () => void
+  onSubmitted?: (info?: InvoiceSubmittedInfo) => void
 }
 
-function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: Props) {
+/** 明细里只要日期（订单号 + 金额 + 日期三列，带时分反而挤） */
+function formatBillDate(value?: string) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitted }: Props) {
   const { token, user_info, setLoginModal } = userStore()
   const [form] = Form.useForm()
   const [titleType, setTitleType] = useState<InvoiceTitleType>('company')
   const [submitting, setSubmitting] = useState(false)
+
+  /**
+   * 实际要开票的订单列表（单笔和合并统一成数组处理，下面的逻辑只写一遍）
+   * 顺手按订单号去重：同一笔传两次会让后端在同一订单上开两张票。
+   */
+  const targets = useMemo(() => {
+    const source = bills && bills.length ? bills : bill ? [bill] : []
+    const seen = new Set<string>()
+    return source.filter((item) => {
+      const id = String(item?.bill_id ?? '')
+      if (!id || seen.has(id)) return false
+      seen.add(id)
+      return true
+    })
+  }, [bills, bill])
+
+  const merged = targets.length > 1
+  /** 合计金额：用 sumCny（按分计算）避免 199.3 + 199.7 = 399.00000000000006 */
+  const total = useMemo(() => sumCny(targets.map((item) => item.pay)), [targets])
 
   useEffect(() => {
     if (!open) return
@@ -43,7 +91,7 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
   }, [open, defaultEmail, form])
 
   const submit = async () => {
-    if (!bill) return
+    if (!targets.length) return
     // 没登录就别提交：后端中间件对「无 token 且无 referer」的请求会回一个
     // {"code":0} 的空壳，前端会误报「提交成功」，实际什么都没写进库。
     if (!token) {
@@ -51,14 +99,21 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
       setLoginModal(true)
       return
     }
+    const billIds = targets.map((item) => String(item.bill_id))
     try {
       const values = await form.validateFields()
       setSubmitting(true)
       const result = await submitInvoiceApplication({
-        bill_id: String(bill.bill_id),
-        // amount / order_no 只为兼容旧后端，金额以后端按订单核验为准
-        amount: Number(bill.pay),
-        order_no: String(bill.bill_id),
+        // 合并时用英文逗号拼接：老后端只认单笔字符串，至少能解析出第一笔，
+        // 不会因为字段类型从 string 变 array 而把整条请求判为非法。
+        bill_id: billIds.join(','),
+        // 新字段：新后端读它来判断"要合并哪几笔"。两个都传的原因见 request/invoice.ts。
+        bill_ids: merged ? billIds : undefined,
+        // amount / order_no 只为兼容旧后端，金额以后端按订单核验为准。
+        // 单笔时仍用原始 pay（与改动前完全一致），只有合并才用按分求和的结果。
+        amount: merged ? total : Number(bill?.pay ?? targets[0]?.pay ?? 0),
+        // 单笔时 order_no 就是那一笔的订单号，和改动前一模一样
+        order_no: merged ? billIds.join(',') : billIds[0],
         title_type: values.title_type,
         title: String(values.title || '').trim(),
         tax_no: values.title_type === 'company' ? String(values.tax_no || '').trim() : undefined,
@@ -80,13 +135,28 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
       if (result.channel === 'business') {
         // 后端明确拒绝：原样展示后端原因（如「该订单已开过发票」），
         // 并刷新列表让按钮状态跟上，否则用户会一直点那笔订单的「开发票」。
-        message.error(result.codeMsg || '提交被拒绝，请核对订单信息')
-        onSubmitted?.()
+        const reason = result.codeMsg || '提交被拒绝，请核对订单信息'
+        if (merged) {
+          // 合并开票是新功能，后端很可能还没实现。把所有可能原因一次说清楚，
+          // 别让用户反复点「提交」却只看到一句含糊的失败。
+          message.error({
+            content: `${reason}。如果反复失败，说明后端暂不支持合并开票，请把这几笔订单号发给站长手动处理，或改成一笔一笔单独开票。`,
+            duration: 8
+          })
+        } else {
+          message.error(reason)
+        }
+        // success=false：页面只刷新列表，不退出选择态，方便用户改完直接重试
+        onSubmitted?.({ billIds, merged, success: false })
         return
       }
       // 走到这里就是后端返回 code=0，申请已经落库、后台待审核列表里能看到。
-      message.success(result.codeMsg || '申请已提交成功，请等待站长审核，通过后电子发票会发送到你的邮箱')
-      onSubmitted?.()
+      message.success(
+        merged
+          ? `已提交 ${billIds.length} 笔合并开票申请，合计 ${formatCny(total)}，请等待站长审核`
+          : result.codeMsg || '申请已提交成功，请等待站长审核，通过后电子发票会发送到你的邮箱'
+      )
+      onSubmitted?.({ billIds, merged, success: true })
       onClose()
     } catch (error: any) {
       if (error?.errorFields) return
@@ -99,9 +169,9 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
   return (
     <Modal
       open={open}
-      title="申请电子普通发票"
+      title={merged ? `合并申请电子普通发票（${targets.length} 笔）` : '申请电子普通发票'}
       onCancel={onClose}
-      width={480}
+      width={merged ? 520 : 480}
       centered
       bodyStyle={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto' }}
       okText="提交申请"
@@ -110,16 +180,47 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
       onOk={() => void submit()}
       destroyOnClose
     >
-      <div className={styles.billCard}>
-        <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
-        <div className={styles.billInfo}>
-          <span>本笔充值</span>
-          <strong className={styles.amount}>¥{Number(bill?.pay || 0).toFixed(2)}</strong>
-          <span className={styles.orderNo}>订单号 {bill?.bill_id || ''}</span>
-        </div>
-      </div>
+      {merged ? (
+        <>
+          <div className={styles.billCard}>
+            <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
+            <div className={styles.billInfo}>
+              <span>本张发票合并 {targets.length} 笔充值</span>
+              <strong className={styles.amount}>{formatCny(total)}</strong>
+              <span className={styles.orderNo}>合计金额已自动相加</span>
+            </div>
+          </div>
 
-      <p className={styles.hint}>一单一票：只对这一笔充值开票，已开票的订单不能重复申请。</p>
+          {/* 明细：让用户提交前能自己核对订单号和金额，避免开错票 */}
+          <ul className={styles.mergeList}>
+            {targets.map((item, index) => (
+              <li key={item.bill_id}>
+                <span className={styles.mergeIndex}>{index + 1}</span>
+                <span className={styles.mergeOrder}>{item.bill_id}</span>
+                <time className={styles.mergeDate}>{formatBillDate(item.generate_time)}</time>
+                <b className={styles.mergeAmount}>{formatCny(item.pay)}</b>
+              </li>
+            ))}
+          </ul>
+
+          <p className={styles.hint}>
+            以上 {targets.length} 笔会开在同一张发票上，合计 {formatCny(total)}；已开票的订单已自动排除在外。
+          </p>
+        </>
+      ) : (
+        <>
+          <div className={styles.billCard}>
+            <IconBadge icon={<FileTextOutlined />} tone="amber" size="md" />
+            <div className={styles.billInfo}>
+              <span>本笔充值</span>
+              <strong className={styles.amount}>{formatCny(bill?.pay)}</strong>
+              <span className={styles.orderNo}>订单号 {bill?.bill_id || ''}</span>
+            </div>
+          </div>
+
+          <p className={styles.hint}>一单一票：只对这一笔充值开票，已开票的订单不能重复申请。</p>
+        </>
+      )}
 
       <Form form={form} layout="vertical" requiredMark="optional" initialValues={{ title_type: 'company' }}>
         <Form.Item name="title_type" label="抬头类型" rules={[{ required: true }]}>

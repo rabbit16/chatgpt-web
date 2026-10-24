@@ -37,6 +37,29 @@ export function formatCny(value: number | string | null | undefined): string {
   return `${sign}¥${tiny}`
 }
 
+/**
+ * 多笔金额求和（2026-10-24 合并开票）
+ * ------------------------------------------------------------
+ * 为什么不用 `arr.reduce((a, b) => a + b, 0)`：
+ *   0.1 + 0.2 = 0.30000000000000004（JS 用二进制存小数，十进制的 0.1 存不准）。
+ *   单笔开票看不出来，但合并开票要「多笔相加后再把合计提交给后端」，
+ *   误差累加后可能变成 1993.0000000000002，后端按金额校验就对不上。
+ *
+ * 做法：每笔先换算成「整分」(×100 后四舍五入) → 整数相加（整数在 JS 里精确）
+ *      → 最后 ÷100 换回元。10 笔 199.3 得到的就是 1993，不是 1993.0000000000002。
+ *
+ * 注意：只用来求合计，不要拿它做除法/税率计算。
+ */
+export function sumCny(values: Array<number | string | null | undefined>): number {
+  const cents = values.reduce<number>((total, value) => {
+    const num = Number(value)
+    if (!Number.isFinite(num)) return total
+    // Math.round 顺便纠正 199.3 * 100 = 19929.999999999996 这类误差
+    return total + Math.round(num * 100)
+  }, 0)
+  return cents / 100
+}
+
 /** 美元单价：保留 6 位有效小数，去末尾 0 */
 export function formatUsd(value: number | string | null | undefined): string {
   const num = Number(value)

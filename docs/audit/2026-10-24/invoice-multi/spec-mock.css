@@ -1,0 +1,222 @@
+/* ============================================================
+   设计稿：多选合并开票（2026-10-24 v1）
+   色值/圆角/间距全部照抄 src/styles/tokens.less 与 src/styles/theme.ts
+   只为"看出效果"，不是产品代码。
+   ============================================================ */
+:root{
+  --brand:#1877ff; --brand-hover:#0b63e5; --brand-soft:#e8f1ff; --brand-softer:#f2f7ff;
+  --text-1:#101828; --text-2:#344054; --text-3:#475467; --text-4:#667085; --text-5:#98a2b3;
+  --border:#e4e9f2; --border-strong:#d0d5dd; --border-soft:#eef2f7;
+  --surface:#fff; --surface-muted:#f4f6fb; --surface-sunken:#f8fafc; --canvas:#f7f9fd;
+  --success:#12b76a; --warning:#f79009; --danger:#f04438;
+  --tint-mint:#e6f7ef; --ink-mint:#0e9f6e; --tint-amber:#fff4e2; --ink-amber:#d9821a;
+  --radius-sm:12px; --radius-lg:16px; --radius-pill:999px;
+  --shadow-pop:0 12px 32px rgba(16,24,40,.12);
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+  --font-mono:'SF Mono',Menlo,Consolas,monospace;
+  --content-max:1200px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--canvas); color:var(--text-3);
+  font-family:var(--font-sans); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.page{padding:28px 0 56px}
+.wrap{max-width:var(--content-max); margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px}
+
+/* 页头 */
+.pageHead h1{margin:0 0 4px; font-size:28px; line-height:1.25; letter-spacing:-.01em; color:var(--text-1)}
+.pageHead p{margin:0; font-size:13px; line-height:1.6; color:var(--text-4)}
+
+/* 汇总卡 */
+.summaryRow{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+.summaryCard{
+  display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:2px 10px;
+  padding:12px 16px; background:var(--surface); border:1px solid var(--border-soft);
+  border-radius:12px; min-height:76px;
+}
+.summaryCard>span{font-size:13px; font-weight:600; color:var(--text-3)}
+.summaryCard>b{grid-row:span 2; font-size:26px; line-height:1.15; color:var(--text-1); font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+.summaryCard[data-primary] b{font-size:22px; color:var(--brand)}
+.summaryCard>em{grid-column:1; font-style:normal; font-size:12px; color:var(--text-4)}
+
+.bottomGrid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:stretch}
+.card{padding:20px 22px; background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg); display:flex; flex-direction:column; min-width:0}
+.cardHead{display:flex; align-items:flex-start; gap:10px; margin-bottom:14px}
+.cardHead h2{margin:0 0 2px; font-size:16px; color:var(--text-1)}
+.cardHead p{margin:0; font-size:12.5px; line-height:1.65; color:var(--text-4)}
+.headActions{display:flex; gap:8px; margin-left:auto; flex-wrap:wrap}
+
+/* 图标徽章：IconBadge sm=28 */
+.badge{width:28px; height:28px; border-radius:8px; display:inline-grid; place-items:center; flex:0 0 auto; font-size:14px}
+.badge.violet{background:#f0ecff; color:#7c5cf0}
+.badge.green{background:var(--tint-mint); color:var(--ink-mint)}
+.badge.amber{background:var(--tint-amber); color:var(--ink-amber)}
+.badge.brand{background:var(--brand-soft); color:var(--brand)}
+
+/* 按钮 */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  height:28px; padding:0 12px; border-radius:12px; font-size:13px; font-weight:500;
+  border:1px solid var(--border); background:var(--surface); color:var(--text-2);
+  cursor:default; white-space:nowrap;
+}
+.btn.primary{background:var(--brand); border-color:var(--brand); color:#fff}
+.btn.ghost{background:transparent; border-color:var(--brand); color:var(--brand)}
+.btn.lg{height:36px; padding:0 16px; font-size:14px}
+.btn.pill{border-radius:var(--radius-pill)}
+.btn[disabled]{color:rgba(0,0,0,.25); background:rgba(0,0,0,.04); border-color:var(--border); }
+.tag{display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:6px; font-size:12px; border:1px solid transparent}
+.tag.gold{background:#fffaeb; color:#b54708; border-color:#fedf89}
+.tag.green{background:#ecfdf3; color:#027a48; border-color:#abefc6}
+.tag.red{background:#fef3f2; color:#b42318; border-color:#fecdca}
+.tag.gray{background:var(--surface-muted); color:var(--text-4); border-color:var(--border)}
+.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+
+/* 充值记录行 */
+.billList{display:flex; flex-direction:column; gap:8px}
+.billRow{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:10px 12px; background:var(--surface-sunken);
+  border:1px solid var(--border-soft); border-radius:12px;
+  transition:border-color .2s, background-color .2s;
+}
+.billMain{display:flex; flex-direction:column; gap:4px; min-width:0; flex:1 1 auto}
+.billMain>strong{white-space:nowrap}
+.billMain strong{font-size:15px; color:var(--text-1); font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+.billMeta{display:flex; flex-wrap:wrap; gap:4px 12px; font-size:11.5px; color:var(--text-4); min-width:0}
+.billMeta span,.billMeta time{white-space:nowrap}
+.billMeta span+span::before{content:'·'; margin-right:12px; color:var(--text-5)}
+@media (max-width:560px){
+  /* 390：空间不够就上下两行，别让「·」自己飘成一行 */
+  .billMeta span+span::before{content:none}
+  .billMeta{gap:2px 10px}
+}
+.billMeta time{font-variant-numeric:tabular-nums}
+.billAction{display:inline-flex; align-items:center; gap:6px; flex:0 0 auto}
+.billMuted{font-size:12px; color:var(--text-5)}
+
+/* ---------- 新增：勾选框（方案 B：仅选择模式出现） ---------- */
+.check{
+  width:18px; height:18px; flex:0 0 auto; border-radius:6px;
+  border:1.5px solid var(--border-strong); background:#fff; display:grid; place-items:center;
+}
+.check svg{width:11px; height:11px; display:none}
+.isSel{background:var(--brand-softer); border-color:var(--brand); box-shadow:inset 3px 0 0 var(--brand)}
+.isSel .check{background:var(--brand); border-color:var(--brand)}
+.isSel .check svg{display:block}
+/* 不可选（已开票 / 审核中） */
+.isLocked{background:var(--surface-muted); border-style:dashed; cursor:not-allowed}
+.isLocked .billMain strong{color:var(--text-4)}
+.isLocked .check{border-color:var(--border); background:var(--surface-muted)}
+.hintText{font-size:12px; color:var(--text-5)}
+
+/* ---------- 新增：列表上方常驻工具栏（默认态的合并入口） ---------- */
+.toolbar{
+  display:flex; align-items:center; gap:10px; margin:0 0 10px; padding:8px 12px;
+  background:var(--surface-sunken); border:1px solid var(--border-soft); border-radius:12px;
+}
+.toolbar .tbHint{font-size:12.5px; color:var(--text-4)}
+.toolbar .btn{margin-left:auto}
+
+/* ---------- 新增：吸底操作条（白底 + 上边框，跟本站卡片一个语汇） ---------- */
+.selBar{
+  position:sticky; bottom:0; z-index:20;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin:12px -22px -20px; padding:12px 22px;
+  background:var(--surface); border-top:1px solid var(--border-soft);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow:0 -8px 24px rgba(16,24,40,.06);
+}
+.selText{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; min-width:0}
+.selBar .count{font-size:13px; color:var(--text-4)}
+.selBar .sum{font-size:22px; font-weight:700; font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--text-1); letter-spacing:-.01em}
+.selBar .cap{font-size:12px; color:var(--text-5)}
+.selActions{display:flex; gap:8px; margin-left:auto}
+
+/* 选择模式提示条 */
+.hintBar{
+  display:flex; align-items:center; gap:8px; margin-bottom:10px; padding:8px 12px;
+  background:var(--brand-softer); border:1px solid #cfe2ff; border-radius:12px;
+  font-size:12.5px; color:var(--text-2);
+}
+.hintBar .exit{margin-left:auto; color:var(--brand); font-weight:500}
+
+/* ---------- 弹窗 ---------- */
+.mask{position:absolute; inset:0; background:rgba(15,23,42,.45); display:grid; place-items:center; padding:24px}
+.modal{
+  width:480px; max-width:100%; background:var(--surface); border-radius:16px;
+  box-shadow:var(--shadow-pop); overflow:hidden;
+}
+.modalHead{padding:18px 20px 0; font-size:18px; font-weight:600; color:var(--text-1)}
+.modalBody{padding:16px 20px; max-height:calc(100vh - 220px); overflow:auto}
+.billCard{display:flex; align-items:center; gap:12px; padding:14px 16px; margin-bottom:10px;
+  border-radius:var(--radius-lg); background:var(--brand-softer); border:1px solid var(--border-soft)}
+.badge.md{width:36px; height:36px; border-radius:12px; font-size:16px}
+.billInfo{display:flex; flex-direction:column; gap:2px; min-width:0}
+.billInfo>span{color:var(--text-4); font-size:12.5px}
+.amount{color:var(--brand); font-size:22px; font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+.orderNo{font-family:var(--font-mono); font-size:12px; color:var(--text-4); overflow-wrap:anywhere}
+.hint{margin:0 0 16px; color:var(--text-4); font-size:12.5px; line-height:1.6}
+/* 多笔明细折叠头 */
+.detailToggle{
+  display:flex; align-items:center; gap:6px; width:100%; margin:0 0 12px; padding:10px 12px;
+  background:var(--surface-sunken); border:1px solid var(--border-soft); border-radius:12px;
+  font-size:13px; color:var(--text-2); cursor:default;
+}
+.detailToggle .caret{margin-left:auto; color:var(--text-4); font-size:12px}
+.detailList{margin:0 0 12px; padding:2px 12px; border:1px solid var(--border-soft); border-radius:12px; background:var(--surface)}
+.detailRow{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f4f9; font-size:12.5px; color:var(--text-4)}
+.detailRow:last-child{border-bottom:0}
+.detailRow .no{font-family:var(--font-mono); color:var(--text-3); overflow-wrap:anywhere}
+.detailRow .p{margin-left:auto; font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--text-1)}
+.field{margin-bottom:16px}
+.label{display:block; margin-bottom:6px; font-size:14px; color:var(--text-2)}
+.input{height:36px; border:1px solid var(--border); border-radius:12px; display:flex; align-items:center; padding:0 12px; color:var(--text-5); font-size:14px; background:#fff}
+.radioGroup{display:inline-flex; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+.radioGroup b{padding:7px 16px; font-size:14px; font-weight:400; color:var(--text-2); background:#fff}
+.radioGroup b.on{background:var(--brand); color:#fff; font-weight:500}
+.modalFoot{display:flex; justify-content:flex-end; gap:8px; padding:12px 20px 18px; border-top:1px solid var(--border-soft)}
+.footHint{margin:4px 0 0; color:var(--text-5); font-size:12px; line-height:1.6}
+.sectionTag{display:inline-flex; margin-left:auto; padding:2px 8px; border-radius:4px; background:var(--tint-amber); color:var(--ink-amber); font-size:12px}
+
+/* 手机端 */
+@media (max-width:900px){
+  .summaryRow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bottomGrid{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .page{padding:18px 0 40px}
+  .wrap{padding:0 12px; gap:14px}
+  .summaryRow{grid-template-columns:minmax(0,1fr); gap:10px}
+  .summaryCard{grid-template-columns:auto 1fr; align-items:center}
+  .summaryCard>b{grid-row:auto; grid-column:2; justify-self:end; font-size:22px}
+  .summaryCard>em{grid-column:1/-1}
+  .pageHead h1{font-size:22px}
+  .card{padding:16px}
+  .headActions{width:100%; margin-left:0}
+  /* 390：勾选框在最左，内容纵向排；右侧动作行独占一行靠右 */
+  .billRow{align-items:center; gap:10px; padding:12px}
+  .billAction{width:100%; justify-content:flex-end}
+  .toolbar{flex-wrap:wrap; gap:8px}
+  .toolbar .btn{margin-left:0; width:100%; height:36px; font-size:14px}
+  .selBar{flex-direction:column; align-items:stretch; gap:8px; margin:12px -16px -16px; padding:10px 16px 12px; border-radius:0}
+  .selText{display:grid; grid-template-columns:auto 1fr; align-items:baseline; gap:2px 8px}
+  .selBar .count{font-size:12.5px; color:var(--text-4)}
+  .selBar .sum{grid-column:2; justify-self:end; font-size:22px}
+  .selBar .cap{grid-column:1/-1}
+  .selActions{margin-left:0}
+  .selActions .btn{flex:1; height:36px; font-size:14px}
+  .hintBar{font-size:12px; padding:8px 10px}
+  .hintBar .exit{white-space:nowrap}
+  .modal{width:100%}
+  .mask{padding:0; align-items:flex-end}
+  .modal{border-radius:16px 16px 0 0}
+}
+body.bare .wrap{padding:0}
+.frameLabel{max-width:1200px; margin:0 auto; padding:10px 24px 0; font-size:12px; color:var(--text-5); font-family:var(--font-mono)}
+/* ---------- 弹窗页面体 ---------- */
+body.modalPage{background:#eef2f7}
+.mask{position:fixed;inset:0}
+

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<title>开票中心 · 多选合并开票 设计稿 v2</title>
+<link rel="stylesheet" href="./spec-mock.css" />
+</head>
+<body>
+<div class="page">
+  <div class="wrap">
+
+    <header class="pageHead">
+      <h1>开票中心</h1>
+      <p>电子发票由站长人工审核，1–3 个工作日发到你填的邮箱；一笔订单只能开一张。</p>
+    </header>
+
+    <div class="summaryRow">
+      <div class="summaryCard"><span>已开票</span><b>¥0.00</b><em>电子发票会发到你填的邮箱</em></div>
+      <div class="summaryCard"><span>审核中</span><b>¥0.00</b><em>等站长处理，不用重复提交</em></div>
+      <div class="summaryCard" data-primary><span>还能开</span><b>¥370.00</b><em>本页可开票金额上限</em></div>
+    </div>
+
+    <div class="bottomGrid">
+      <section class="card">
+        <div class="cardHead">
+          <span class="badge violet">⟳</span>
+          <div><h2>开票记录</h2><p>待审核 / 开票中可以撤销。</p></div>
+          <div class="headActions"><span class="btn" style="width:120px;justify-content:space-between">全部状态 <i>▾</i></span><span class="btn">刷新</span></div>
+        </div>
+        <div style="padding:26px 0;text-align:center;color:var(--text-5);font-size:13px">还没有开票记录</div>
+      </section>
+
+      <section class="card" id="billCard">
+        <div class="cardHead">
+          <span class="badge green">◫</span>
+          <div><h2>充值记录</h2><p id="cardSub">单笔点右侧「开发票」；多笔点「合并开票」自动相加。</p></div>
+          <div class="headActions" id="headActions"><span class="btn">⟳ 刷新</span></div>
+        </div>
+
+        <div class="toolbar" id="toolbar">
+          <span class="tbHint">要开成一张票？可勾选多笔合并。</span>
+          <span class="btn" id="mergeEntry">合并开票</span>
+        </div>
+
+        <div class="hintBar" id="hintBar" style="display:none">
+          <span class="tipLong">选择模式：勾选 2 笔及以上，金额自动相加。</span>
+          <span class="exit" id="exitLink">退出选择</span>
+        </div>
+        <div class="billList" id="billList"></div>
+
+        <div class="selBar" id="selBar" style="display:none">
+          <div class="selText">
+            <span class="count" id="selCount">已选 0 笔</span>
+            <span class="sum num" id="selSum">¥0.00</span>
+            <span class="cap" id="selCap"></span>
+          </div>
+          <div class="selActions">
+            <span class="btn" id="cancelSel">取消选择</span>
+            <span class="btn primary" id="mergeBtn">合并开票</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 假数据照抄现状截图：4 笔 ¥100 + 1 笔 ¥30，其中 1 笔已开票、1 笔已驳回 */
+const BILLS = [
+  { id:'1791363073531', pay:100, time:'2026-10-07 16:51', fn:'智能对话', state:'none' },
+  { id:'1791460945714', pay:100, time:'2026-10-08 20:02', fn:'智能对话', state:'issued' },
+  { id:'1791558832190', pay:30,  time:'2026-10-09 09:14', fn:'智能对话', state:'none' },
+  { id:'1791620564778', pay:100, time:'2026-10-09 18:40', fn:'智能对话', state:'none' },
+  { id:'1791701888345', pay:100, time:'2026-10-10 11:23', fn:'智能对话', state:'rejected' }
+];
+const CHECK = '<span class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2 4.6 8.8 10 3.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+const TAG = { issued:'<span class="tag green">已开票</span>', pending:'<span class="tag gold">待审核</span>', rejected:'<span class="tag red">已驳回</span>' };
+const MAX = 20;
+
+function row(b, opt){
+  const selected = (opt.selected||[]).includes(b.id);
+  const locked = b.state==='issued' || b.state==='pending';
+  const cls = ['billRow'];
+  if (opt.mode==='select' && locked) cls.push('isLocked');
+  if (opt.mode==='select' && selected) cls.push('isSel');
+  const box = opt.mode==='select' ? CHECK : '';
+  let action;
+  if (opt.mode==='plain'){
+    if (b.state==='rejected') action = `<span class="billAction"><span class="tag red">已驳回</span><span class="btn ghost">重新申请</span></span>`;
+    else if (locked) action = `<span class="billAction">${TAG[b.state]}</span>`;
+    else action = `<span class="billAction"><span class="btn ghost">开发票</span></span>`;
+  } else {
+    action = locked
+      ? `<span class="billAction">${TAG[b.state]}</span>`
+      : `<span class="billAction hintText">${selected?'已选':'点整行选择'}</span>`;
+  }
+  const meta = `<span class="billMeta"><time>${b.time}</time><span>订单号 ${b.id}</span><span>${b.fn}</span></span>`;
+  return `<article class="${cls.join(' ')}">
+    ${box}<div class="billMain"><strong>¥${b.pay.toFixed(2)}</strong>${meta}</div>${action}</article>`;
+}
+
+function render(opt){
+  document.getElementById('billList').innerHTML = BILLS.map(b=>row(b,opt)).join('');
+
+  const select = opt.mode === 'select';
+  document.getElementById('hintBar').style.display = select ? 'flex' : 'none';
+  document.getElementById('selBar').style.display = select ? 'flex' : 'none';
+  document.getElementById('headActions').innerHTML = select
+    ? `<span class="btn" id="exitBtn">退出选择</span>`
+    : `<span class="btn">⟳ 刷新</span>`;
+  document.getElementById('toolbar').style.display = select ? 'none' : 'flex';
+  document.getElementById('cardSub').textContent = select
+    ? '勾选要合并的充值，金额自动相加；已开票 / 审核中的不能选。'
+    : '单笔点右侧「开发票」；多笔点「合并开票」自动相加。';
+
+  if (select){
+    const items = BILLS.filter(b=>opt.selected.includes(b.id));
+    const sum = items.reduce((a,b)=>a+b.pay,0);
+    document.getElementById('selCount').textContent = items.length ? `已选 ${items.length} 笔` : '还没选';
+    document.getElementById('selSum').textContent = '¥'+sum.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('selCap').textContent = items.length ? `最多 ${MAX} 笔` : '勾选左边的方框开始';
+    const btn = document.getElementById('mergeBtn');
+    if (!items.length){
+      btn.style.opacity = .45;
+      btn.style.background = 'rgba(0,0,0,.04)';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'rgba(0,0,0,.25)';
+    }
+  }
+}
+
+const qs = new URLSearchParams(location.search);
+const state = qs.get('state') || 'plain';
+if (state === 'plain') render({mode:'plain'});
+if (state === 'select') render({mode:'select', selected:['1791363073531','1791558832190','1791701888345']});
+if (state === 'empty') render({mode:'select', selected:[]});
+</script>
+</body>
+</html>

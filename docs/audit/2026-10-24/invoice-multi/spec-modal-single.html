@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<title>弹窗 · 多笔合并（设计稿）</title>
+<link rel="stylesheet" href="./spec-mock.css" />
+</head>
+<body style="background:#eef2f7">
+<div class="mask" style="position:fixed;inset:0">
+  <div class="modal">
+    <div class="modalHead">申请电子普通发票</div>
+    <div class="modalBody">
+
+      <div class="billCard">
+        <span class="badge md amber">🧾</span>
+        <div class="billInfo">
+          <span>本笔充值</span>
+          <strong class="amount">¥230.00</strong>
+          <span class="orderNo">订单号 1791363073531</span>
+        </div>
+      </div>
+
+      <p class="hint">一单一票：只对这一笔充值开票，已开票的订单不能重复申请。</p>
+
+      <div class="field">
+        <label class="label">抬头类型</label>
+        <div class="radioGroup"><b class="on">企业</b><b>个人</b></div>
+      </div>
+      <div class="field"><label class="label">公司名称</label><div class="input">营业执照上的全称</div></div>
+      <div class="field"><label class="label">纳税人识别号</label><div class="input">15 / 18 / 20 位，字母数字</div></div>
+      <div class="field"><label class="label">接收邮箱</label><div class="input">发票 PDF 会发到这里</div></div>
+      <p class="footHint">审核通过后 1–3 个工作日开出；已开票的订单在「开票中心」里能看到发票号。</p>
+    </div>
+    <div class="modalFoot">
+      <span class="btn lg">取消</span>
+      <span class="btn lg primary">提交申请</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
