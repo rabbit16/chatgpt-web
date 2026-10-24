@@ -41,7 +41,7 @@ import styles from './index.module.less'
 
 type TabKey = 'all' | ModelProvider
 
-/** 充值商城的两个页签（发票已于 2026-10-24 独立成「发票中心」，不再放页签） */
+/** 充值商城的两个页签（发票已于 2026-10-24 独立成「开票中心」，不再放页签） */
 type ViewTab = 'price' | 'wallet'
 
 const tabs: { key: TabKey; label: string }[] = [
@@ -106,7 +106,7 @@ function PricePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawTab = searchParams.get('tab')
 
-  // 发票已于 2026-10-24 独立成「发票中心」（/invoice），价格页不再有该页签。
+  // 发票已于 2026-10-24 独立成「开票中心」（/invoice），价格页不再有该页签。
   // 老链接 /price?tab=invoice 仍会有人用（书签、历史记录），直接转到新页面，不留白屏。
   useEffect(() => {
     if (rawTab === 'invoice') navigate('/invoice', { replace: true })
@@ -425,10 +425,10 @@ function PricePage() {
                 {token ? '立即充值' : '登录并充值'}
               </Button>
               {token ? (
-                // 发票已独立成「发票中心」页面，这里做成真跳转（原来是 switchTab，
+                // 发票已独立成「开票中心」页面，这里做成真跳转（原来是 switchTab，
                 // 页签删掉后就变成了点了没反应的死按钮）
                 <Button type="text" icon={<FileTextOutlined />} onClick={() => navigate('/invoice')}>
-                  发票中心 <ArrowRightOutlined />
+                  开票中心 <ArrowRightOutlined />
                 </Button>
               ) : null}
             </div>
@@ -498,7 +498,20 @@ function PricePage() {
               </Button>
             </div>
           ) : !credential ? (
-            <Alert showIcon type="warning" message="请先到「Agent 接入」页创建 sk- 密钥，再查看个人费率" />
+            /* 没密钥的用户在这里是「想用但不知道怎么开始」的准客户，
+               原来只有一句不可点击的提示，还用了导航里早已不存在的旧名
+               「Agent 接入」，全页除导航栏外没有任何去接入指南的入口
+               （2026-10-24 流程检验第 2 条：阻塞交易）。 */
+            <Alert
+              showIcon
+              type="warning"
+              message="还没有密钥：先到「接入指南」创建一个 sk- 密钥，再回来看你的个人费率"
+              action={
+                <Button size="small" type="primary" onClick={() => navigate('/guide')}>
+                  去接入指南
+                </Button>
+              }
+            />
           ) : loading && !pricing ? (
             <Alert showIcon type="info" message="正在获取当前账号价格…" />
           ) : error ? (

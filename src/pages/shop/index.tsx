@@ -501,25 +501,39 @@ export function ShopPanel() {
           open={Boolean(paySuccess)}
           title="充值成功"
           onCancel={() => setPaySuccess(null)}
+          /* 充值成功是营收漏斗上最关键的一屏：用户刚付完钱，最想知道
+             「接下来怎么用」，而不是「怎么开发票」。
+             原来这里唯一的按钮是「去支付记录开发票」，等于收完钱就把人送去
+             办手续（2026-10-24 流程检验第 1 条：阻塞交易）。 */
           footer={[
-            <Button key="ok" onClick={() => setPaySuccess(null)}>
-              知道了
-            </Button>,
             <Button
               key="invoice"
-              type="primary"
               onClick={() => {
                 setPaySuccess(null)
                 recordsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }}
             >
               去支付记录开发票
+            </Button>,
+            <Button
+              key="guide"
+              type="primary"
+              onClick={() => {
+                setPaySuccess(null)
+                navigate('/guide')
+              }}
+            >
+              去生成密钥并接入
             </Button>
           ]}
         >
           <p className={styles.successText}>
-            ¥{Number(paySuccess?.amount || 0).toFixed(2)} 已到账。需要发票的话，在下方「支付记录」里对这笔充值申请，
-            一单一票，已开票的订单不能重复开。
+            ¥{Number(paySuccess?.amount || 0).toFixed(2)} 已到账，现在就能用了。
+          </p>
+          <p className={styles.successText}>
+            下一步：去「接入指南」生成一个密钥，填到你的软件里就能开始调用。
+            <br />
+            需要发票的话，在下方「支付记录」里对这笔充值申请，一单一票。
           </p>
         </Modal>
         <InvoiceApplyModal

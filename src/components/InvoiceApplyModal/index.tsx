@@ -168,7 +168,7 @@ function InvoiceApplyModal({ open, bill, defaultEmail, onClose, onSubmitted }: P
       </Form>
 
       <p className={styles.footHint}>
-        审核通过后 1–3 个工作日开出；已开票的订单在「发票中心」里能看到发票号。
+        审核通过后 1–3 个工作日开出；已开票的订单在「开票中心」里能看到发票号。
       </p>
     </Modal>
   )

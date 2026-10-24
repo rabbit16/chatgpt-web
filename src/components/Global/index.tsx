@@ -254,7 +254,8 @@ function Global(props: Props) {
     // 站长 2026-10-24：登录后直接进充值页（/price），这是转化主路径。
     // 唯一例外是对话页 /chat：用户正在聊天时弹窗登录，不该把人拽走。
     if (location.pathname === '/chat') return
-    navigate('/price')
+    // 直接落到「我的钱包」页签，而不是停在模型价格页（省掉一次点击）
+    navigate('/price?tab=wallet')
   }
 
   useLayoutEffect(() => {

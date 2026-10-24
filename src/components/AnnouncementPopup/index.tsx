@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Modal } from 'antd'
 import { NotificationOutlined } from '@ant-design/icons'
+import { useLocation } from 'react-router-dom'
 import { announcementStore, useAnnouncementUnread } from '@/store/announcement'
 import styles from './index.module.less'
 
@@ -16,8 +17,14 @@ function AnnouncementPopup() {
   const load = announcementStore((state) => state.load)
   const markSeen = announcementStore((state) => state.markSeen)
   const unread = useAnnouncementUnread()
+  const location = useLocation()
   // 打开后即使点了「已读」，弹窗也保持到用户手动关掉，避免闪
   const [open, setOpen] = useState(true)
+
+  // 登录页不弹（2026-10-24 流程检验第 4 条）：
+  // 弹窗会盖住首屏并拦截点击，实测在首页点「查看价格」会被浮层挡住；
+  // 用户正在登录时更不该被一个公告拦住。
+  const isLoginPage = location.pathname === '/login'
 
   useEffect(() => {
     void load()
@@ -30,7 +37,7 @@ function AnnouncementPopup() {
 
   return (
     <Modal
-      open={Boolean(unread && latest && open)}
+      open={Boolean(unread && latest && open && !isLoginPage)}
       zIndex={2000}
       title={
         <span className={styles.title}>
