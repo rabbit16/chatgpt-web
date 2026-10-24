@@ -48,7 +48,7 @@
   gap: 10px;
   align-items: center;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--border);
 }
@@ -61,7 +61,7 @@
 
 .stat {
   padding: 16px 18px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--border);
 
@@ -75,25 +75,33 @@
   b {
     font-size: 24px;
     color: var(--text-1);
+    /* 四个数字纵向并排，位数对齐才好扫读 */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
   }
 }
 
+/* 「总消费」是这页最重要的数字，但强调色必须用品牌蓝：
+   绿色在 tokens 里是「成功/辅助」语义，用作强调会让用户误读成状态
+   （2026-10-24 视觉验收第 10 条）。 */
 .statPrimary {
-  border-color: var(--success);
-  background: linear-gradient(180deg, var(--tint-mint) 0%, var(--surface) 100%);
+  border-color: var(--brand-soft);
+  background: linear-gradient(180deg, var(--brand-soft) 0%, var(--surface) 100%);
 
   label {
-    color: var(--ink-mint);
+    color: var(--brand);
   }
 
   b {
-    color: var(--success);
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
   }
 }
 
 .card {
   padding: 12px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
   overflow: hidden;
@@ -110,7 +118,7 @@
 
     &::-webkit-scrollbar-thumb {
       background: var(--text-5);
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
     }
 
     &::-webkit-scrollbar-track {

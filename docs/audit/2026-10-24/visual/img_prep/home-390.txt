@@ -1,0 +1,29 @@
+后台 钱
+品采单
+9 多模型 API中转
+一个地址，
+接通主流大模型
+兼容 OpenAI 协议接入。使用单一密钥即可调度GPT，
+Claude、 Semini等58个模型。按实际用量付费，余额与
+账单随时可查。
+山 进入对话
+查看价格
+•无需绑卡匿名可先体验密钥随时吊销
+POST /v1/chat/completions
+curl https://www.rabbitj,top\
+/v1/chat/comp Letions\
+H 'Authorization: Bearer sk-•."\
+-d'｛'model"："gpt-6.1-50l
+'messages"： ［｛"role ："user"，
+"content”：”你好"｝］｝！
+200OK
+接入文档
+省完整示例＞
+58
+个可用型
+10
+冢上游供应商
+3
+神协议兼容
+按量
+计發，无订阅

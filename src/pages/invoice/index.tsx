@@ -146,7 +146,9 @@ export function InvoicePanel() {
   const summaryCards = [
     { label: '已开票', value: money(summary.issued_amount), hint: '电子发票会发到你填的邮箱' },
     { label: '审核中', value: money(summary.pending_amount), hint: '等站长处理，不用重复提交' },
-    { label: '还能开', value: money(summary.invoiceable_amount), hint: `累计充值 ${money(summary.recharge_total)}` }
+    // 副标题原来是「累计充值 ¥370.00」，主数字也是 ¥370.00，同一张卡同一个数字出现两次；
+    // 改成说明这个数字是什么（可开票上限），避免看起来像重复渲染。
+    { label: '还能开', value: money(summary.invoiceable_amount), hint: '本页可开票金额上限' }
   ]
 
   const renderBillAction = (bill: InvoiceBill) => {
@@ -188,35 +190,6 @@ export function InvoicePanel() {
             </div>
           ))}
         </section>
-
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <IconBadge icon={<FileTextOutlined />} tone="brand" size="sm" />
-          <div>
-            <h2>怎么开发票</h2>
-            <p>不用单独填金额：在「充值记录」里选一笔已支付充值，金额和订单号自动带出来。</p>
-          </div>
-        </div>
-        <ol className={styles.steps}>
-          <li>
-            <b>选一笔已支付充值</b>
-            <span>在「充值记录」里核对金额和日期，点右侧「开发票」。</span>
-          </li>
-          <li>
-            <b>点「开发票」填抬头</b>
-            <span>企业填营业执照全称 + 税号；个人填姓名。电子发票发到邮箱。</span>
-          </li>
-          <li>
-            <b>等站长审核</b>
-            <span>1–3 个工作日开出，状态在这里实时可见；审核中可以撤销。</span>
-          </li>
-        </ol>
-        <ul className={styles.ruleList}>
-          <li>只对<b>已支付</b>的充值订单开票，余额消费不开票。</li>
-          <li>一笔订单只能开一张发票，已开过的不能再开。</li>
-          <li>本站只开电子普通发票，不办增值税专用发票。</li>
-        </ul>
-      </section>
 
       </div>
 
@@ -350,6 +323,35 @@ export function InvoicePanel() {
         onClose={() => setInvoiceTarget(null)}
         onSubmitted={() => setRefreshKey((n) => n + 1)}
       />
+
+      <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <IconBadge icon={<FileTextOutlined />} tone="brand" size="sm" />
+          <div>
+            <h2>怎么开发票</h2>
+            <p>不用单独填金额：在「充值记录」里选一笔已支付充值，金额和订单号自动带出来。</p>
+          </div>
+        </div>
+        <ol className={styles.steps}>
+          <li>
+            <b>选一笔已支付充值</b>
+            <span>在「充值记录」里核对金额和日期，点右侧「开发票」。</span>
+          </li>
+          <li>
+            <b>点「开发票」填抬头</b>
+            <span>企业填营业执照全称 + 税号；个人填姓名。电子发票发到邮箱。</span>
+          </li>
+          <li>
+            <b>等站长审核</b>
+            <span>1–3 个工作日开出，状态在这里实时可见；审核中可以撤销。</span>
+          </li>
+        </ol>
+        <ul className={styles.ruleList}>
+          <li>只对<b>已支付</b>的充值订单开票，余额消费不开票。</li>
+          <li>一笔订单只能开一张发票，已开过的不能再开。</li>
+          <li>本站只开电子普通发票，不办增值税专用发票。</li>
+        </ul>
+      </section>
     </>
   )
 }

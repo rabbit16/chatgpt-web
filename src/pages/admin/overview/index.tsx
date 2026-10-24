@@ -59,11 +59,14 @@ function AdminOverview() {
           rowKey="mode"
           pagination={false}
           dataSource={models}
+          /* 手机上必须允许横滚：原来没配 scroll.x，中文被压成竖排单字，
+             行高从 56px 撑到 135px（2026-10-24 视觉验收第 3 条）。 */
+          scroll={{ x: 720 }}
           columns={[
-            { title: '模型', dataIndex: 'label' },
-            { title: 'ID', dataIndex: 'mode' },
-            { title: '输入 ¥ / 百万', dataIndex: 'input_cny_per_1m' },
-            { title: '输出 ¥ / 百万', dataIndex: 'output_cny_per_1m' }
+            { title: '模型', dataIndex: 'label', width: 200 },
+            { title: 'ID', dataIndex: 'mode', width: 200 },
+            { title: '输入 ¥ / 百万', dataIndex: 'input_cny_per_1m', width: 150, align: 'right' as const },
+            { title: '输出 ¥ / 百万', dataIndex: 'output_cny_per_1m', width: 150, align: 'right' as const }
           ]}
         />
         <p style={{ marginTop: 12, color: '#667085' }}>

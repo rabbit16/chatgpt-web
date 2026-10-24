@@ -1,0 +1,59 @@
+8 rabbitJ
+分 首页 AI工作台 Q 充值商城 日 开票中心 C使用记染
+［ 接入指南 园 软件商城 • 公告留言
+后台钱
+多：多模型 API中转
+一个地址，
+接通主流大模型
+兼容 OpenAI 协议接入，使用单一密钥即可调度GPT、Claudes
+Cemini 等58个模型。按实际用量付费，余额与账单随时可查。
+E 进入对话
+|查看价格
+• 无福绑卡 （ 匿名可先体验（ 密钥随时吊销
+POST /v1/chat/completions
+curl https://www.rabbitj.top/v1/chat/completions/
+H'Authorization: Bearer sk-...."
+-H "Content-Type: application/json”\
+-d｛
+"model:gpt-6.1-so！.
+"messages"： It "rolew： "user".
+content ：“份好"H，
+'streaml:true
+投入文惜
+200 OK
+看完堅示例
+58
+个可用模盤
+10
+承上游供应商
+3
+狩份议兼窑
+按量
+计质，无订阳
+常用模型价格
+标准参考价，单位为美元/百万tokens；注册后按你的等级计算实际单价。
+OpenAi
+gpt-6.1-sol
+输入
+输出
+$0.360
+$1.80
+Claude
+claude-sonnet-5
+縮入
+轮出
+全部58 个模型
+$0.520
+$2.60
+Google
+Gemini 3.5 Flash
+换入
+输出
+$0.693
+$4.16
+DeepSeek
+DeepSeek V4 Pro 正式版
+输入
+输出
+＄1.57
+$4.71

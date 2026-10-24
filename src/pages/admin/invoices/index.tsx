@@ -185,7 +185,7 @@ function AdminInvoices() {
         rowKey="id"
         loading={loading}
         dataSource={list}
-        scroll={{ x: 1240 }}
+        scroll={{ x: 950 }}
         pagination={{
           current: page,
           total,
@@ -193,21 +193,27 @@ function AdminInvoices() {
           onChange: (next) => void loadList(next)
         }}
         columns={[
-          { title: 'ID', dataIndex: 'id', width: 70 },
-          { title: '用户', dataIndex: 'user_id', width: 90 },
-          {
-            title: '订单号',
-            dataIndex: 'bill_id',
-            width: 160,
-            render: (value: string, record: InvoiceRecord) => (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{value || record.order_no || '-'}</span>
-            )
-          },
+          /* 列顺序按「审核时先看什么」排：
+             金额 → 状态 → 抬头 → 用户 → 订单号 → 邮箱 → 申请时间 → ID。
+             原来 ID/用户占头两列，手机横滚后首屏只剩这两列，最该看的金额
+             要到第三屏才出现（2026-10-24 视觉验收第 4 条）。 */
           {
             title: '金额',
             dataIndex: 'amount',
             width: 100,
-            render: (value) => money(value)
+            // 金额等宽右对齐：站长审核时一列数字竖着扫，位数对不齐容易看错
+            align: 'right' as const,
+            render: (value) => (
+              <span style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}>
+                {money(value)}
+              </span>
+            )
+          },
+          {
+            title: '状态',
+            dataIndex: 'status',
+            width: 100,
+            render: (value: InvoiceStatus) => <Tag color={STATUS[value]?.color}>{STATUS[value]?.label || value}</Tag>
           },
           {
             title: '抬头',
@@ -220,18 +226,22 @@ function AdminInvoices() {
               </div>
             )
           },
-          { title: '邮箱', dataIndex: 'email', width: 180 },
+          { title: '用户', dataIndex: 'user_id', width: 90 },
           {
-            title: '状态',
-            dataIndex: 'status',
-            width: 100,
-            render: (value: InvoiceStatus) => <Tag color={STATUS[value]?.color}>{STATUS[value]?.label || value}</Tag>
+            title: '订单号',
+            dataIndex: 'bill_id',
+            width: 160,
+            render: (value: string, record: InvoiceRecord) => (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{value || record.order_no || '-'}</span>
+            )
           },
+          { title: '邮箱', dataIndex: 'email', width: 180 },
           {
             title: '申请时间',
             dataIndex: 'created_at',
             width: 160
           },
+          { title: 'ID', dataIndex: 'id', width: 70 },
           {
             title: '操作',
             width: 120,

@@ -4,7 +4,7 @@
 	border: 1px solid #dedede;
 	max-height: 132px;
 	min-height: 132px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	display: flex;
 	flex-direction: column;
 
@@ -20,9 +20,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border: 1px solid #dedede;
-		box-shadow: 0px 2px 4px 0px rgba(0,0,0,.05);
-		border-radius: 12px;
+		/* 全站约定：卡片用 1px 描边分层、不用重阴影（原来是 #dedede 硬编码 + 投影） */
+		border: 1px solid var(--border-soft);
+		box-shadow: none;
+		border-radius: var(--radius-sm);
 		img {
 			width: 100%;
 			height: auto;
@@ -72,7 +73,7 @@
 			cursor: pointer;
 			background-color: rgba(255, 255, 255, 0);
 			font-size: 12px;
-			border-radius: 50px;
+			border-radius: var(--radius-pill);
 			transition: background-color 0.3s ease-in-out;
 			&:hover{
 				background-color: var(--border);
@@ -93,7 +94,7 @@
 			img{
 				width: 20px;
 				height: 20px;
-				border-radius: 50px;
+				border-radius: var(--radius-pill);
 			}
 			span{
 				margin-left: 4px;

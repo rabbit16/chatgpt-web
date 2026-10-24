@@ -87,9 +87,14 @@
 		&_menu{
 			display: inline-flex;
 			align-items: center;
+			justify-content: center;
 			gap: 4px;
 			margin-left: 4px;
 			padding: 5px 10px;
+			/* 手机端唯一导航入口，实测原来只有 22px 高，拇指容易点空。
+			   撑到 40px 热区，与旁边「后台」按钮一致（验收第 11 条）。 */
+			min-height: 40px;
+			min-width: 64px;
 			border-radius: var(--radius-pill);
 			font-size: 17px;
 			color: var(--text-3);
@@ -144,7 +149,7 @@
 	gap: 8px 16px;
 	max-width: min(720px, calc(100vw - 24px));
 	padding: 6px 16px;
-	border-radius: 999px;
+	border-radius: var(--radius-pill);
 	background: rgba(16, 24, 40, 0.88);
 	color: #fff;
 	font-size: 13px;
@@ -173,7 +178,7 @@
 @media (max-width: 768px) {
 	.billingToast {
 		top: 8px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 		font-size: 12px;
 		gap: 4px 10px;
 	}
@@ -204,7 +209,7 @@
 		border-radius: var(--radius-pill);
 		background: color-mix(in srgb, var(--surface) 88%, transparent);
 		backdrop-filter: saturate(150%) blur(12px);
-		box-shadow: 0 6px 24px rgba(16, 32, 64, 0.08), 0 0 0 1px var(--border-soft);
+		box-shadow: var(--shadow-card), 0 0 0 1px var(--border-soft);
 	}
 
 	.header__progress{

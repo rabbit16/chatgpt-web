@@ -1,0 +1,25 @@
+后台 钱
+品单
+兼容 OpenAI / Anthropic 协议
+接入指南
+全程按 Claude-haha 的实际界面走：装 Claude-
+haha 复制本站地址和密钥 照着 Claude-haha 的
+「添加模型」窗口填4个框。其他客户端最后附一句
+对照，不用来回翻。
+先装 Claude-haha
+本站教程默认用 Claude-haha：写代码、画
+图一个软件就够用，免费。装好再回来做第 2
+步。
+推荐 claude-haha（cc-haha） v0.6.7
+L 百度网盘
+提取码 wxhe
+codex 安装包
+百度网
+提取码_y2y5
+claudecode官方软件 安装包
+L 白度网盘 提取码 xmf7
+2 Claude-haha 也有 GitHub 直链
+2
+复制地址和密钥
+地址是本站的，密钥是你账号的。两样都复制
+好，下一步填进软件。

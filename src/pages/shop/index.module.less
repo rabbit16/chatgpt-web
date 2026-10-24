@@ -13,12 +13,20 @@
 			display: none;
 			/* Chrome Safari */
 		}
+
+		/* 手机上套餐卡片会被右边缘硬切，看着像坏了（2026-10-24 验收第 7 条）：
+		   右缘加渐隐遮罩，暗示「右边还有，可以滑」。 */
+		@media (max-width: 768px) {
+			padding-right: 8px;
+			mask-image: linear-gradient(to right, #000 86%, transparent 100%);
+			-webkit-mask-image: linear-gradient(to right, #000 86%, transparent 100%);
+		}
 	}
 
 	&_card {
 		background-color: var(--surface-sunken);
 		padding: 12px 20px;
-		border-radius: 12px;
+		border-radius: var(--radius-md);
 
 		h4 {
 			font-size: 16px;
@@ -45,7 +53,7 @@
 
 			&Item {
 				padding: 14px;
-				border-radius: 12px;
+				border-radius: var(--radius-md);
 				background: var(--surface);
 				border: 1px solid #edf0f5;
 				cursor: pointer;
@@ -79,7 +87,7 @@
 		.priceProvider {
 			display: inline-block;
 			padding: 2px 8px;
-			border-radius: 999px;
+			border-radius: var(--radius-pill);
 			background: var(--brand-soft);
 			color: var(--brand);
 			font-size: 12px;
@@ -93,7 +101,7 @@
 				min-width: 120px;
 				// height: 40px;
 				background-color: var(--surface);
-				border-radius: 4px;
+				border-radius: var(--radius-xs);
 				padding: 12px;
 				margin: 6px;
 				box-sizing: border-box;
@@ -131,7 +139,7 @@
 			flex-wrap: wrap;
 			margin-top: 12px;
 			padding: 14px 16px;
-			border-radius: 12px;
+			border-radius: var(--radius-md);
 			background: var(--surface);
 			border: 1px dashed #b7d2ff;
 
@@ -179,7 +187,7 @@
 		&_type {
 			background-color: var(--surface);
 			border: 1px solid var(--text-5);
-			border-radius: 8px;
+			border-radius: var(--radius-xs);
 			display: flex;
 			padding-left: 12px;
 
@@ -257,7 +265,7 @@
 	justify-content: space-between;
 	width: 100%;
 	padding: 10px 14px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	background: var(--brand-softer);
 	border: 1px solid var(--border-soft);
 
@@ -280,7 +288,7 @@
 	width: 232px;
 	height: 232px;
 	padding: 16px;
-	border-radius: 16px;
+	border-radius: var(--radius-lg);
 	background: #fff;
 	border: 1px solid var(--border);
 }
@@ -295,7 +303,7 @@
 	font-size: 13px;
 	text-align: center;
 	background: var(--surface-sunken);
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 }
 
 .payHint {
@@ -366,14 +374,15 @@
 .mobileDate {
   margin-top: 2px;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  /* 手机上看支付记录日期，11.5px 偏小，抬到 12px */
+  font-size: 12px;
   color: var(--text-5);
 }
 
 /* 窄屏支付记录：卡片列表，避免横向滚动裁掉发票按钮 */
 .billCards {
   border: 1px solid var(--border-soft);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--surface);
 }

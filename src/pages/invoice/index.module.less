@@ -68,15 +68,20 @@
 
 /* 卡片体一致：头部固定，内容区滚动，四块高度对齐 */
 .topGrid > .summary {
-  /* 拉伸到与右侧说明卡同高；内容不足时卡片均匀分布 */
+  /* 不再 flex:1 硬拉到与右侧「怎么开发票」等高：
+     那样每张卡会被撑到约 118px，而内容只有两行，像占位没填内容。
+     改为自然高度 + 顶部对齐，三张卡紧凑成一组（2026-10-24 验收 S2）。 */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .topGrid > .summary > .summaryCard {
-  flex: 1;
+  /* 自然高度即可，别被拉伸成空心块 */
+  flex: 0 0 auto;
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr auto;
   align-content: center;
@@ -115,16 +120,17 @@
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-md);
+  min-height: 76px;
 
   span {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-1);
+    color: var(--text-3);
   }
 
   b {
     grid-row: span 2;
-    font-size: 22px;
+    font-size: 26px;
     line-height: 1.15;
     color: var(--text-1);
     font-family: var(--font-mono);
@@ -147,7 +153,10 @@
       grid-row: auto;
       grid-column: 2;
       justify-self: end;
-      font-size: 18px;
+      /* 与桌面同字号：手机上金额是这页最该一眼看到的数字 */
+      font-size: 22px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum';
     }
 
     em {

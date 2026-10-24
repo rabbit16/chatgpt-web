@@ -1,7 +1,7 @@
 .userInfo{
     background-color: var(--surface-sunken);
     padding: 12px 20px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     &_card{
         display: flex;
         align-items: center;
@@ -33,5 +33,45 @@
     }
     &_vip{
         margin-left: auto;
+
+        /* 余额与折扣数字挤在一起会被读成「133.7010.7」（2026-10-24 视觉验收第 8 条）：
+           两项之间给足间距，并加一条竖向分隔线，让它们明确是两个不同的数。 */
+        :global(.ant-space) {
+            gap: 20px !important;
+            align-items: center;
+        }
+
+        :global(.ant-statistic) + :global(.ant-statistic) {
+            padding-left: 20px;
+            border-left: 1px solid var(--border);
+        }
+    }
+
+    /* 窄屏：两项不要挤在一行，各占一半，数字才不会粘连 */
+    @media (max-width: 640px) {
+        &_vip {
+            margin-left: 0;
+            width: 100%;
+            margin-top: 10px;
+
+            :global(.ant-space) {
+                display: flex;
+                width: 100%;
+                gap: 12px !important;
+            }
+
+            :global(.ant-space-item) {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+
+            :global(.ant-statistic) + :global(.ant-statistic) {
+                padding-left: 12px;
+            }
+
+            :global(.ant-statistic-content) {
+                font-size: 18px;
+            }
+        }
     }
 }

@@ -1,0 +1,33 @@
+8 rabbitJ
+分 首页 AI工作台 取 充值商城 固 开票中心C使用记录
+后台钱
+兼容 OpenAi/Anthropic 议
+接入指南
+全程按 Claude-haha 的实际界面走：装 Claude-haha 复制本站地址和密钥 照着 Claude-haha的「添加模型」窗口填4个
+框。其他客户端最后附一句对照，不用来回翻。
+先裝 Claude-haha
+本站教程默认用 Claude-haha： 写代码、画图一个软件就够用，免费。装好再回来做第2步
+推荐 claude-haha（cc-haha） v0.6.7
+上百度网盘提取码 wxhe
+codex 安装包
+百度网盘 提取码 y2y5
+claudecode官方软件 安装包
+& Claude-haha 也有 GitHub 直链
+山 百度网盈 提取码 xmf7
+2 复制地址和密钥
+地址是本站的，密钥是你账号的。两样都复制好，下一步填进软件。
+接口地址
+OpenAI 兼容
+Codex. Cursor. ChatBox 等項这条
+https://www.rabbitj.top/v1
+Anthropic 原生
+Claude-haha 默认用这系，不带 Mvi
+https://www.rabbitj.top
+Claude-haha 照第3 步填第二条；其他客户端大多琪第一系。
+0 复制
+API 密钥
+SK-38b8_038f
+0 复制
+管理密钥（新建/禁用/開除）
+展开
+一把密钥能用在所有客户鳞。换电前或担心池篷，就新建一起，旧的茶用與可

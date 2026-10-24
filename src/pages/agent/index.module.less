@@ -26,7 +26,7 @@
 
 .hero {
   padding: 28px 26px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   color: #fff;
   background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
 
@@ -57,7 +57,7 @@
 
 .card {
   padding: 22px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
 
@@ -103,7 +103,7 @@
     min-width: 0;
     max-width: 100%;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-xs);
     background: var(--border-soft);
     color: var(--text-1);
     font-size: 13px;
@@ -130,7 +130,7 @@
   gap: 12px;
   align-items: center;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--surface);
 
   strong {
@@ -181,7 +181,7 @@
 .choice,
 .choiceActive {
   text-align: left;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 14px;
   cursor: pointer;
   background: var(--surface);
@@ -234,7 +234,7 @@
 
 .job,
 .jobActive {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 8px 16px;
   cursor: pointer;
   font-size: 14px;
@@ -293,7 +293,7 @@
 .fillCard {
   border: 1px solid #dbe7ff;
   background: var(--brand-softer);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 16px;
 
   h3 {
@@ -318,7 +318,7 @@
     grid-template-columns: minmax(160px, 220px) 1fr;
     gap: 12px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: var(--surface);
     border: 1px solid var(--border-soft);
   }
@@ -358,7 +358,7 @@
     flex: 1;
     min-width: 0;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--ink-deep);
     color: #e2e8f0;
     font-size: 13px;
@@ -374,7 +374,7 @@
 .drawNote {
   margin-top: 16px;
   padding: 14px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--warning-soft);
   color: #7a2e0e;
 
@@ -397,7 +397,7 @@
 
   article {
     padding: 14px;
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     background: var(--surface-sunken);
     border: 1px solid var(--border-soft);
     display: grid;
