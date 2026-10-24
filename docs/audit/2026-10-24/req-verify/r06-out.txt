@@ -1,0 +1,338 @@
+{
+ "default1440": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "pagText": "1234",
+  "metaText": null,
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 0,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": 1180,
+  "clientW": 1110,
+  "canScrollX": true,
+  "docOverflow": 0
+ },
+ "kw_gpt": {
+  "rows": 13,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "pagText": "1",
+  "metaText": "找到 13 个模型",
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 7,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": 1180,
+  "clientW": 1110,
+  "canScrollX": true,
+  "docOverflow": 0
+ },
+ "kw_claude": {
+  "rows": 13,
+  "ids": [
+   "claude-opus-5-5",
+   "claude-sonnet-5-5",
+   "claude-haiku-5-5",
+   "claude-fable-5-1",
+   "claude-opus-5",
+   "claude-fable-5",
+   "claude-sonnet-5",
+   "claude-opus-4-8",
+   "claude-opus-4-7",
+   "claude-opus-4-6",
+   "claude-sonnet-4-6",
+   "claude-haiku-4-5-20251001",
+   "claude-haiku-4-5"
+  ],
+  "pagText": "1",
+  "metaText": "找到 13 个模型",
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 7,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": 1180,
+  "clientW": 1110,
+  "canScrollX": true,
+  "docOverflow": 0
+ },
+ "kw_gpt_sol": {
+  "rows": 4,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-sol",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)"
+  ],
+  "pagText": "1",
+  "metaText": "找到 4 个模型",
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 7,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": 1180,
+  "clientW": 1110,
+  "canScrollX": true,
+  "docOverflow": 0
+ },
+ "kw_zzzz": {
+  "rows": 0,
+  "ids": [],
+  "pagText": null,
+  "metaText": "找到 0 个模型 —— 换个更短的关键词；或清空搜索看全部 58 个",
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 7,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": true,
+  "scrollW": null,
+  "clientW": null,
+  "canScrollX": null,
+  "docOverflow": 0
+ },
+ "afterClear1440": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "pagText": "1234",
+  "metaText": null,
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 0,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": 1180,
+  "clientW": 1110,
+  "canScrollX": true,
+  "docOverflow": 0
+ },
+ "tabFilter": {
+  "OpenAI": {
+   "rows": 13,
+   "active": [
+    "OpenAI"
+   ],
+   "providerTags": [
+    "gpt-6.1-sol",
+    "gpt-6-astra"
+   ],
+   "muted": 0
+  },
+  "Claude": {
+   "rows": 13,
+   "active": [
+    "Claude"
+   ],
+   "providerTags": [
+    "claude-opus-5-5",
+    "claude-sonnet-5-5"
+   ],
+   "muted": 0
+  },
+  "Google": {
+   "rows": 7,
+   "active": [
+    "Google"
+   ],
+   "providerTags": [
+    "gemini-4-argon",
+    "gemini-3.8-flash"
+   ],
+   "muted": 0
+  },
+  "DeepSeek": {
+   "rows": 8,
+   "active": [
+    "DeepSeek"
+   ],
+   "providerTags": [
+    "deepseek-flash-1017",
+    "deepseek-v4-pro-260425"
+   ],
+   "muted": 0
+  },
+  "智谱": {
+   "rows": 4,
+   "active": [
+    "智谱"
+   ],
+   "providerTags": [
+    "glm-5.3",
+    "glm-5.3-flash"
+   ],
+   "muted": 0
+  },
+  "xAI": {
+   "rows": 3,
+   "active": [
+    "xAI"
+   ],
+   "providerTags": [
+    "grok-4.7",
+    "grok-4.6"
+   ],
+   "muted": 0
+  },
+  "其他": {
+   "rows": 10,
+   "active": [
+    "其他"
+   ],
+   "providerTags": [
+    "gg(cursor)-46",
+    "qwen3.8-max"
+   ],
+   "muted": 0
+  },
+  "全部": {
+   "rows": 15,
+   "active": [
+    "全部"
+   ],
+   "providerTags": [
+    "gpt-6.1-sol",
+    "gpt-6-astra"
+   ],
+   "muted": 0
+  }
+ },
+ "calculator": {
+  "before": "预计消费（USD）$0.004536",
+  "after": "预计消费（USD）$0.02772",
+  "changed": true
+ },
+ "m390": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "pagText": "1234",
+  "metaText": null,
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 0,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": null,
+  "clientW": null,
+  "canScrollX": null,
+  "docOverflow": 0
+ },
+ "m390Scrolled": {
+  "scrollLeft": 726,
+  "scrollWidth": 1050,
+  "clientWidth": 324
+ },
+ "m390AfterScroll": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "pagText": "1234",
+  "metaText": null,
+  "activeTab": [
+   "全部"
+  ],
+  "mutedCount": 0,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "scrollW": null,
+  "clientW": null,
+  "canScrollX": null,
+  "docOverflow": 0
+ },
+ "deleteToast": {
+  "texts": [
+   "删除未成功：后端可能还未接入删除接口",
+   "删除未成功：后端可能还未接入删除接口"
+  ],
+  "html": [
+   "<div class=\"ant-message-custom-content ant-message-warning\"><span role=\"img\" aria-label=\"exclamation-circle\" class=\"anticon anticon-exclamation-circle\"><svg viewBox=\"64 64 896 896\" focusable=\"false\" d",
+   "<span role=\"img\" aria-label=\"exclamation-circle\" class=\"anticon anticon-exclamation-circle\"><svg viewBox=\"64 64 896 896\" focusable=\"false\" data-icon=\"exclamation-circle\" width=\"1em\" height=\"1em\" fill="
+  ]
+ }
+}
+

@@ -1,0 +1,206 @@
+{
+ "default": {
+  "rows": 15,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-astra<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-6 Astra (Fast)",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>"
+  ]
+ },
+ "gpt": {
+  "rows": 13,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-astra<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-6 Astra (Fast)",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>"
+  ]
+ },
+ "claude": {
+  "rows": 13,
+  "names": [
+   "claude-opus-5-5",
+   "claude-sonnet-5-5",
+   "claude-haiku-5-5",
+   "claude-fable-5-1",
+   "claude-opus-5",
+   "claude-fable-5",
+   "claude-sonnet-5",
+   "claude-opus-4-8",
+   "claude-opus-4-7",
+   "claude-opus-4-6",
+   "claude-sonnet-4-6",
+   "claude-haiku-4-5-20251001",
+   "claude-haiku-4-5"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(180, 83, 9);\">Claude</span>claude-opus-5-5<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(180, 83, 9);\">Claude</span>claude-sonnet-5-5",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(180, 83, 9);\">Claude</span>claude-haiku-5-5",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(180, 83, 9);\">Claude</span>claude-fable-5-1"
+  ]
+ },
+ "gptsol": {
+  "rows": 4,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-sol",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-5.6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-5.6 Sol (Fast)"
+  ]
+ },
+ "zzzz": {
+  "rows": 0,
+  "names": [],
+  "hl": 0,
+  "markers": [],
+  "nameEls": []
+ },
+ "darkGpt": {
+  "rows": 13,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-astra<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-6 Astra (Fast)",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>"
+  ]
+ },
+ "m390default": {
+  "rows": 15,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-astra<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-6 Astra (Fast)",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>"
+  ]
+ },
+ "m390zzzz": {
+  "rows": 6,
+  "names": [
+   "gpt-image-2.5-flare",
+   "gpt-image-2.5-sunburst",
+   "gpt-image-2",
+   "gemini-3.1-flash-image",
+   "gemini-3-pro-image",
+   "gemini-nano-banana-2.1"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT Image 2.5 Flare<span class=\"ant-tag ant-tag-green css-dev-only-do-not-override-1reyzg4\" style=\"margin-left: 8px;\">按张</spa",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT Image 2.5 Sunburst<span class=\"ant-tag ant-tag-green css-dev-only-do-not-override-1reyzg4\" style=\"margin-left: 8px;\">按张</",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT Image 2<span class=\"ant-tag ant-tag-green css-dev-only-do-not-override-1reyzg4\" style=\"margin-left: 8px;\">按张</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(22, 119, 255);\">Google</span>Gemini 3.1 Flash Image<span class=\"ant-tag css-dev-only-do-not-override-1reyzg4\" style=\"margin-left: 8px;\">tokens</span>"
+  ]
+ },
+ "m390gpt": {
+  "rows": 13,
+  "names": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "hl": 0,
+  "markers": [],
+  "nameEls": [
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-astra<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>GPT-6 Astra (Fast)",
+   "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>"
+  ]
+ }
+}
+

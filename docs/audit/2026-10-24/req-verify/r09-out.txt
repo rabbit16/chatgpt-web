@@ -1,0 +1,73 @@
+{
+ "dark": {
+  "theme": "dark",
+  "htmlClass": "dark",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "tdBg": "rgb(34, 34, 38)",
+  "nameColor": "rgb(240, 240, 243)",
+  "idColor": "rgb(135, 135, 143)",
+  "priceColor": "rgb(111, 157, 255)",
+  "activeTabBg": "rgb(43, 53, 70)",
+  "activeTabColor": "rgb(111, 157, 255)",
+  "searchBg": "rgb(34, 34, 38)",
+  "searchBorder": "rgb(52, 52, 58)",
+  "rows": 15
+ },
+ "darkSearch": {
+  "theme": "dark",
+  "htmlClass": "dark",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "tdBg": "rgb(34, 34, 38)",
+  "nameColor": "rgb(240, 240, 243)",
+  "idColor": "rgb(135, 135, 143)",
+  "priceColor": "rgb(111, 157, 255)",
+  "activeTabBg": "rgb(43, 53, 70)",
+  "activeTabColor": "rgb(111, 157, 255)",
+  "searchBg": "rgb(34, 34, 38)",
+  "searchBorder": "rgb(111, 157, 255)",
+  "rows": 13
+ },
+ "darkEmpty": {
+  "theme": "dark",
+  "htmlClass": "dark",
+  "rowBg": null,
+  "tdBg": null,
+  "nameColor": null,
+  "idColor": null,
+  "priceColor": null,
+  "activeTabBg": "rgb(43, 53, 70)",
+  "activeTabColor": "rgb(111, 157, 255)",
+  "searchBg": "rgb(34, 34, 38)",
+  "searchBorder": "rgb(111, 157, 255)",
+  "rows": 0
+ },
+ "dark390": {
+  "theme": "dark",
+  "htmlClass": "dark",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "tdBg": "rgba(0, 0, 0, 0)",
+  "nameColor": "rgb(240, 240, 243)",
+  "idColor": "rgb(135, 135, 143)",
+  "priceColor": "rgb(111, 157, 255)",
+  "activeTabBg": "rgb(43, 53, 70)",
+  "activeTabColor": "rgb(111, 157, 255)",
+  "searchBg": "rgb(34, 34, 38)",
+  "searchBorder": "rgb(111, 157, 255)",
+  "rows": 13
+ },
+ "lightBack": {
+  "theme": "light",
+  "htmlClass": "light",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "tdBg": "rgb(255, 255, 255)",
+  "nameColor": "rgb(16, 24, 40)",
+  "idColor": "rgb(152, 162, 179)",
+  "priceColor": "rgb(24, 119, 255)",
+  "activeTabBg": "rgb(232, 241, 255)",
+  "activeTabColor": "rgb(24, 119, 255)",
+  "searchBg": "rgb(255, 255, 255)",
+  "searchBorder": "rgb(228, 233, 242)",
+  "rows": 15
+ }
+}
+

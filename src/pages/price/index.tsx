@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, Button, InputNumber, Select, Table, Tag } from 'antd'
+import { Alert, Button, Input, InputNumber, Select, Table, Tag } from 'antd'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowRightOutlined,
@@ -8,6 +8,7 @@ import {
   FileTextOutlined,
   ImportOutlined,
   ReloadOutlined,
+  SearchOutlined,
   ThunderboltOutlined,
   WalletOutlined
 } from '@ant-design/icons'
@@ -73,6 +74,31 @@ function formatPrice(amount: number) {
   return formatUsd(amount) === '$0.00' ? `$${amount.toExponential(2)}` : formatUsd(amount)
 }
 
+/**
+ * 把文本里命中搜索词的片段包成 <mark>（2026-10-24 站长搜索需求）
+ * ------------------------------------------------------------
+ * 不高亮的话，用户搜 gpt 只看到一堆行，不知道命中了哪几个字；
+ * 搜 `gpt sol` 同时命中 4 条时尤其分不清。
+ * 纯函数、无副作用，只在有搜索词时调用。
+ */
+function highlight(text: string, terms: string[]) {
+  if (!terms.length || !text) return text
+  // 用捕获组切分，保留被命中的片段（大小写不敏感）
+  const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).filter(Boolean)
+  if (!escaped.length) return text
+  const re = new RegExp(`(${escaped.join('|')})`, 'gi')
+  const parts = text.split(re)
+  return parts.map((part, i) =>
+    re.test(part) ? (
+      <mark key={i} className={styles.hl}>
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  )
+}
+
 /** 人民币余额：统一走 utils/money，保证全站小数位规则一致 */
 function formatMoney(value: number) {
   return formatCny(value)
@@ -102,6 +128,8 @@ function PricePage() {
   const navigate = useNavigate()
   // 充值商城：两个页签同页切换（模型价格 / 我的钱包），URL 用 ?tab= 记住位置
   const [searchParams, setSearchParams] = useSearchParams()
+  // 模型广场搜索关键词
+  const [search, setSearch] = useState('')
   const rawTab = searchParams.get('tab')
 
   // 发票已于 2026-10-24 独立成「开票中心」（/invoice），价格页不再有该页签。
@@ -266,10 +294,26 @@ function PricePage() {
       .sort((a, b) => compareModelNewestFirst(a.model, b.model))
   }, [pricing])
 
-  const list = useMemo(
-    () => (tab === 'all' ? models : models.filter((item) => item.provider === tab)),
-    [models, tab]
-  )
+  /* 模型广场搜索（2026-10-24 站长需求：「搜模型关键字，能蹦出来这个模型」）
+     站长决策：**全局搜索，忽略厂商页签** —— 正在搜索时不受当前页签限制，
+     否则用户在「OpenAI」页签里搜 claude 什么也搜不到，会以为站里没有。 */
+  const keyword = search.trim().toLowerCase()
+  const searching = keyword.length > 0
+  // 按空格分词，全部命中才算（AND）：搜「gpt sol」也能找到 gpt-6.1-sol
+  const terms = useMemo(() => keyword.split(/\s+/).filter(Boolean), [keyword])
+  const searched = useMemo(() => {
+    if (!searching) return []
+    return models.filter((item) => {
+      const haystack = `${item.id} ${item.name || ''}`.toLowerCase()
+      return terms.every((t) => haystack.includes(t))
+    })
+  }, [models, terms, searching])
+
+  const list = useMemo(() => {
+    // 搜索优先：命中后跨全部厂商展示
+    if (searching) return searched
+    return tab === 'all' ? models : models.filter((item) => item.provider === tab)
+  }, [models, tab, searching, searched])
   const currentModel = models.find((item) => item.id === modelId) || models[0]
   const selectedRate =
     currentModel?.rates.find((item) => item.service_tier === tier) ||
@@ -306,10 +350,10 @@ function PricePage() {
         <div>
           <div className={styles.modelCellName}>
             <Tag color={PROVIDER_META[record.provider].color}>{PROVIDER_META[record.provider].label}</Tag>
-            {record.name}
+            {highlight(record.name || '', terms)}
             {record.recommend ? <Tag color="blue">推荐</Tag> : null}
           </div>
-          <div className={styles.modelCellId}>{record.id}</div>
+          <div className={styles.modelCellId}>{highlight(record.id, terms)}</div>
           <div className={styles.modelIntro}>{record.intro}</div>
         </div>
       )
@@ -615,16 +659,78 @@ function PricePage() {
               <section className={styles.tableCard}>
                 <div className={styles.tableHead}>
                   <h2>
-                    完整价目 <small>当前可用模型 · 最新在前</small>
+                    完整价目{' '}
+                    <small>
+                      {searching
+                        ? `搜索「${search.trim()}」，已在全部厂商中查找`
+                        : '当前可用模型 · 最新在前'}
+                    </small>
                   </h2>
-                  <div className={styles.tabs}>
-                    {tabs.map(({ key, label }) => (
-                      <button key={key} className={tab === key ? styles.tabActive : undefined} onClick={() => setTab(key)}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                  <Input
+                    allowClear
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="搜索模型名或 ID"
+                    prefix={<SearchOutlined />}
+                    className={styles.modelSearch}
+                    aria-label="搜索模型"
+                    onKeyDown={(e) => {
+                      // 规格 §3：按 Esc 也能清空，和点 ✕ 等价
+                      if (e.key === 'Escape' && search) {
+                        e.preventDefault()
+                        setSearch('')
+                      }
+                    }}
+                  />
                 </div>
+                {/* 厂商页签单独一行（UI 规格 v1：实测 1200 宽下同排会破版换行）。
+                    语义也分开：搜索是「全局检索」，页签是「列表筛选」。 */}
+                <div className={styles.tabs}>
+                  {tabs.map(({ key, label }) => (
+                    <button
+                      key={key}
+                      /* 搜索时始终高亮「全部」：用「范围=全部厂商」表达全局搜索，
+                         而不是把所有页签一起变灰（那会被读成功能坏了） */
+                      className={(searching ? key === 'all' : tab === key) ? styles.tabActive : undefined}
+                      data-muted={(searching && key !== 'all') || undefined}
+                      onClick={() => {
+                        // 点页签 = 退出搜索，回到该厂商列表
+                        if (searching) setSearch('')
+                        setTab(key)
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {/* 搜索命中数：让用户知道「搜到了没有」，而不是盯着空表格发呆 */}
+                {searching ? (
+                  <div className={styles.searchMeta}>
+                    找到 <b>{searched.length}</b> 个模型
+                    {searched.length === 0 ? (
+                      <span>
+                        {' '}
+                        —— 换个更短的关键词；或
+                        <button type="button" onClick={() => setSearch('')}>
+                          清空搜索
+                        </button>
+                        看全部 {models.length} 个
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+                {/* 无结果时给一个专门的空状态，不要再让表格自己弹 antd 的
+                    「暂无数据」大空框——那会和上方「找到 0 个模型」重复两次。 */}
+                {searching && searched.length === 0 ? (
+                  <div className={styles.searchEmpty}>
+                    <IconBadge icon={<SearchOutlined />} tone="sky" size="md" />
+                    <strong>没有找到「{search.trim()}」的模型</strong>
+                    <p>换个更短的关键词，或者清空搜索看全部 {models.length} 个模型。</p>
+                    <Button type="primary" onClick={() => setSearch('')}>
+                      查看全部 {models.length} 个模型
+                    </Button>
+                  </div>
+                ) : (
                 <HorizontalDrag watch={list.length + tab}>
                 {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
                     并加 scroll.y 让表头固定：否则 390 下要滚 960px 才摸到数字、
@@ -653,6 +759,7 @@ function PricePage() {
                   }}
                 />
                 </HorizontalDrag>
+                )}
               </section>
 
               {imageModels.length > 0 ? (

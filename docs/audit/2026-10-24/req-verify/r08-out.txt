@@ -1,0 +1,131 @@
+{
+ "lightDefault": {
+  "themeAttr": "light",
+  "varText1": "#101828",
+  "varText2": "#344054",
+  "varBg": "",
+  "varSurface": "#ffffff",
+  "nameColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "OpenAIgpt-6.1-sol推荐"
+  },
+  "idColor": {
+   "color": "rgb(152, 162, 179)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "gpt-6.1-sol"
+  },
+  "priceColor": {
+   "color": "rgb(24, 119, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "$0.252"
+  },
+  "thColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgb(244, 246, 251)",
+   "text": "模型"
+  },
+  "tdBg": "rgb(255, 255, 255)",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "cardBg": "rgb(255, 255, 255)",
+  "tableBg": "rgb(255, 255, 255)"
+ },
+ "themeBtn": {
+  "label": "切换外观，当前浅色",
+  "html": "<span class=\"ant-btn-icon\"><span role=\"img\" aria-label=\"sun\" class=\"anticon anticon-sun\"><svg fill-rule=\"evenodd\" viewBo"
+ },
+ "afterThemeClick": {
+  "themeAttr": "light",
+  "varText1": "#101828",
+  "varText2": "#344054",
+  "varBg": "",
+  "varSurface": "#ffffff",
+  "nameColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "OpenAIgpt-6.1-sol推荐"
+  },
+  "idColor": {
+   "color": "rgb(152, 162, 179)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "gpt-6.1-sol"
+  },
+  "priceColor": {
+   "color": "rgb(24, 119, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "$0.252"
+  },
+  "thColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgb(244, 246, 251)",
+   "text": "模型"
+  },
+  "tdBg": "rgb(255, 255, 255)",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "cardBg": "rgb(255, 255, 255)",
+  "tableBg": "rgb(255, 255, 255)"
+ },
+ "darkSearchReal": {
+  "themeAttr": "light",
+  "varText1": "#101828",
+  "varText2": "#344054",
+  "varBg": "",
+  "varSurface": "#ffffff",
+  "nameColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "OpenAIgpt-6.1-sol推荐"
+  },
+  "idColor": {
+   "color": "rgb(152, 162, 179)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "gpt-6.1-sol"
+  },
+  "priceColor": {
+   "color": "rgb(24, 119, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "$0.252"
+  },
+  "thColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgb(244, 246, 251)",
+   "text": "模型"
+  },
+  "tdBg": "rgb(255, 255, 255)",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "cardBg": "rgb(255, 255, 255)",
+  "tableBg": "rgb(255, 255, 255)"
+ },
+ "backToLight": {
+  "themeAttr": "light",
+  "varText1": "#101828",
+  "varText2": "#344054",
+  "varBg": "",
+  "varSurface": "#ffffff",
+  "nameColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "OpenAIgpt-6.1-sol推荐"
+  },
+  "idColor": {
+   "color": "rgb(152, 162, 179)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "gpt-6.1-sol"
+  },
+  "priceColor": {
+   "color": "rgb(24, 119, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "text": "$0.252"
+  },
+  "thColor": {
+   "color": "rgb(16, 24, 40)",
+   "bg": "rgb(244, 246, 251)",
+   "text": "模型"
+  },
+  "tdBg": "rgb(255, 255, 255)",
+  "rowBg": "rgba(0, 0, 0, 0)",
+  "cardBg": "rgb(255, 255, 255)",
+  "tableBg": "rgb(255, 255, 255)"
+ }
+}
+

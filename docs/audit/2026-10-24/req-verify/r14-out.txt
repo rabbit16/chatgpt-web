@@ -1,0 +1,191 @@
+{
+ "allTotal": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "meta": null,
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 0,
+  "pagText": "1234",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": ""
+ },
+ "paginationTotal": {
+  "pages": 4,
+  "last": "4"
+ },
+ "onClaudeTab": {
+  "rows": 13,
+  "ids": [
+   "claude-opus-5-5",
+   "claude-sonnet-5-5",
+   "claude-haiku-5-5",
+   "claude-fable-5-1",
+   "claude-opus-5",
+   "claude-fable-5",
+   "claude-sonnet-5",
+   "claude-opus-4-8",
+   "claude-opus-4-7",
+   "claude-opus-4-6",
+   "claude-sonnet-4-6",
+   "claude-haiku-4-5-20251001",
+   "claude-haiku-4-5"
+  ],
+  "meta": null,
+  "activeTabs": [
+   "Claude"
+  ],
+  "muted": 0,
+  "pagText": "1",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": ""
+ },
+ "claudeTabThenGpt": {
+  "rows": 13,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "meta": "找到 13 个模型",
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 7,
+  "pagText": "1",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": "gpt"
+ },
+ "chineseKeyword": {
+  "rows": 0,
+  "ids": [],
+  "meta": "找到 0 个模型 —— 换个更短的关键词；或清空搜索看全部 58 个",
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 7,
+  "pagText": null,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": true,
+  "value": "智谱"
+ },
+ "glm": {
+  "rows": 4,
+  "ids": [
+   "glm-5.3",
+   "glm-5.3-flash",
+   "glm-5.3-flash-free",
+   "glm-5.2"
+  ],
+  "meta": "找到 4 个模型",
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 7,
+  "pagText": "1",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": "glm"
+ },
+ "backToAll": {
+  "rows": 15,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini",
+   "claude-opus-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "meta": null,
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 0,
+  "pagText": "1234",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": ""
+ },
+ "dark390": {
+  "rows": 13,
+  "ids": [
+   "gpt-6.1-sol",
+   "gpt-6-astra",
+   "gpt-6-astra (fast)",
+   "gpt-6-sol",
+   "gpt-6-luna",
+   "gpt-5.6-sol",
+   "gpt-5.6-sol (fast)",
+   "gpt-5.6-terra",
+   "gpt-5.6-terra (fast)",
+   "gpt-5.6-luna",
+   "gpt-5.5",
+   "gpt-5.4",
+   "gpt-5.4-mini"
+  ],
+  "meta": "找到 13 个模型",
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 7,
+  "pagText": "1",
+  "hasAntEmpty": false,
+  "hasSearchEmpty": false,
+  "value": "gpt"
+ },
+ "dark390Theme": "dark",
+ "dark390Empty": {
+  "rows": 0,
+  "ids": [],
+  "meta": "找到 0 个模型 —— 换个更短的关键词；或清空搜索看全部 58 个",
+  "activeTabs": [
+   "全部"
+  ],
+  "muted": 7,
+  "pagText": null,
+  "hasAntEmpty": false,
+  "hasSearchEmpty": true,
+  "value": "zzzz"
+ }
+}
+

@@ -81,3 +81,9 @@ docs/audit/2026-10-24/ui-design/*.jpg
 docs/audit/2026-10-24/ui-design/img_prep/
 docs/audit/2026-10-24/final-verify/*.png
 docs/audit/2026-10-24/final-verify/img_prep/
+# 需求验收的截图含后台留言/用户信息，只留本地
+docs/audit/2026-10-24/req-verify/*.png
+docs/audit/2026-10-24/req-verify/img_prep/
+docs/audit/2026-10-24/req-verify/invalid/
+docs/audit/2026-10-24/search-design/*.png
+docs/audit/2026-10-24/search-design/img_prep/

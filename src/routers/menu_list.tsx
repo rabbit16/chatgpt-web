@@ -17,10 +17,8 @@ import {
   NotificationOutlined,
   ProfileOutlined,
   SettingOutlined,
-  ShopOutlined,
   TeamOutlined,
   TransactionOutlined,
-  UserOutlined
 } from '@ant-design/icons'
 
 /**
@@ -134,9 +132,12 @@ const admin = {
     { path: '/admin/userprice', name: '用户专属价', icon: <DollarOutlined /> },
     { path: '/admin/prompt', name: 'Prompt 注入', icon: <BulbOutlined /> },
     { path: '/admin/pricing', name: '费率设置', icon: <SettingOutlined /> },
-    { path: '/admin/software', name: '软件下载', icon: <CloudDownloadOutlined /> },
-    { path: '/admin/profile', name: '个人资料', icon: <UserOutlined /> },
-    { path: '/admin/shop', name: '商城', icon: <ShopOutlined /> }  ]
+    { path: '/admin/software', name: '软件下载', icon: <CloudDownloadOutlined /> }
+    /* 2026-10-24 站长反馈：下面两项点了是 404（菜单里有、routes 里没有），
+       已删除。若要恢复，需先在 routers/index.tsx 补对应路由：
+       { path: '/admin/profile', name: '个人资料', icon: <UserOutlined /> }
+       { path: '/admin/shop', name: '商城', icon: <ShopOutlined /> } */
+  ]
 }
 
 export default {

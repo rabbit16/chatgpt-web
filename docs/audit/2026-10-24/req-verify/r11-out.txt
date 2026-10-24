@@ -1,0 +1,45 @@
+{
+ "before": {
+  "focused": false,
+  "border": "rgb(228, 233, 242)",
+  "shadow": "none",
+  "transition": "all 0.2s"
+ },
+ "click+0ms": {
+  "focused": true,
+  "border": "rgb(228, 233, 242)",
+  "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+  "transition": "all 0.2s"
+ },
+ "click+100ms": {
+  "focused": true,
+  "border": "rgb(228, 233, 242)",
+  "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+  "transition": "all 0.2s"
+ },
+ "click+300ms": {
+  "focused": true,
+  "border": "rgb(228, 233, 242)",
+  "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+  "transition": "all 0.2s"
+ },
+ "click+800ms": {
+  "focused": true,
+  "border": "rgb(24, 119, 255)",
+  "shadow": "rgb(232, 241, 255) 0px 0px 0px 3px",
+  "transition": "all 0.2s"
+ },
+ "click+1500ms": {
+  "focused": true,
+  "border": "rgb(24, 119, 255)",
+  "shadow": "rgb(232, 241, 255) 0px 0px 0px 3px",
+  "transition": "all 0.2s"
+ },
+ "afterProgrammaticFocus": {
+  "focused": true,
+  "border": "rgb(24, 119, 255)",
+  "shadow": "rgb(232, 241, 255) 0px 0px 0px 3px",
+  "transition": "all 0.2s"
+ }
+}
+

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Button, Empty, Input, Modal, Pagination, Spin, Switch, Tag, message } from 'antd'
-import { getAdminFeedback, updateAdminFeedback } from '@/request/api'
+import { Button, Empty, Input, Modal, Pagination, Popconfirm, Spin, Switch, Tag, message } from 'antd'
+import { deleteAdminFeedback, getAdminFeedback, updateAdminFeedback } from '@/request/api'
 import { INVOICE_MARKER } from '@/request/invoice'
 import styles from '../index.module.less'
 
@@ -107,6 +107,25 @@ function AdminFeedback() {
     return false
   }
 
+  /* 彻底删除（2026-10-24 站长需求）。
+     与「隐藏」的区别：隐藏只是标记 is_delete，数据还在、还能恢复；
+     删除是从后台真的清掉，所以在界面上做了二次确认，且按钮用危险色，
+     两个动作的措辞也刻意分开（隐藏 ↔ 删除），避免误点。 */
+  const removeItem = async (id: number) => {
+    try {
+      const res: any = await deleteAdminFeedback({ id })
+      if (res?.data?.code === '0' || res?.code === 0) {
+        message.success('已删除')
+        loadList(page)
+        return
+      }
+      // 后端还没实现时会走到这里，给出可执行的提示，不静默失败
+      message.warning(res?.data?.codeMsg || '删除未成功：后端可能还未接入删除接口')
+    } catch {
+      message.error('删除失败：后端接口 /user/admin/feedback/delete 尚未接入')
+    }
+  }
+
   const openReply = (row: any) => {
     setReplying(row)
     setReplyText(row.reply || '')
@@ -194,6 +213,18 @@ function AdminFeedback() {
                     >
                       {row.is_delete ? '恢复' : '隐藏'}
                     </Button>
+                    <Popconfirm
+                      title="彻底删除这条留言？"
+                      description="删除后无法恢复，与「隐藏」不同。"
+                      okText="删除"
+                      cancelText="取消"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() => void removeItem(row.id)}
+                    >
+                      <Button type="link" danger>
+                        删除
+                      </Button>
+                    </Popconfirm>
                   </div>
                 </footer>
               </article>

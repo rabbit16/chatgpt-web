@@ -1,0 +1,33 @@
+{
+ "focus": {
+  "borderColor": "rgb(228, 233, 242)",
+  "boxShadow": "none",
+  "borderWidth": "1px",
+  "paddingLeft": "11px",
+  "paddingRight": "11px",
+  "height": 36,
+  "width": 320,
+  "borderRadius": "12px",
+  "isFocused": true
+ },
+ "highlight": {
+  "marks": 0,
+  "hlClassNodes": 0,
+  "computedBgOnNameSpan": "rgba(0, 0, 0, 0)",
+  "nameHTML": "<span class=\"ant-tag ant-tag-has-color css-dev-only-do-not-override-1reyzg4\" style=\"background-color: rgb(16, 163, 127);\">OpenAI</span>gpt-6.1-sol<span class=\"ant-tag ant-tag-blue css-dev-only-do-not-override-1reyzg4\">推荐</span>",
+  "idHTML": "gpt-6.1-sol",
+  "anyBrandSoftBg": true
+ },
+ "clearBtn": {
+  "w": 12,
+  "h": 19,
+  "fontSize": "12px",
+  "visible": true
+ },
+ "darkEmptyBg": {
+  "cardBg": "rgb(34, 34, 38)",
+  "textColor": "rgb(240, 240, 243)",
+  "btnBg": "rgb(111, 157, 255)"
+ }
+}
+

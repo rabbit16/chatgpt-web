@@ -426,6 +426,136 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* 表格右上工具区：搜索框 + 厂商页签同行 */
+.tableTools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 模型广场搜索框（2026-10-24 站长需求 + UI 规格 v1）
+   输入控件用 12px 方角（不用药丸：药丸是筛选语义，且会被 global 的
+   `border-radius:12px !important` 覆盖，写药丸等于写了个不生效的样式）。
+   桌面与页签槽同高 36px；手机 40px 且字号 16 防 iOS 聚焦自动放大。 */
+.modelSearch {
+  width: 320px;
+  flex: 0 0 auto;
+
+  :global(.ant-input-affix-wrapper),
+  &:global(.ant-input-affix-wrapper) {
+    min-height: 36px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex: 1 1 auto;
+
+    /* 手机端压到 40px：全局给 .ant-btn 的 40px 热区 + affix 的内边距
+       会把搜索框撑到 54px，和旁边 36px 的页签一大一小不齐
+       （UI 规格 v1 缺陷 2）。这里把内边距与行高一起收掉。 */
+    :global(.ant-input-affix-wrapper),
+    &:global(.ant-input-affix-wrapper) {
+      min-height: 40px;
+      height: 40px;
+      padding-block: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 16px;
+      align-items: center;
+    }
+
+    :global(.ant-input-affix-wrapper .ant-input),
+    :global(.ant-input-affix-wrapper input) {
+      height: 38px;
+      line-height: 38px;
+      padding-block: 0;
+    }
+
+    /* 清除按钮不要按 40px 热区撑高，32px 够点 */
+    :global(.ant-input-affix-wrapper .anticon-close-circle) {
+      font-size: 14px;
+    }
+  }
+}
+
+/* 搜索命中片段高亮：浅品牌底、不加粗不变字号，
+   避免整行视觉重量被打乱（深色下 --brand-soft 已是 #2b3546，无需额外变量） */
+.hl {
+  background: var(--brand-soft);
+  color: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  padding: 0 1px;
+  border-radius: 3px;
+}
+
+/* 无结果空状态：替掉 antd 自带的「暂无数据」大空框 */
+.searchEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 16px 48px;
+  text-align: center;
+
+  strong {
+    font-size: 15px;
+    color: var(--text-1);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-4);
+  }
+
+  :global(.ant-btn) {
+    margin-top: 4px;
+  }
+}
+
+/* 搜索时厂商页签降权：表达「现在是在全部厂商里找，页签不生效」 */
+.tabs button[data-muted] {
+  opacity: 0.55;
+}
+
+/* 搜索命中数 */
+.searchMeta {
+  margin: -6px 0 12px;
+  font-size: 13px;
+  color: var(--text-4);
+
+  b {
+    color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+
+  button {
+    border: 0;
+    background: none;
+    padding: 0 2px;
+    color: var(--brand);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 768px) {
+  .tableHead {
+    align-items: flex-start;
+  }
+
+  .tableTools {
+    width: 100%;
+  }
 }
 
 /* 模型筛选页签（2026-10-24 视觉验收 P8）

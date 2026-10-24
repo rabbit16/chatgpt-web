@@ -409,6 +409,19 @@ export function updateAdminFeedback(params: {
   return request.post('/user/admin/feedback/update', params)
 }
 
+/**
+ * 彻底删除一条留言（2026-10-24 站长需求：「留言给我一个删除的按钮，后台的，不然删不掉」）
+ * ------------------------------------------------------------
+ * 原来的「隐藏」只是 `is_delete: true` 标记，数据仍在库里，列表里还能点「恢复」，
+ * 站长要的是真正删掉。这里单独开一个接口，**等后端在
+ * `POST /user/admin/feedback/delete` 实现后即生效**；后端未就绪时前端会
+ * 明确提示「后端接口未接入」，不会静默失败。
+ * 参数只用 id，不要传整条数据。
+ */
+export function deleteAdminFeedback(params: { id: number }) {
+  return request.post('/user/admin/feedback/delete', params)
+}
+
 export function getAdminOrders(params: { page?: number; page_num?: number; userId?: number }) {
   return request.post('/user/admin/orders', {
     page: params.page || 1,

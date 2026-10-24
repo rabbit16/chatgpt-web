@@ -1,0 +1,287 @@
+{
+ "w1280": {
+  "default": {
+   "rows": 15,
+   "metaNum": null,
+   "match": null,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 0,
+   "value": "",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:gpt": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "gpt",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:claude": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "claude",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:gpt sol": {
+   "rows": 4,
+   "metaNum": 4,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "gpt sol",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:zzzz": {
+   "rows": 0,
+   "metaNum": 0,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": true,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "zzzz",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "clearBtn": {
+   "found": true,
+   "w": 12,
+   "h": 19,
+   "opacity": "1",
+   "font": "12px"
+  },
+  "afterClearClick": {
+   "rows": 15,
+   "metaNum": null,
+   "match": null,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 0,
+   "value": "",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "afterEsc": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "claude",
+   "inputH": 36,
+   "inputW": 320,
+   "fontSize": "14px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  }
+ },
+ "w390": {
+  "default": {
+   "rows": 15,
+   "metaNum": null,
+   "match": null,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 0,
+   "value": "",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:gpt": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "gpt",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:claude": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "claude",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:gpt sol": {
+   "rows": 4,
+   "metaNum": 4,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "gpt sol",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "kw:zzzz": {
+   "rows": 0,
+   "metaNum": 0,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": true,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "zzzz",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "clearBtn": {
+   "found": true,
+   "w": 12,
+   "h": 40,
+   "opacity": "1",
+   "font": "12px"
+  },
+  "afterClearClick": {
+   "rows": 15,
+   "metaNum": null,
+   "match": null,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 0,
+   "value": "",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  },
+  "afterEsc": {
+   "rows": 13,
+   "metaNum": 13,
+   "match": true,
+   "hasAntEmpty": false,
+   "hasSearchEmpty": false,
+   "activeTabs": [
+    "全部"
+   ],
+   "muted": 7,
+   "value": "claude",
+   "inputH": 40,
+   "inputW": 324,
+   "fontSize": "16px",
+   "enterKeyHint": null,
+   "ariaLabel": "搜索模型",
+   "overflow": 0,
+   "placeholder": "搜索模型名或 ID"
+  }
+ }
+}
+
