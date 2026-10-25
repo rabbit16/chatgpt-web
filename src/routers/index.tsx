@@ -133,7 +133,8 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: false,
       public: true,
-      title: '接入指南',
+      // 教程已并入 Agent 接入（/agent?tab=guide），标题跟着统一，别和导航对不上
+      title: 'Agent 接入 · 教程',
       role: ['user', 'administrator']
     }
   },
@@ -145,7 +146,8 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: false,
       public: true,
-      title: '接入指南',
+      // 教程已并入 Agent 接入（/agent?tab=guide），标题跟着统一，别和导航对不上
+      title: 'Agent 接入 · 教程',
       role: ['user', 'administrator']
     }
   },
@@ -214,7 +216,8 @@ export const webRouter: RouteOptions[] = [
     configure: {
       verifToken: false,
       public: true,
-      title: '接入',
+      // 2026-10-25 站长要求导航改名「Agent 接入」，浏览器标题同步，避免对不上
+      title: 'Agent 接入',
       role: ['user', 'administrator']
     }
   },

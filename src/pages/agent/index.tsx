@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ApiOutlined,
   ArrowRightOutlined,
@@ -18,6 +18,8 @@ import { getUserPricing, listUserApiKeys, type UserApiKeyItem } from '@/request/
 import { pickFeaturedModelIds } from '@/data/modelPricing'
 import { CC_HAHA_RELEASES, RELAY_HOST, RELAY_URL } from '@/utils/relay'
 import { readPhone, readUserId, syncCredential } from '@/utils/llmCredential'
+import PillTabs from '@/components/PillTabs'
+import { GuideContent } from '@/pages/guide'
 import ApiKeyPanel from './ApiKeyPanel'
 import styles from './index.module.less'
 
@@ -125,6 +127,27 @@ function pickGptModel(ids: string[]) {
 }
 
 function AgentPage() {
+  /**
+   * 页内两个页签（2026-10-25 站长要求把「接入教程」并进来）
+   * ------------------------------------------------------------
+   * 站长原话：「把这个接入教程并入现在的左侧这个接入导航栏中的这个按钮，
+   * 然后这个接入要改成叫 agent 接入……页签里面应该有两个小页签，
+   * 一个是地址密钥，还有一个是接入教程。已经点这个 agent 接入，默认的是这个地址密钥。」
+   *
+   * 取值：tab=values（默认，地址密钥） / tab=guide（接入教程）
+   * 为什么用 ?tab= 记在 URL 上而不是纯 state：
+   *   刷新、从教程里点「去拿密钥」、把链接发给别人，都能落到同一个页签。
+   * 教程正文**直接复用** guide 页导出的 GuideContent 组件，
+   * 不复制一份代码（否则以后改教程要改两处，必然漏）。
+   */
+  const [searchParams, setSearchParams] = useSearchParams()
+  const agentTab = searchParams.get('tab') === 'guide' ? 'guide' : 'values'
+  const switchAgentTab = (next: string) => {
+    const nextParams = new URLSearchParams(searchParams)
+    if (next === 'values') nextParams.delete('tab')
+    else nextParams.set('tab', next)
+    setSearchParams(nextParams, { replace: true })
+  }
   const { token, user_info, llm_api_key } = userStore()
   const [apiKey, setApiKey] = useState(llm_api_key || '')
   const [chatModels, setChatModels] = useState<string[]>([])
@@ -206,6 +229,32 @@ function AgentPage() {
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
+          {/**
+           * 页内两个页签（2026-10-25 站长要求）
+           * ------------------------------------------------------------
+           * 「地址密钥」默认选中 —— 站长原话：「已经点这个 agent 接入，默认的是这个地址密钥。
+           * 不明白的人可以点接入教程。」
+           * 用现成的 PillTabs（变体 solid：白底槽 + 品牌色选中态），
+           * 和充值商城、公告页同一套组件，视觉天然统一，也让「这俩能点」一眼可见。
+           */}
+          <PillTabs
+            ariaLabel="Agent 接入"
+            variant="solid"
+            value={agentTab}
+            onChange={switchAgentTab}
+            items={[
+              { key: 'values', label: '地址密钥' },
+              { key: 'guide', label: '接入教程' }
+            ]}
+          />
+
+          {agentTab === 'guide' ? (
+            /* 教程页签：正文复用 guide 页的 GuideContent，不复制代码 */
+            <div className={styles.guidePane}>
+              <GuideContent />
+            </div>
+          ) : (
+          <>
           {/* ---------- 页面头：只说这一页是干什么的，教程留给接入指南 ---------- */}
           <header className={styles.hero}>
             <div className={styles.heroMain}>
@@ -391,6 +440,8 @@ function AgentPage() {
               />
             ) : null}
           </section>
+          </>
+          )}
         </div>
       </Layout>
     </div>

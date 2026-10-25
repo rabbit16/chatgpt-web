@@ -28,7 +28,14 @@
   padding: 28px;
   border-radius: var(--radius-lg);
   color: #fff;
-  background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
+  /* 2026-10-25 深色修复：中段 --brand 上白字仅 2.64:1、收尾 #22c1c3 仅 2.21:1，
+     改用成对的 --hero-gradient-* 变量（深色下自动换成深蓝/深青）。 */
+  background: linear-gradient(
+    135deg,
+    var(--ink-deep) 0%,
+    var(--hero-gradient-mid) 58%,
+    var(--hero-gradient-end) 120%
+  );
   box-shadow: 0 16px 40px rgba(24, 119, 255, 0.18);
 
   h1 {
@@ -78,7 +85,8 @@
   }
 
   span {
-    color: var(--text-5);
+    /* 13px 计数：--text-5 浅 2.58:1 / 深 4.45:1 都不达标，升 --text-meta。 */
+    color: var(--text-meta);
     font-size: 13px;
   }
 }
@@ -109,7 +117,8 @@
 
   time {
     margin-left: auto;
-    color: var(--text-5);
+    /* 12px 时间戳：同留言，--text-5 两套主题都不达标，升 --text-meta。 */
+    color: var(--text-meta);
     font-size: 12px;
   }
 }

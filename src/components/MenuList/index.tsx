@@ -32,11 +32,44 @@ function MenuList(props: Props) {
 
   const pathname = useMemo(() => location.pathname, [location])
 
+  /**
+   * 当前 URL 的 tab（价格页用它区分「模型价格 / 我的钱包」两个菜单项）
+   * ------------------------------------------------------------
+   * 语义与 price 页完全一致：viewTab = rawTab === 'wallet' ? 'wallet' : 'price'，
+   * 也就是说**没有 tab 参数、或 tab 是 price/shop 等任何非 wallet 的值，都算「模型价格」**。
+   *
+   * 为什么必须这样：价格页点「模型价格」页签时 switchTab 会删掉 tab 参数
+   * （URL 变成裸 /price）。如果这里只认 tab=price，
+   * 用户从页内页签切回价格时顶部菜单就会不高亮——看着像导航坏了。
+   */
+  const currentTab = useMemo(() => {
+    const raw = new URLSearchParams(location.search).get('tab')
+    return raw === 'wallet' ? 'wallet' : 'price'
+  }, [location.search])
+
   const items: MenuItemData[] = token ? menuList.userNav : menuList.guestNav
+
+  /**
+   * 是否高亮某一个菜单项
+   * ------------------------------------------------------------
+   * 普通菜单项（没有 matchTab / matchAlso）：行为与改动前**完全一致**，只比 pathname。
+   * 带 matchTab 的菜单项（模型价格 / 我的钱包）：pathname 命中且 tab 也命中才算高亮，
+   * 否则共用 /price 的两项会同时亮（2026-10-25 拆导航时踩到的坑）。
+   * 带 matchAlso 的菜单项（Agent 接入）：除了自己的 /agent，列出的其他路径也算选中。
+   * 为什么需要：「接入教程」已并入 /agent 做成页签，但 /guide 作为旧链接仍然可用；
+   * 用户在 /guide 时若导航一项都不亮，会以为「我不在 Agent 接入里」。
+   */
+  const isActive = (item: MenuItemData) => {
+    const meta = item as { matchTab?: string; matchAlso?: string[] }
+    // 额外路径：教程等从属页面，也算这一项被选中
+    if (meta.matchAlso?.includes(pathname)) return true
+    if (!meta.matchTab) return pathname === item.path
+    return pathname === item.path.split('?')[0] && currentTab === meta.matchTab
+  }
 
   const renderItem = (item: MenuItemData) => {
     const isExternal = /^(http:\/\/|https:\/\/)/.test(item.path)
-    const active = pathname === item.path
+    const active = isActive(item)
 
     return (
       <Link key={item.path} to={item.path} target={isExternal ? '_blank' : '_self'}>

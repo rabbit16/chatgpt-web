@@ -1,58 +1,57 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button, Empty, Spin, Tag } from 'antd'
 import {
   AppleOutlined,
   ArrowLeftOutlined,
   CloudDownloadOutlined,
+  DownloadOutlined,
   GithubOutlined,
+  InboxOutlined,
   LinuxOutlined,
   WindowsOutlined
 } from '@ant-design/icons'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Layout from '@/components/Layout'
-import IconBadge from '@/components/IconBadge'
+import CoverBadge from '@/components/CoverBadge'
 import {
   PLATFORM_LABEL,
-  getOpenSourceProjects,
-  type OpenSourceProject,
-  type ProjectPlatform
-} from '@/request/projects'
+  REVIEW_LABEL,
+  formatFileSize,
+  getMarketDetail,
+  platformsOf,
+  type SoftwareRecord
+} from '@/request/software'
 import styles from './detail.module.less'
 
-const PLATFORMS: { key: ProjectPlatform; label: string; icon: JSX.Element }[] = [
-  { key: 'windows', label: 'Windows', icon: <WindowsOutlined /> },
-  { key: 'macos', label: 'macOS', icon: <AppleOutlined /> },
-  { key: 'linux', label: 'Linux', icon: <LinuxOutlined /> }
-]
-
 /**
- * 项目详情页
+ * 软件详情页
  * ------------------------------------------------------------
- * 列表只占一行，点进来才看完整介绍与下载。这样列表能放很多项目不臃肿。
- * 数据仍复用 getOpenSourceProjects（接口就绪后自动切换）。
+ * 列表一行放不下全部信息，点进来才看完整介绍、安装包与更新说明。
+ * 数据走 getMarketDetail（GET /user/software/detail?id=）；
+ * 后端未提供该接口时，请求层会自动降级为「从公开列表里找同 id」。
  */
 function ProjectDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [projects, setProjects] = useState<OpenSourceProject[]>([])
+  const [item, setItem] = useState<SoftwareRecord | null>(null)
+  const [localMode, setLocalMode] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    let alive = true
-    void (async () => {
-      try {
-        const list = await getOpenSourceProjects()
-        if (alive) setProjects(list)
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-    return () => {
-      alive = false
+  const load = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    try {
+      const res = await getMarketDetail(id)
+      setItem(res.item || null)
+      setLocalMode(res.local)
+    } finally {
+      setLoading(false)
     }
-  }, [])
+  }, [id])
 
-  const project = useMemo(() => projects.find((item) => String(item.id) === String(id)), [projects, id])
+  useEffect(() => {
+    void load()
+  }, [load])
 
   if (loading) {
     return (
@@ -66,14 +65,14 @@ function ProjectDetailPage() {
     )
   }
 
-  if (!project) {
+  if (!item) {
     return (
       <div className={styles.page}>
         <Layout>
           <div className={styles.wrap}>
-            <Empty description="没有找到这个项目，可能已下架或链接有误">
+            <Empty description="没有找到这个软件，可能已下架或链接有误">
               <Button type="primary" onClick={() => navigate('/projects')}>
-                返回项目列表
+                返回软件商城
               </Button>
             </Empty>
           </div>
@@ -82,95 +81,152 @@ function ProjectDetailPage() {
     )
   }
 
+  // 平台列表统一走 platformsOf：兼容后端只返回单数 platform 的过渡期
+  const entries = platformsOf(item)
+  const isOfficial = item.source === 'official'
+  const PLATFORM_ICON: Record<string, JSX.Element> = {
+    windows: <WindowsOutlined />,
+    macos: <AppleOutlined />,
+    linux: <LinuxOutlined />
+  }
+
   return (
     <div className={styles.page}>
       <Layout>
         <div className={styles.wrap}>
           <Link to="/projects" className={styles.back}>
-            <ArrowLeftOutlined /> 返回项目列表
+            <ArrowLeftOutlined /> 返回软件商城
           </Link>
 
           <header className={styles.head}>
-            <IconBadge icon={<span className={styles.bunny}>🐰</span>} tone="rose" size="lg" />
+            {/* 有封面显示站长上传的图，没有/加载失败回退图标（2026-10-25 站长要求） */}
+            <CoverBadge src={item.cover_url} size="lg" fallback={<InboxOutlined />} />
             <div className={styles.headText}>
               <h1>
-                {project.name}
-                {project.official && <Tag color="blue">官方</Tag>}
+                {item.name}
+                {isOfficial ? <Tag color="blue">官方</Tag> : <Tag>用户上传</Tag>}
+                {!isOfficial && item.review_status !== 'approved' ? (
+                  <Tag color={item.review_status === 'rejected' ? 'red' : 'gold'}>
+                    {REVIEW_LABEL[item.review_status]}
+                  </Tag>
+                ) : null}
               </h1>
-              <p>{project.summary}</p>
+              <p>{item.summary}</p>
               <div className={styles.meta}>
-                {project.author_name ? <span>作者：{project.author_name}</span> : null}
-                {project.repo_url ? (
-                  <a href={project.repo_url} target="_blank" rel="noreferrer">
+                {item.author_name ? <span>作者：{item.author_name}</span> : null}
+                {item.category_name ? <span>分类：{item.category_name}</span> : null}
+                {item.version ? <span>版本：v{item.version}</span> : null}
+                {item.repo_url ? (
+                  <a href={item.repo_url} target="_blank" rel="noreferrer">
                     <GithubOutlined /> 开源仓库
                   </a>
-                ) : (
-                  <span className={styles.muted}>仓库待补充</span>
-                )}
+                ) : null}
               </div>
             </div>
           </header>
 
-          {project.description ? <p className={styles.desc}>{project.description}</p> : null}
+          {!isOfficial && item.review_status === 'rejected' ? (
+            <p className={styles.desc}>
+              <strong>审核未通过：</strong>
+              {item.reviewer_note || '站长没有填写原因，可以重新提交或在留言区询问。'}
+            </p>
+          ) : null}
 
           <section className={styles.downloads}>
             <h2>下载</h2>
             <div className={styles.releaseList}>
-              {PLATFORMS.map((p) => {
-                const release = project.releases.find((r) => r.platform === p.key && r.status !== 'rejected')
-                const ready = Boolean(release?.file_url)
-                return (
-                  <div key={p.key} className={styles.releaseRow}>
-                    <span className={styles.releaseIcon}>{p.icon}</span>
+              {entries.length ? (
+                entries.map((entry) => (
+                  <div key={entry.platform} className={styles.releaseRow}>
+                    <span className={styles.releaseIcon}>{PLATFORM_ICON[entry.platform]}</span>
                     <div className={styles.releaseMeta}>
-                      <strong>{PLATFORM_LABEL[p.key]}</strong>
+                      <strong>
+                        {PLATFORM_LABEL[entry.platform]} 安装包
+                        {entry.version || item.version ? ` · v${entry.version || item.version}` : ''}
+                      </strong>
                       <span>
-                        {release?.version ? `v${release.version}` : '版本待定'}
-                        {release?.file_size ? ` · ${release.file_size}` : ''}
+                        {formatFileSize(entry.file_size || item.file_size) || '体积未标注'}
+                        {entry.download_count ? ` · 下载 ${entry.download_count} 次` : ''}
                       </span>
                     </div>
-                    {ready ? (
-                      <Button type="primary" icon={<CloudDownloadOutlined />} href={release!.file_url} target="_blank">
+                    {entry.file_url ? (
+                      <Button
+                        type="primary"
+                        icon={<CloudDownloadOutlined />}
+                        href={entry.file_url}
+                        target="_blank"
+                      >
                         下载
                       </Button>
                     ) : (
                       <Tag>安装包待上传</Tag>
                     )}
                   </div>
-                )
-              })}
+                ))
+              ) : (
+                <div className={styles.releaseRow}>
+                  <span className={styles.releaseIcon}>
+                    <InboxOutlined />
+                  </span>
+                  <div className={styles.releaseMeta}>
+                    <strong>安装包</strong>
+                    <span>尚未上传</span>
+                  </div>
+                  <Tag>安装包待上传</Tag>
+                </div>
+              )}
             </div>
-            {project.releases.some((r) => r.status === 'pending') ? (
-              <p className={styles.pendingNote}>有版本正在等待站长审核，通过后会自动出现在这里。</p>
+            {!isOfficial && item.review_status === 'pending' ? (
+              <p className={styles.pendingNote}>这份投稿正在等待站长审核，通过后会出现在公开列表。</p>
+            ) : null}
+            {localMode ? (
+              <p className={styles.pendingNote}>本地模式：下面是本机暂存的数据，后端接口接入后自动切到真实数据。</p>
             ) : null}
           </section>
 
-          {/* 版本时间线：一眼看清哪个平台哪一版改了什么 */}
-          <section className={styles.changelog}>
-            <h2>版本更新</h2>
-            <ol className={styles.timeline}>
-              {[...project.releases]
-                .filter((r) => r.status !== 'rejected')
-                .sort((a, b) => String(b.version).localeCompare(String(a.version), 'en', { numeric: true }))
-                .map((r) => (
-                  <li key={r.id} className={styles.timelineItem}>
-                    <span className={styles.timelineDot} />
-                    <div className={styles.timelineBody}>
-                      <div className={styles.timelineHead}>
-                        <strong>
-                          {PLATFORM_LABEL[r.platform]} v{r.version || '—'}
-                        </strong>
-                        {r.created_at ? <time>{String(r.created_at).slice(0, 10)}</time> : null}
-                        <Tag color={r.status === 'approved' ? 'green' : 'orange'}>
-                          {r.status === 'approved' ? '已上架' : '审核中'}
-                        </Tag>
-                      </div>
-                      <p>{r.changelog || '这一版没有填写更新说明。'}</p>
+          {item.category_name || item.file_size || item.download_count !== undefined ? (
+            <section className={styles.downloads}>
+              <h2>信息</h2>
+              <div className={styles.releaseList}>
+                {item.category_name ? (
+                  <div className={styles.releaseRow}>
+                    <span className={styles.releaseIcon}>#</span>
+                    <div className={styles.releaseMeta}>
+                      <strong>分类</strong>
+                      <span>{item.category_name}</span>
                     </div>
-                  </li>
-                ))}
-            </ol>
-          </section>
+                  </div>
+                ) : null}
+                <div className={styles.releaseRow}>
+                  <span className={styles.releaseIcon}>
+                    <DownloadOutlined />
+                  </span>
+                  <div className={styles.releaseMeta}>
+                    <strong>下载量</strong>
+                    <span>{item.download_count ?? 0} 次</span>
+                  </div>
+                </div>
+                {item.insert_time ? (
+                  <div className={styles.releaseRow}>
+                    <span className={styles.releaseIcon}>#</span>
+                    <div className={styles.releaseMeta}>
+                      <strong>上架时间</strong>
+                      <span>{String(item.insert_time).slice(0, 10)}</span>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {item.changelog ? (
+            <section className={styles.changelog}>
+              <h2>更新说明</h2>
+              <ul>
+                <li>{item.changelog}</li>
+              </ul>
+            </section>
+          ) : null}
         </div>
       </Layout>
     </div>

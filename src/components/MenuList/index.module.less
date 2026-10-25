@@ -1,3 +1,25 @@
+/**
+ * 导航菜单样式
+ * ============================================================
+ * 【铁律 · 2026-10-25 站长要求，长期有效】
+ * 导航项数量会随产品迭代**不断增加**（2026-10-25 就从 8 项涨到 9 项，
+ * 「模型价格」「我的钱包」被提到顶栏）。每次**新增/删除/改名菜单项**或改这里的样式，
+ * 都必须实测下面 5 个宽度下「相邻项互不重叠、文字不换行」：
+ *
+ *   1920 / 1440 / 1280 / 1024 / 390
+ *   （1024 是最容易出事的临界点；390 应走汉堡菜单）
+ *
+ * 判据：读 DOM 量 getBoundingClientRect()，前一项.right > 后一项.left 即重叠；
+ * 另需检查每一项的文字宽度 ≤ 盒子宽度（否则字会溢出压到隔壁）。
+ * 只贴截图目测不算数。
+ *
+ * 【当年踩的坑】2026-10-25：导航加到 11 项、且 .item 默认 flex-shrink:1，
+ * 宽度不够时各项目被压到比文字还窄，文字溢出盒子互相压盖，
+ * 站长截图看到「公告留言」和「后台」叠在一起、字压字看不清。
+ * 修法：项目 flex-shrink:0（绝不允许被压缩到小于内容），
+ * 空间不够时整条导航横向滚动，而不是让字叠字。
+ * ============================================================
+ */
 .menuList {
 	display: flex;
 
@@ -18,13 +40,31 @@
 		}
 	}
 
-	/* 顶栏常驻：5 项 + 更多，不再挤满一行 */
+	/* 顶栏常驻：全部平铺，右对齐 */
 	&_horizontal {
 		align-items: center;
 		height: var(--header-h);
 		margin-left: auto;
 		gap: 1px;
 		min-width: 0;
+
+		/**
+		 * 空间不够时整条横向滚动（铁律的落地实现）
+		 * ------------------------------------------------------------
+		 * overflow-x:auto 只在真的放不下时才出现滚动（放得下时 overflow 不生效）；
+		 * overscroll-behavior-x:contain 防止滑到两端时连带滚动整页。
+		 * 滚动条默认隐藏，鼠标悬停/滚动时仍可用，不破坏顶栏的干净。
+		 */
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		flex-wrap: nowrap;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
 
 		.item {
 			/* 药丸式选中态：悬停浅底、选中品牌浅底，不用下划线 */
@@ -33,6 +73,10 @@
 			height: 34px;
 			border-radius: var(--radius-pill);
 			white-space: nowrap;
+
+			/* ★ 铁律核心：绝不允许被 flex 压缩 —— 一旦缩小到比文字窄，字就会溢出压到隔壁 */
+			flex: 0 0 auto;
+			flex-shrink: 0;
 
 			&:hover {
 				color: var(--text-1);
@@ -69,6 +113,9 @@
 				line-height: 1;
 				margin: 0 0 0 6px;
 				color: inherit;
+				/* 铁律配套：标题也不许被压缩，否则外层一变 flex 就会被悄悄压扁 */
+				flex: 0 0 auto;
+				min-width: max-content;
 			}
 
 			&_caret {

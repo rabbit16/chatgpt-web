@@ -29,8 +29,15 @@
 .hero {
   padding: 28px;
   border-radius: var(--radius-lg);
-  color: #fff;
-  background: linear-gradient(135deg, var(--ink-deep) 0%, var(--brand) 58%, #22c1c3 120%);
+  color: #fff; /* 渐变块上的标题：渐变已按主题调深，白字 ≥4.5:1 */
+  /* 2026-10-25 深色修复：中段原来用 --brand，深色下白字压上只有 2.64:1；
+     收尾 #22c1c3 只有 2.21:1。改用成对的 --hero-gradient-* 变量。 */
+  background: linear-gradient(
+    135deg,
+    var(--ink-deep) 0%,
+    var(--hero-gradient-mid) 58%,
+    var(--hero-gradient-end) 120%
+  );
   box-shadow: 0 16px 40px rgba(24, 119, 255, 0.18);
 
   h1 {
@@ -88,7 +95,8 @@
   }
 
   span {
-    color: var(--text-5);
+    /* 13px 计数：--text-5 不达标，升 --text-meta。 */
+    color: var(--text-meta);
     font-size: 13px;
   }
 }
@@ -154,12 +162,14 @@
   gap: 8px;
 
   strong {
-    color: var(--brand);
+    /* --brand 当文字色浅底仅 3.81:1，改用 --brand-text（浅 4.97 / 深 6.94）。 */
+    color: var(--brand-text);
   }
 
   time {
     margin-left: auto;
-    color: var(--text-5);
+    /* 12px 时间戳：--text-5 浅 2.58:1 / 深 4.45:1 都不达标，升 --text-meta。 */
+    color: var(--text-meta);
     font-size: 12px;
   }
 }
@@ -176,7 +186,8 @@
 
   time {
     margin-left: auto;
-    color: var(--text-5);
+    /* 12px 时间戳：同 .replyMeta，--text-5 两套主题都不达标。 */
+    color: var(--text-meta);
     font-size: 12px;
   }
 }

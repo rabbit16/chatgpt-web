@@ -15,7 +15,6 @@ import {
 import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
-import PillTabs from '@/components/PillTabs'
 import { useNarrow } from '@/hooks/useNarrow'
 import { formatCny } from '@/utils/money'
 import ShopPanel from '@/pages/shop'
@@ -137,11 +136,35 @@ function PricePage() {
   useEffect(() => {
     if (rawTab === 'invoice') navigate('/invoice', { replace: true })
   }, [rawTab, navigate])
+  /**
+   * 页签取值（2026-10-25 导航重构后重新梳理）
+   * ------------------------------------------------------------
+   * 规范值：price / wallet（与顶部导航两个菜单项一一对应）
+   * 兼容值：
+   *   · 裸 /price            → price（老链接、老书签，不能白屏）
+   *   · tab=shop             → price（「充值商城」时代的默认值，
+   *                            routers/index.tsx 里 /shop 的重定向还在用它）
+   *   · tab=invoice          → 直接跳 /invoice（发票已独立成页）
+   *   · 其他任何脏值          → price（参数错不该把页面搞成空白）
+   */
   const viewTab: ViewTab = rawTab === 'wallet' ? 'wallet' : 'price'
+
+  // tab=shop 规整成规范的 tab=price：地址栏里的参数要能被菜单高亮逻辑读懂，
+  // 也让用户复制出去的链接是当前语义（shop 已不是一个存在的页签名）。
+  useEffect(() => {
+    if (rawTab === 'shop') {
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.set('tab', 'price')
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [rawTab, searchParams, setSearchParams])
+
   const switchTab = (next: string) => {
     const nextParams = new URLSearchParams(searchParams)
-    if (next === 'price') nextParams.delete('tab')
-    else nextParams.set('tab', next)
+    // 显式写入 tab=price，而不是删掉参数：
+    // 顶部导航「模型价格」指向 /price?tab=price，两边写法必须一致，
+    // 否则页内切到价格后地址栏变成裸 /price，与菜单链接不像同一个位置。
+    nextParams.set('tab', next)
     setSearchParams(nextParams, { replace: true })
   }
 
@@ -426,19 +449,18 @@ function PricePage() {
     <div className={styles.pricePage}>
       <Layout>
         <div className={styles.wrap}>
-          <PillTabs
-            ariaLabel="充值商城"
-            variant="solid"
-            value={viewTab}
-            onChange={switchTab}
-            items={[
-              { key: 'price', label: '模型价格' },
-              { key: 'wallet', label: '我的钱包' }
-            ]}
-          />
-
-          {/* 充值条：站长反馈「很难注意到在哪里充钱」。
-              常驻在价格页顶部，不点进「我的钱包」也能看见余额 + 一键去充值。 */}
+          {/**
+           * 页内 PillTabs 已删除（2026-10-25 站长追加要求）
+           * ------------------------------------------------------------
+           * 站长原话：「既然红框里的这两个页签已经放到导航栏来，那这两个就不需要了。」
+           * 「模型价格 / 我的钱包」已经是顶栏两个独立菜单项，页内再放一排切换按钮
+           * 等于同一件事给两个入口，还占掉首屏最贵的那块地方。
+           *
+           * 注意：删掉的只是这排 UI 按钮，
+           *   · ?tab= 的解析（viewTab）**保留**，顶部导航靠它区分两个菜单项；
+           *   · 页内大标题（TAB_META[viewTab].title）**保留**，用户得知道自己在哪一页。
+           * 页面顶部现在直接是充值条，所以下方不要再留多余的空白。
+           */}
           <div className={styles.rechargeBar}>
             <div className={styles.rechargeLead}>
               <span className={styles.rechargeIcon}>

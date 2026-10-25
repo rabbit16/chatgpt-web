@@ -1,0 +1,278 @@
+/**
+ * 后台 · 软件管理（本次新增的「管理员直传」面板）
+ * ------------------------------------------------------------
+ * 为什么不改 ../index.module.less：
+ *   那份是后台共享样式，另一位同事正在改深色留言可读性；
+ *   这里只为本面板新增独立样式，避免撞车。
+ *
+ * 视觉沿用全站秩序：1px 描边分层、圆角 12/16、无可点元素无 hover 反馈。
+ */
+
+/* 面板顶部说明条 */
+.panelHint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-4);
+  background: var(--brand-softer);
+  border: 1px solid var(--brand-soft);
+  border-radius: var(--radius-lg);
+}
+
+/* 表单分栏：两列并排，窄屏自动堆叠 */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 文件拖放区 */
+.dropZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 22px 16px;
+  text-align: center;
+  background: var(--surface-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--brand);
+    background: var(--brand-softer);
+  }
+}
+
+.dropIcon {
+  font-size: 22px;
+  color: var(--brand);
+}
+
+.dropTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.dropDesc {
+  font-size: 12px;
+  color: var(--text-5);
+}
+
+/* 已选文件回显：文件名 + 体积，数字等宽 */
+.filePicked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+}
+
+.filePickedName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filePickedSize {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-4);
+}
+
+/* 提交方式切换：直传文件 / 填链接 */
+.modeSwitch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 16px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+}
+
+.modeBtn {
+  padding: 5px 14px;
+  font-size: 12.5px;
+  color: var(--text-4);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+
+  &:hover {
+    color: var(--brand);
+  }
+}
+
+.modeBtnActive {
+  color: var(--text-1);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  font-weight: 500;
+}
+
+/* 审核状态小标 */
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  color: var(--text-4);
+}
+
+/* ---------- 多平台录入：一键同链接 ---------- */
+/* 「同一链接用于全部平台」：输入框 + 按钮一行，站长最常用的一条路径 */
+.bulkRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: var(--brand-softer);
+  border: 1px solid var(--brand-soft);
+  border-radius: var(--radius-md);
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.bulkHint {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-5);
+}
+
+/* ---------- 多平台逐行录入（上传安装包 / 填链接 共用） ---------- */
+/* 一个平台一行：左侧平台名固定宽度，右侧拖拽区/输入框占满，窄屏自动换行 */
+.platformBlock {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+}
+
+.platformBlockHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.platformBlockTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.platformBlockHint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-5);
+}
+
+.platformRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--border-soft);
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* 平台名当行首标签：等宽 84px，三行文字左边缘对齐 */
+.platformName {
+  flex: 0 0 84px;
+  padding-top: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+
+  @media (max-width: 640px) {
+    padding-top: 0;
+  }
+}
+
+.platformSlot {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 拖拽区压缩成一行高度：多平台时三块叠起来不能太占地方 */
+.compactDragger {
+  display: block;
+
+  :global(.ant-upload-drag) {
+    padding: 8px 12px !important;
+    background: var(--surface) !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  :global(.ant-upload-btn) {
+    padding: 0 !important;
+  }
+}
+
+/* 已传文件行里的「移除」：低调的小按钮，不抢主操作 */
+.fileClear {
+  flex: 0 0 auto;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--text-5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+
+  &:hover {
+    color: var(--danger, #d4380d);
+  }
+}
+
+/* 提交行：主按钮 + 「本次上架 N 个平台」提示 */
+.submitRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.submitHint {
+  font-size: 12px;
+  color: var(--text-5);
+}

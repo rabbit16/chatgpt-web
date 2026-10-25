@@ -83,7 +83,9 @@
 
   time {
     margin-left: auto;
-    color: var(--text-5);
+    /* 12px 时间戳：--text-5 在深色卡片底只有 4.45:1、浅色仅 2.58:1，都不达标，
+       统一升到 --text-meta（浅 #5f6b7d 4.60~5.40 / 深 #9a9aa3 5.12~5.95）。 */
+    color: var(--text-meta);
     font-size: 12px;
     white-space: nowrap;
   }
@@ -92,12 +94,18 @@
 .feedHead strong,
 .feedReplyMeta strong {
   flex: none;
+  /* 不写死色值：显式继承语义色，避免主题切换时退回浏览器默认黑/白。 */
+  color: var(--text-1);
 }
 
 .feedBody,
 .feedReply p {
   margin: 10px 0 0;
-  color: #1d2939;
+  /* 2026-10-25 深色修复：原来写死 #1d2939（浅色正文色），深色卡片背景 --surface
+     是 #222226，黑字压近黑底只有 1.08:1，站长反馈「看不清」。
+     改用语义 token：浅色 --text-2 #344054 在 #ffffff 上 10.46:1，
+     深色 --text-2 #d9d9df 在 #222226 上 11.28:1，两套都超过正文 7:1 的判据。 */
+  color: var(--text-2);
   font-size: 14px;
   line-height: 1.75;
   white-space: pre-wrap;
@@ -110,15 +118,25 @@
   padding: 10px 12px;
   border-radius: var(--radius-md);
   background: var(--brand-softer);
+  /* 深色下回复块 #23272f 与卡片底 #222226 只差一点，靠一条左侧品牌色竖线
+     把「这是管理员回复」这件事标出来（浅色同样成立，不改布局尺寸）。 */
+  border-left: 3px solid var(--brand);
 
   p {
     margin-top: 6px;
+  }
+
+  /* 「管理员回复」标签：--brand 当文字色时浅底仅 3.81:1，改用 --brand-text
+     （浅 #0b63e5 4.97:1 / 深 #8ab0ff 6.94:1）。 */
+  .feedReplyMeta strong {
+    color: var(--brand-text);
   }
 }
 
 .feedFoot {
   margin-top: 8px;
-  color: var(--text-5);
+  /* 12px 元信息（#id / 联系方式 / IP）：同时间戳，--text-5 两套主题都不达标。 */
+  color: var(--text-meta);
   font-size: 12px;
 
   span {
@@ -175,7 +193,9 @@
 	margin: 8px 0 4px;
 	padding: 12px 14px;
 	border: 1px solid var(--border-soft);
-	border-left: 3px solid var(--warning, #d97706);
+	/* 2026-10-25：原来写 var(--warning, #d97706)，兜底值在深色下偏暗；
+	   两个主题都已定义 --warning，去掉写死的兜底色。 */
+	border-left: 3px solid var(--warning);
 	border-radius: var(--radius-md);
 	background: var(--surface-sunken);
 }
@@ -196,6 +216,7 @@
 
 	span {
 		font-family: var(--font-mono);
+		/* 12px 订单号：--text-4 浅 4.75:1 / 深 6.72:1，两套都过 4.5:1。 */
 		font-size: 12px;
 		color: var(--text-4);
 	}
@@ -212,13 +233,16 @@
 	}
 
 	dt {
+		/* 11.5px 字段名：--text-5 浅色仅 2.58:1、深色 4.45:1 临界，
+		   统一升到 --text-meta（浅 5.00 / 深 6.72）。 */
 		font-size: 11.5px;
-		color: var(--text-5);
+		color: var(--text-meta);
 	}
 
 	dd {
 		margin: 2px 0 0;
 		font-size: 13px;
+		/* 字段值是要读的内容：--text-2 浅 10.00:1 / 深 11.82:1（sunken 底）。 */
 		color: var(--text-2);
 		word-break: break-all;
 	}
@@ -228,9 +252,16 @@
 	margin-top: 10px;
 
 	summary {
+		/* 折叠标题也是要读的文字：同 dt，升到 --text-meta。 */
 		font-size: 11.5px;
-		color: var(--text-5);
+		color: var(--text-meta);
 		cursor: pointer;
+
+		/* 键盘可达：summary 默认可聚焦，但多数浏览器不给可见焦点环，这里补上。 */
+		&:focus-visible {
+			outline: 2px solid var(--brand);
+			outline-offset: 2px;
+		}
 	}
 
 	code {
@@ -240,7 +271,9 @@
 		border-radius: var(--radius-xs);
 		background: var(--surface);
 		font-size: 11px;
-		color: var(--text-4);
+		/* 11px 原始 JSON：--text-4 本已达标（浅 4.97 / 深 6.41），
+		   但字号偏小，升到 --text-3（浅 7.69 / 深 8.76）更稳。 */
+		color: var(--text-3);
 		word-break: break-all;
 	}
 }

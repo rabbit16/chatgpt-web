@@ -5,6 +5,7 @@ import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
 import styles from './index.module.less'
 import {
   AppstoreOutlined,
+  FileTextOutlined,
   LogoutOutlined,
   MenuUnfoldOutlined,
   PayCircleOutlined,
@@ -132,6 +133,25 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                     label: '我的钱包',
                     onClick: () => {
                       navigate('/price?tab=wallet')
+                    }
+                  },
+                  {
+                    /**
+                     * 开票中心（2026-10-25 站长追加要求）
+                     * ------------------------------------------------------------
+                     * 站长原话：「导航里开票中心可以不需要了，因为在我的钱包这个页面
+                     * 横幅上它是有开票中心的……把那个开票中心挪到那边
+                     * （右上角用户头像下拉），让它不要在导航栏占位置。」
+                     *
+                     * 所以：顶栏不再有「开票中心」这一格，页面和 /invoice 路由都保留，
+                     * 入口挪到这里。放「我的钱包」之后、「退出登录」之前 ——
+                     * 开票是花完钱之后的动作，跟钱包挨着，离「退出」最远，不易误点。
+                     */
+                    key: 'invoice',
+                    icon: <FileTextOutlined />,
+                    label: '开票中心',
+                    onClick: () => {
+                      navigate('/invoice')
                     }
                   },
                   {

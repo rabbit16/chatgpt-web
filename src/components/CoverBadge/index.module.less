@@ -1,0 +1,65 @@
+/**
+ * 软件封面容器
+ * ------------------------------------------------------------
+ * 尺寸与圆角刻意与 IconBadge 对齐，保证「有封面的行」和「没封面的行」
+ * 左侧一列是同宽同圆角的，不会一列方一列圆、一列大一小。
+ *   md → 36px，圆角 --radius-sm(12px)（与 IconBadge .md 一致）
+ *   lg → 44px，圆角 --radius-lg(16px)（与 IconBadge .lg 一致）
+ *
+ * 底色用 --surface-sunken：图片解码完成前先有一块「沉下去」的中性底，
+ * 不会在深色主题上闪一个白方块。
+ */
+.wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	overflow: hidden;
+	background: var(--surface-sunken);
+	line-height: 1;
+
+	/**
+	 * 1px 描边（2026-10-25 站长要求「深色模式要验」）
+	 * ------------------------------------------------------------
+	 * 封面是用户上传的任意图片，白底图很常见。
+	 * 在深色页面上，一块白底图如果没有任何边界，会像贴在界面上的白斑；
+	 * 加一圈 --border-soft 的细描边，深浅两套主题下都能把图「框住」。
+	 * 用 inset box-shadow 而不是 border：border 会占掉 1px 内容区，
+	 * 让 36 / 44 的尺寸变成 38 / 46，跟 IconBadge 对不齐。
+	 */
+	box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+
+.md {
+	width: 36px;
+	height: 36px;
+	border-radius: var(--radius-sm);
+}
+
+.lg {
+	width: 44px;
+	height: 44px;
+	border-radius: var(--radius-lg);
+}
+
+.img {
+	width: 100%;
+	height: 100%;
+	/* 裁切而不是拉伸：不同比例的封面都不变形 */
+	object-fit: cover;
+	object-position: center;
+	display: block;
+	/* 用户上传的图片带自己的颜色，别让容器的 hover/过渡影响它 */
+	user-select: none;
+}
+
+/* 兜底图标态：沿用 IconBadge 的视觉语言（柔和底 + 同色系图标） */
+.fallback {
+	font-size: 16px;
+	color: var(--ink-brand);
+	background: var(--tint-brand);
+}
+
+.lg.fallback {
+	font-size: 19px;
+}

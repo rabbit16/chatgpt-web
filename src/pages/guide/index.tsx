@@ -16,7 +16,12 @@ import Layout from '@/components/Layout'
 import IconBadge from '@/components/IconBadge'
 import { DocsPanel } from '@/pages/docs'
 // 2026-10-24：密钥管理已从教程页移到 /agent，这里不再需要 ApiKeyPanel
-import { getSoftwareList, type SoftwareItem } from '@/request/api'
+import {
+  getSoftwareCategories,
+  getSoftwareList,
+  type SoftwareCategoryItem,
+  type SoftwareItem
+} from '@/request/api'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
 import { CC_HAHA_RELEASES, RELAY_HOST, RELAY_URL } from '@/utils/relay'
@@ -69,6 +74,26 @@ function useCopy() {
 
 /* ---------------- 第 1 步：客户端下载（紧凑列表） ---------------- */
 
+/**
+ * 从分类列表里认出「AI(Agent)软件」的 id
+ * ------------------------------------------------------------
+ * 2026-10-25 站长报的 bug：后台直传的「余额兔」（分类=效率软件）跑进了接入指南第 1 步。
+ * 根因是这里取数没带 category_id，把商城**全部**软件都拉了回来。
+ * 修法：只取「AI(Agent)软件」这一个分类，接入指南就该只对应 AI 工具台。
+ *
+ * 为什么按名字匹配、不写死 category_id = 1：
+ *   分类 id 是后端自增的，换环境/重建库就可能变（现有数据里效率软件是 id=3）。
+ *   写死数字迟早会让接入指南整页空白 —— 那种「静默变空」比显示错软件更难排查。
+ * 匹配不到时返回 null，调用方据此退回「不过滤」，并保留原 GitHub Releases 兜底链接：
+ *   宁可多显示一个软件，也不能让客户看不到下载入口。
+ */
+function pickAgentCategoryId(categories: SoftwareCategoryItem[]): number | null {
+  const hit = categories.find(
+    (item) => /AI\s*\(?\s*Agent/i.test(item.name) || /^\s*AI/i.test(item.name)
+  )
+  return hit ? hit.id : null
+}
+
 function ClientDownloads() {
   const [items, setItems] = useState<SoftwareItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,9 +101,30 @@ function ClientDownloads() {
 
   useEffect(() => {
     let alive = true
-    getSoftwareList({ page: 1, page_num: 6 })
-      .then((res: any) => {
-        const list = (res?.data?.list || []) as SoftwareItem[]
+    /**
+     * 取数顺序：先拿分类表 → 认出 AI(Agent) 的 id → 按该 id 取软件。
+     * 分类接口挂了不影响下载入口：categoryId 保持 null，退回取全部（原有行为），
+     * 这样后端分类接口抖动时，客户仍然拿得到下载列表。
+     */
+    const loadList = async () => {
+      let categoryId: number | null = null
+      try {
+        const catRes: any = await getSoftwareCategories()
+        const categories = (catRes?.data?.list || catRes?.list || []) as SoftwareCategoryItem[]
+        if (Array.isArray(categories)) categoryId = pickAgentCategoryId(categories)
+      } catch {
+        categoryId = null
+      }
+      const res: any = await getSoftwareList({
+        page: 1,
+        page_num: 6,
+        ...(categoryId === null ? {} : { category_id: categoryId })
+      })
+      return ((res?.data?.list || []) as SoftwareItem[]) || []
+    }
+
+    loadList()
+      .then((list) => {
         // 推荐款排前面：Claude-haha → Codex → 其他
         const weight = (name: string) => (/haha/i.test(name) ? 0 : /codex/i.test(name) ? 1 : 2)
         const sorted = [...list].sort(
@@ -209,7 +255,16 @@ function MockField({ no, label, value, mono }: { no: number; label: string; valu
 
 /* ---------------- 页面 ---------------- */
 
-function GuidePage() {
+/**
+ * 教程正文（可被 /guide 与 /agent?tab=guide 共用）
+ * ------------------------------------------------------------
+ * 2026-10-25 站长要求把「接入教程」并进「Agent 接入」里做第二个页签。
+ * 为了避免把 600 行教程复制一份（以后改一处忘另一处），这里把正文抽成组件：
+ *   · /guide 页面 = 本组件 + 自己的 Layout 外壳（旧链接、书签继续可用）
+ *   · /agent?tab=guide = 同一个本组件，套在接入页的页签里
+ * 两份入口共用一套代码，教程内容永远只有一处。
+ */
+function GuideContent() {
   const [params] = useSearchParams()
   const { token, llm_api_key, setLoginModal } = userStore()
   const [key, setKey] = useState(llm_api_key || '')
@@ -277,9 +332,7 @@ function GuidePage() {
   )
 
   return (
-    <div className={styles.page}>
-      <Layout>
-        <div className={styles.wrap}>
+    <div className={styles.guideBody}>
           <header className={styles.head}>
             <p className={styles.kicker}>
               <ApiOutlined /> 兼容 OpenAI / Anthropic 协议
@@ -558,10 +611,22 @@ function GuidePage() {
           <p className={styles.footerTip}>
             <KeyOutlined /> 密钥只保存在你自己的客户端里，本站不代管、不写入日志。
           </p>
+    </div>
+  )
+}
+
+/** /guide 独立页面：套一层自带页头/布局的外壳，行为与改动前一致 */
+function GuidePage() {
+  return (
+    <div className={styles.page}>
+      <Layout>
+        <div className={styles.wrap}>
+          <GuideContent />
         </div>
       </Layout>
     </div>
   )
 }
 
+export { GuideContent }
 export default GuidePage

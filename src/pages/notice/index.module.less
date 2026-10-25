@@ -38,7 +38,9 @@
 	margin: 0;
 	font-size: 12px;
 	letter-spacing: 0.04em;
-	color: var(--brand);
+	/* 2026-10-25：12px 品牌色文字用 --brand 时，浅底 --canvas 上只有 3.89:1，
+	   改用 --brand-text（浅 5.07:1 / 深 8.21:1）。 */
+	color: var(--brand-text);
 }
 
 .lead {

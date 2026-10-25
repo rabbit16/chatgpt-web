@@ -103,11 +103,6 @@
 	}
 }
 
-.bunny {
-	font-size: 20px;
-	line-height: 1;
-}
-
 .cardDesc {
 	margin: 0;
 	font-size: 13px;
@@ -328,6 +323,12 @@
 	font-size: 12px;
 }
 
+.rowPlatforms {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
 .rowPlatform {
 	display: inline-flex;
 	font-size: 14px;
@@ -341,4 +342,344 @@
 .rowArrow {
 	font-size: 11px;
 	color: var(--text-5);
+}
+
+/* ---------- 来源徽标与审核态 ---------- */
+/* 官方：品牌色实心小徽标，比 Tag 更醒目但不抢标题 */
+.badgeOfficial {
+	display: inline-flex;
+	align-items: center;
+	height: 20px;
+	padding: 0 8px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.02em;
+	color: #fff;
+	background: var(--brand);
+	border-radius: var(--radius-pill);
+}
+
+/* 用户上传：中性描边 Tag，不与官方抢眼 */
+.badgeUser {
+	margin-inline-end: 0;
+	color: var(--text-4);
+	background: var(--surface-muted);
+	border-color: var(--border-soft);
+}
+
+/* 驳回原因：单独一行，红色但降饱和，避免整行刺眼 */
+.reviewNote {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	color: #d4380d;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rowVersion {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-4);
+}
+
+/* 本地模式提示条：与页面卡片同圆角层级 */
+.localHint {
+	border-radius: var(--radius-lg);
+}
+
+/* 空状态里的补充说明文字：解释「为什么这里看不到」，语气克制不吓人 */
+.localHintText {
+	max-width: 44em;
+	margin: 0 auto 16px;
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--text-4);
+}
+
+/* 上传弹窗里的「选文件」触发器 */
+.uploadTrigger {
+	font-size: 12px;
+	color: var(--brand);
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+/**
+ * 两层筛选的容器（2026-10-25 站长验收反馈）
+ * ------------------------------------------------------------
+ * 站长原话：「红框内的应该是主要的（来源页签），绿框内的应该是辅助的（分类），
+ * 所以要有一个大小的区分，还有一个颜色深浅的区分。」
+ *
+ * 两层之间必须留出清晰的间距（12px），让人一眼看出是「筛选的主 / 次两层」，
+ * 而不是「一排按钮太长被折成了两行」。用 gap 而不是 margin，
+ * 这样「我的提交」页签下第二排整排消失时，第一排下面不会多出一块空白。
+ */
+.filterStack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	/* 390 不溢出的第一道保险：允许栏目收缩，长内容不会把页面撑宽 */
+	min-width: 0;
+}
+
+/**
+ * 主排：来源页签（全部 / 官方软件 / 用户上传 / 我的提交）
+ * ------------------------------------------------------------
+ * 这里是「变体覆盖」：给 PillTabs 外面套一层，用 CSS Modules 的哈希类把它盖一层皮肤。
+ * 原组件（src/components/PillTabs）一个字都没改 —— 它还服务 AI 工作台、
+ * 充值商城、公告页，动组件等于三处一起变。
+ *
+ * 覆盖了什么（改前 → 改后）：
+ *   槽内边距   3px        → 4px
+ *   按钮内边距 7px 16px   → 9px 18px
+ *   字号       13px       → 14px
+ *   行高       1.4        → 1.35（大字号配紧行高，按钮高度更整）
+ *   选中态     白底 + 深灰字 → 品牌实底 + 白字（最强档）
+ *   未选中字色 --text-4   → --text-2（比第二排深一档）
+ *
+ * 白色字压 --brand 只有 4.10:1（深色主题更只有 2.64:1），所以实底用专门的
+ * --brand-solid（浅 #0b63e5 白字 5.34:1 / 深 #2f6fe0 白字 4.70:1），
+ * 两套主题都过 4.5:1。
+ */
+.sourceRail {
+	min-width: 0;
+	width: 100%;
+
+	/* 槽：跟第二排同一套圆角语言（全圆胶囊），但更厚 */
+	> div {
+		width: fit-content;
+		max-width: 100%;
+		padding: 4px;
+		gap: 4px;
+		background: var(--surface);
+		border: 1px solid var(--border-soft);
+		box-shadow: var(--shadow-xs);
+	}
+
+	/* 按钮 */
+	> div > button {
+		padding: 9px 18px;
+		font-size: 14px;
+		line-height: 1.35;
+		font-weight: 500;
+		color: var(--text-2);
+		white-space: nowrap;
+
+		&:hover {
+			color: var(--text-1);
+			background: var(--surface-muted);
+		}
+	}
+
+	/* 选中态：品牌实底 + 白字（这是全页最强的一档，一眼就能看出「主筛选在哪」） */
+	> div > button[aria-selected='true'] {
+		background: var(--brand-solid);
+		color: var(--on-brand-solid);
+		font-weight: 600;
+		box-shadow: none;
+
+		&:hover {
+			background: var(--brand-solid-hover);
+			color: var(--on-brand-solid);
+		}
+	}
+}
+
+/**
+ * 主排窄屏（≤640）：四个页签放大后总宽 356px，比 390 屏的可用宽 332px 还大，
+ * 「我的提交」会被裁掉半边（实测右边界 385 > 槽右边界 362）。
+ * 处理方式和第二排一致：单行 + 横向滚动 + 隐藏滚动条，保证每个按钮都能滑到、看得全。
+ * 注意：这里只让「槽内部」滚动，页面本身仍然不产生横向溢出（docScrollWidth 保持 390）。
+ */
+@media (max-width: 640px) {
+	.sourceRail {
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		> div {
+			width: max-content;
+			max-width: none;
+		}
+
+		/* 右侧渐隐，暗示「还能往右滑」（mask 只用 alpha，深浅色都不受影响） */
+		mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+		-webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+	}
+}
+
+/**
+ * 分类筛选栏（第二排，2026-10-25）
+ * ------------------------------------------------------------
+ * 定位：主排下面的「辅助过滤」，所以整排刻意做小一号、做浅一档。
+ * 数值：槽 3px 内边距 / 项 5px 13px / 字号 12.5px / gap 4px / 圆角全圆。
+ * （改前与主排完全一样：7px 16px / 13px，两者视觉权重相同，站长看不出主次。）
+ *
+ * 选中态用「白底 + 品牌色文字 + 品牌色描边」（弱一档），而不是主排的品牌实底：
+ * 全页最强的实底只属于来源页签，避免两层又回到同权。
+ *
+ * 为什么不直接把 PillTabs 组件改造成可滚动：
+ *   PillTabs 还被 AI 工作台、充值商城、公告页用着，给它全局加 overflow 有回归风险
+ *   （那几处的槽是固定三四个项、宽度吃满，一加滚动会出现半截按钮）。
+ *   所以在页面侧包一层滚动容器，组件本身一字不改。
+ *
+ * 溢出策略（站长 390 窄屏硬要求 scrollWidth === 390）：
+ *   宽屏 → flex-wrap 换行，分类再多也只在槽内往下排，不产生横向滚动条；
+ *   窄屏（≤640）→ 单行 + 横向滚动，保证「全部分类」永远在第一屏可见，
+ *                并隐藏滚动条，摸起来像原生 App 的分类 chips。
+ */
+.categoryBar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	/* 关键：min-width:0 允许 flex 子项收缩；不写这行，长内容会把父级撑宽 */
+	min-width: 0;
+}
+
+.categoryScroll {
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow-x: auto;
+	overflow-y: hidden;
+	/* 隐藏滚动条：Firefox / IE / WebKit 三套写法都要，漏一个就露出来 */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	-webkit-overflow-scrolling: touch;
+	/* 滑到两端时不要连带滚动整页 */
+	overscroll-behavior-x: contain;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+/* 槽：与 PillTabs index.module.less 的 .tabs 保持同一组数值 */
+.categoryTabs {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 3px;
+	width: max-content;
+	/* 换行后最多占满容器，绝不超出，这是 390 不溢出的第二道保险 */
+	max-width: 100%;
+	border-radius: var(--radius-pill);
+	background: var(--surface-muted);
+}
+
+.categoryTab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	/* 次排：比来源页签小一号（改前这里也是 7px 16px / 13px，与主排撞了权重） */
+	padding: 5px 13px;
+	border: 1px solid transparent;
+	background: transparent;
+	border-radius: var(--radius-pill);
+	font-size: 12.5px;
+	line-height: 1.4;
+	/* 不允许换行：「AI(Agent)软件 3」折两行会把槽撑高，也破坏「一排 chips」的样子 */
+	white-space: nowrap;
+	/* 未选中比主排浅一档：主排 --text-2、次排 --text-3。
+	   浅色 --text-3 在 --surface-muted 上 7.11:1，深色 7.89:1，都远超 4.5 */
+	color: var(--text-3);
+	cursor: pointer;
+	/* 可点元素必须有 hover 反馈（视觉约定） */
+	transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+		box-shadow var(--dur) var(--ease);
+
+	&:hover {
+		color: var(--text-1);
+		background: var(--surface);
+	}
+
+	/* 键盘可达：全站统一焦点环，不靠鼠标也能看见当前在哪 */
+	&:focus-visible {
+		outline: none;
+		box-shadow: var(--shadow-focus);
+	}
+}
+
+/**
+ * 次排选中态：白底 + 品牌色文字 + 品牌色描边（比主排弱一档）
+ * ------------------------------------------------------------
+ * 与主排「品牌实底白字」形成明确两级：
+ *   主排 = 实心色块（最强的「面」）；次排 = 只描边 + 染字（面仍是白/浅的）。
+ * 文字用 --brand-text 而非 --brand：--brand 当文字色在浅底只有 3.60~4.10:1，
+ * --brand-text 浅色 5.34:1、深色 6.62~7.35:1，两套主题都达标。
+ */
+.categoryTabActive {
+	background: var(--surface);
+	color: var(--brand-text);
+	border-color: var(--brand);
+	font-weight: 600;
+	box-shadow: var(--shadow-xs);
+
+	&:hover {
+		background: var(--surface);
+		color: var(--brand-text);
+	}
+}
+
+/* 计数徽标：等宽数字（视觉约定），弱化处理不抢分类名 */
+.categoryCount {
+	margin-left: 2px;
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: 11.5px;
+	color: var(--text-4);
+}
+
+.categoryTabActive .categoryCount {
+	color: var(--brand-text);
+	opacity: 0.78;
+}
+
+/* 分类接口失败时整排直接不渲染（增强功能不打扰用户），所以不需要提示样式 */
+
+.formHint {
+	margin: -4px 0 12px;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--text-5);
+}
+
+@media (max-width: 640px) {
+	.rowDesc {
+		white-space: normal;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+	}
+
+	.rowMeta {
+		gap: 6px;
+	}
+
+	.rowVersion {
+		display: none;
+	}
+
+	/* 窄屏改单行横滑：不换行，避免两行 chips 把首屏内容顶下去 */
+	.categoryTabs {
+		flex-wrap: nowrap;
+		width: max-content;
+		max-width: none;
+	}
+
+	/* 右侧渐隐，暗示「还能往右滑」。
+	   mask 里只用到 alpha，黑色不代表任何主题色，深浅色都不受影响 */
+	.categoryScroll {
+		mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+		-webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+	}
 }
