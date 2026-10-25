@@ -1228,8 +1228,19 @@
 	gap: 10px;
 }
 
+/**
+ * 协议药丸（模型选择器右侧）
+ * ------------------------------------------------------------
+ * 2026-10-25：formatLabel 改成与 CC-Haha 下拉逐字一致的长文案后，
+ * 「OpenAI · OpenAI Responses API（代理转换）」实测 281px，
+ * 而 390 宽下模型选择行只有 ~296px（卡片内宽减内边距），
+ * 原来 flex:0 0 auto + nowrap 会硬顶出容器 15px（量到 tagOverflowsRow=true）。
+ * 修法：允许收缩 + 内部换行，并把 max-width 收到 100%，宽了就折两行，绝不压字。
+ */
 .protocolTag {
-	flex: 0 0 auto;
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: 100%;
 	padding: 4px 11px;
 	border-radius: var(--radius-pill);
 	background: var(--brand-softer);
@@ -1237,7 +1248,9 @@
 	color: var(--brand);
 	font-size: 12px;
 	font-weight: 500;
-	white-space: nowrap;
+	line-height: 1.5;
+	white-space: normal;
+	overflow-wrap: anywhere;
 }
 
 .modelPickWhy {

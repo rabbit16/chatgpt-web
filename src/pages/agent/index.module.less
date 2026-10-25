@@ -226,6 +226,55 @@
 	}
 }
 
+/* ---------------- 地址行里的「API 格式选 …」药丸（2026-10-25） ----------------
+ * 站长需求：拿到地址去 CC-Haha，不知道「API 格式」下拉选哪个。
+ * 对应关系必须就地可见，所以药丸就贴在地址标签下面，复制地址时一眼看到。
+ *
+ * 排布取舍：标签「API 格式选」不换行、药丸自身允许断行（文案与下拉逐字一致，
+ * 但 OpenAI Responses API（代理转换）在 390 下会超过一行，硬不折行就撑破卡片）。
+ * 整行 flex-wrap：放不下时整块折到下一行，绝不压字。
+ */
+.formatTagRow {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 3px;
+	min-width: 0;
+}
+
+.formatTagLabel {
+	flex: 0 0 auto;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--text-3);
+	letter-spacing: 0.01em;
+}
+
+.formatTag {
+	flex: 0 1 auto;
+	max-width: 100%;
+	padding: 2px 10px;
+	/* 药丸：全圆 + 品牌描边 + 极浅底，不和「✅ 推荐」抢注意力 */
+	border-radius: var(--radius-pill);
+	border: 1px solid var(--brand-soft);
+	background: var(--brand-softer);
+	color: var(--brand-text);
+	font-size: 11.5px;
+	font-weight: 600;
+	line-height: 1.6;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.formatTagNote {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 11.5px;
+	color: var(--text-4);
+	line-height: 1.5;
+}
+
 .copyValue {
 	display: flex;
 	align-items: center;
@@ -338,6 +387,195 @@
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
+}
+
+/* ============================================================
+ * API 格式三分支对照（2026-10-25 站长需求）
+ * ------------------------------------------------------------
+ * 视觉分工：
+ *   · 推荐的两项（a / c）→ 品牌色描边 + 品牌徽章 → 「该选这个」
+ *   · 不推荐的 b        → 琥珀徽章 + 虚线浅描边 → 「一般不用选」，弱化但不写成不可用
+ * 徽章色共用到 brand / violet（卡片头）/ amber，一屏 3 种，符合约定。
+ * 圆角只用两档：卡片 16、内部条目 12；药丸全圆。
+ * ============================================================ */
+
+.formatLead {
+	margin: 0;
+	padding: 10px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--surface-sunken);
+	border-left: 2px solid var(--brand);
+	font-size: 13px;
+	line-height: 1.75;
+	color: var(--text-3);
+}
+
+.formatList {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.formatItem {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 14px;
+	border-radius: var(--radius-sm);
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+
+	&:hover {
+		border-color: var(--border-strong);
+	}
+}
+
+/* 推荐项：品牌描边 + 极浅品牌底，和「一般不用选」在余光里就能分开 */
+.formatItemPick {
+	border-color: var(--brand-soft);
+	background: var(--brand-softer);
+
+	&:hover {
+		border-color: var(--brand);
+	}
+}
+
+/* 不推荐项：虚线，一行虚线就够说明「这是次要路径」，不用置灰（置灰会被读成不可用） */
+.formatItemAvoid {
+	border-style: dashed;
+	background: var(--surface-sunken);
+}
+
+.formatMain {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.formatTitle {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-width: 0;
+
+	strong {
+		/* 下拉原文，必须完整可见；长了就整段折到下一行，不挤掉徽章 */
+		font-size: 13.5px;
+		font-weight: 600;
+		color: var(--text-1);
+		line-height: 1.5;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+}
+
+/* 前面的 a / b / c：用户对着下拉里的字母更容易找到那一项 */
+.formatLetter {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	border: 1px solid var(--border-strong);
+	color: var(--text-3);
+	font-size: 11.5px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.formatBadgePick,
+.formatBadgeAvoid {
+	flex: 0 0 auto;
+	padding: 1px 9px;
+	border-radius: var(--radius-pill);
+	font-size: 11.5px;
+	font-weight: 600;
+	line-height: 1.7;
+	white-space: nowrap;
+}
+
+.formatBadgePick {
+	background: var(--brand);
+	border: 1px solid var(--brand);
+	color: var(--text-inverse);
+}
+
+.formatBadgeAvoid {
+	background: var(--tint-amber);
+	border: 1px solid var(--tint-amber);
+	color: var(--ink-amber);
+}
+
+.formatScope {
+	margin: 0;
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--text-3);
+}
+
+/* 地址那一行：地址本身等宽 + 可横向滚动，绝不裁掉 /v1 */
+.formatAddr {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-width: 0;
+}
+
+.formatAddrLabel {
+	flex: 0 0 auto;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--text-3);
+}
+
+.formatAddr {
+	code {
+		flex: 0 1 auto;
+		min-width: 0;
+		max-width: 100%;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text-1);
+		font-size: 12px;
+		line-height: 1.6;
+		white-space: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+}
+
+.formatAddrNote {
+	flex: 0 0 auto;
+	font-size: 11.5px;
+	color: var(--text-4);
+}
+
+.formatFoot {
+	margin: 0;
+	padding-top: 12px;
+	border-top: 1px solid var(--border-soft);
+	font-size: 12.5px;
+	line-height: 1.75;
+	color: var(--text-4);
+
+	b {
+		color: var(--text-2);
+		font-weight: 700;
+	}
 }
 
 /* 填哪几个框：三列对照，只讲"模型名长什么样"，教程细节留给 /guide */
@@ -665,6 +903,82 @@
 		:global(.ant-btn) {
 			width: 100%;
 		}
+	}
+
+	/* ---------------- 格式药丸（手机端，2026-10-25） ----------------
+	   手机上 .copyMeta 被改成「标题 + 说明并排、可换行」，药丸如果不强制独占一行，
+	   就会跟着挤进标题那一行尾巴，容易被压成 2 个字宽的一条缝。
+	   所以这里 flex-basis:100% 独占一行：格式文案长，宁可多一行也要读得全。 */
+	.formatTagRow {
+		flex: 1 1 100%;
+		width: 100%;
+		margin-top: 2px;
+		gap: 4px 6px;
+	}
+
+	.formatTag {
+		padding: 1px 9px;
+		font-size: 11px;
+	}
+
+	.formatTagLabel,
+	.formatTagNote {
+		font-size: 11px;
+	}
+
+	/* ---------------- API 格式三分支（手机端） ----------------
+	   390 下可用宽度只有 ~312px（344 卡片内宽 - 28 内边距），
+	   所以：条目竖向空间放宽、图标徽章不缩、地址整行可滑。 */
+	.formatLead {
+		padding: 9px 10px;
+		font-size: 12px;
+		line-height: 1.7;
+	}
+
+	.formatItem {
+		padding: 10px 11px;
+		gap: 8px;
+	}
+
+	.formatTitle {
+		gap: 5px;
+
+		strong {
+			font-size: 12.5px;
+			line-height: 1.5;
+		}
+	}
+
+	.formatLetter {
+		width: 18px;
+		height: 18px;
+		font-size: 11px;
+	}
+
+	.formatBadgePick,
+	.formatBadgeAvoid {
+		padding: 0 8px;
+		font-size: 11px;
+	}
+
+	.formatScope {
+		font-size: 12px;
+		line-height: 1.65;
+	}
+
+	/* 地址行：标签 + 地址 + 备注在 390 下各占一行，地址可横向滑动，不裁 /v1 */
+	.formatAddr {
+		gap: 4px;
+
+		code {
+			font-size: 11.5px;
+			padding: 1px 6px;
+		}
+	}
+
+	.formatFoot {
+		font-size: 12px;
+		line-height: 1.7;
 	}
 
 	.phoneBox,

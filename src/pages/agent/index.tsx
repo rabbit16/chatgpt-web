@@ -7,7 +7,8 @@ import {
   CopyOutlined,
   KeyOutlined,
   LinkOutlined,
-  RobotOutlined
+  RobotOutlined,
+  SwapOutlined
 } from '@ant-design/icons'
 import { Alert, Button, message } from 'antd'
 import Layout from '@/components/Layout'
@@ -20,6 +21,7 @@ import { CC_HAHA_RELEASES, RELAY_HOST, RELAY_URL } from '@/utils/relay'
 import { readPhone, readUserId, syncCredential } from '@/utils/llmCredential'
 import PillTabs from '@/components/PillTabs'
 import { GuideContent } from '@/pages/guide'
+import { FORMAT_LABELS, FORMAT_OPTIONS } from '@/pages/guide/models'
 import ApiKeyPanel from './ApiKeyPanel'
 import styles from './index.module.less'
 
@@ -88,14 +90,23 @@ function CopyButton({
   )
 }
 
-/** 一个「标签 + 等宽值 + 复制按钮」的横向复制行（地址、密钥、模型名共用） */
+/**
+ * 一个「标签 + 等宽值 + 复制按钮」的横向复制行（地址、密钥、模型名共用）
+ * ------------------------------------------------------------
+ * 2026-10-25 加可选 format：站长反馈「拿到地址去 CC-Haha，还是不知道格式选哪个」。
+ * 格式不能只写在下方的对照表里 —— 用户复制地址时眼睛在这一行，
+ * 对应关系必须**就在地址旁边**，不用跳页、不用记。
+ * 所以 format 是药丸原文（与下拉逐字一致），question 是一句带过的大白话。
+ */
 function CopyRow({
   title,
   hint,
   value,
   copyLabel,
   mono = true,
-  primary = false
+  primary = false,
+  format,
+  formatNote
 }: {
   title: string
   hint?: string
@@ -103,12 +114,23 @@ function CopyRow({
   copyLabel?: string
   mono?: boolean
   primary?: boolean
+  format?: string
+  formatNote?: string
 }) {
   return (
     <div className={styles.copyRow}>
       <div className={styles.copyMeta}>
         <strong>{title}</strong>
         {hint ? <em>{hint}</em> : null}
+        {format ? (
+          <span className={styles.formatTagRow}>
+            <span className={styles.formatTagLabel}>API 格式选</span>
+            <span className={styles.formatTag} title={format}>
+              {format}
+            </span>
+            {formatNote ? <span className={styles.formatTagNote}>{formatNote}</span> : null}
+          </span>
+        ) : null}
       </div>
       <div className={styles.copyValue}>
         <code className={mono ? styles.mono : undefined}>{value}</code>
@@ -283,18 +305,28 @@ function AgentPage() {
             </div>
 
             <div className={styles.valueGroup}>
+              {/**
+               * 两条地址各自挂上「API 格式选什么」（2026-10-25 站长需求）
+               * ------------------------------------------------------------
+               * hint 只保留「谁用这条」，格式统一交给下面的药丸，避免一行里堆两句话。
+               * 药丸原文来自 FORMAT_LABELS，与 CC-Haha 下拉逐字一致，用户能直接对上。
+               */}
               <CopyRow
                 title="接口地址"
-                hint="OpenAI 兼容格式，必须带 /v1。Codex、Cursor、ChatBox 等填这条"
+                hint="Codex、Cursor、ChatBox 等填这条"
                 value={RELAY_URL}
                 copyLabel="复制地址"
                 primary
+                format={FORMAT_LABELS.responses}
+                formatNote="GPT / Gemini / DeepSeek 等（除 Claude）"
               />
               <CopyRow
                 title="Claude 专用地址"
-                hint="Anthropic 原生格式，不带 /v1。Claude-haha 默认用这条"
+                hint="只有模型名是 claude- 开头的才用这条"
                 value={RELAY_HOST}
                 copyLabel="复制地址"
+                format={FORMAT_LABELS.anthropic}
+                formatNote="Claude 全系"
               />
             </div>
 
@@ -363,6 +395,75 @@ function AgentPage() {
             </div>
           </section>
 
+          {/* ---------- API 格式怎么选（2026-10-25 站长需求） ----------
+           * 站长原话：用户拿着图 1 的两条地址去图 2 的「添加模型」弹窗，
+           * 看到「API 格式」下拉（a/b/c 三项）就卡住了 —— 页面从头到尾没提过这个下拉。
+           * 所以这里补一块「格式三分支对照」，只解释「格式这一步」，
+           * 不写软件怎么装、一步步点哪里（那是 ?tab=guide 教程页的事）。
+           *
+           * 数据源：FORMAT_OPTIONS（guide/models.ts），和 /guide 共用同一份字面值，
+           * 以后站长改下拉文案只改一处，两页一起跟着变。
+           */}
+          <section className={styles.card} aria-labelledby="agent-format">
+            <div className={styles.cardHead}>
+              <IconBadge icon={<SwapOutlined />} tone="violet" size="lg" />
+              <div>
+                <h2 id="agent-format">API 格式怎么选</h2>
+                <p>
+                  CC-Haha「添加模型」里有个「API 格式」下拉。这一步选错，地址填得再对也连不上。
+                </p>
+              </div>
+            </div>
+
+            {/* 生活化类比：先说清「格式」到底是个什么东西，再讲选哪个 */}
+            <p className={styles.formatLead}>
+              打个比方：地址是门牌号，格式是进门后要说的暗号。门牌找对了、暗号说错了，门照样不开。
+              下面三行就是三个暗号，照着你的模型名挑一行即可。
+            </p>
+
+            <div className={styles.formatList}>
+              {FORMAT_OPTIONS.map((opt) => {
+                const pickable = opt.tone === 'pick'
+                return (
+                  <article
+                    key={opt.key}
+                    className={[styles.formatItem, pickable ? styles.formatItemPick : styles.formatItemAvoid]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    <IconBadge
+                      icon={pickable ? <CheckOutlined /> : <SwapOutlined />}
+                      tone={pickable ? 'brand' : 'amber'}
+                      size="md"
+                    />
+                    <div className={styles.formatMain}>
+                      <div className={styles.formatTitle}>
+                        <span className={styles.formatLetter}>{opt.letter}</span>
+                        <strong>{opt.label}</strong>
+                        <span className={pickable ? styles.formatBadgePick : styles.formatBadgeAvoid}>
+                          {opt.badge}
+                        </span>
+                      </div>
+                      <p className={styles.formatScope}>{opt.scope}</p>
+                      <div className={styles.formatAddr}>
+                        <span className={styles.formatAddrLabel}>地址配这条</span>
+                        <code className={styles.mono} title={opt.baseUrl}>
+                          {opt.baseUrl}
+                        </code>
+                        <span className={styles.formatAddrNote}>{opt.baseUrlNote}</span>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+
+            <p className={styles.formatFoot}>
+              一句话记：<b>名字带 claude 选 a</b>，<b>其它一律选 c</b>。b 是老格式，新模型的新功能到它那儿容易打折扣，
+              所以不推荐；但个别老软件只认 b，真遇到了也能用，地址同样带 /v1。
+            </p>
+          </section>
+
           {/* ---------- 第二屏：知道填在哪（简版对照，不重复教程） ---------- */}
           <section className={styles.card}>
             <div className={styles.cardHead}>
@@ -377,13 +478,14 @@ function AgentPage() {
                 <strong>gpt- 开头</strong>
                 <span>写代码</span>
                 <code>地址填带 /v1 的那条</code>
-                <small>OpenAI 格式，绝大多数软件用这个</small>
+                {/* 2026-10-25：原来写「OpenAI 格式」，下拉里没有这个词，统一成实际要选的项 */}
+                <small>格式选 c) Responses，绝大多数软件用这套</small>
               </article>
               <article>
                 <strong>claude- 开头</strong>
                 <span>写代码</span>
                 <code>地址填不带 /v1 的那条</code>
-                <small>Anthropic 格式，Claude-haha 默认走这条</small>
+                <small>格式选 a) Anthropic Messages，Claude-haha 默认走这套</small>
               </article>
               <article>
                 <strong>gpt-image- 开头</strong>

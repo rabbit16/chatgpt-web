@@ -28,6 +28,7 @@ import { CC_HAHA_RELEASES, RELAY_HOST, RELAY_URL } from '@/utils/relay'
 import {
   defaultGuideModel,
   findModel,
+  FORMAT_LABELS,
   groupModels,
   guideModelSummary,
   protocolMeta,
@@ -527,14 +528,14 @@ function GuideContent() {
               {protocol.key === 'anthropic' ? (
                 <>
                   {' '}
-                  想用 GPT / Gemini / DeepSeek 系？在上面下拉里换一个，地址会变成带 <code>/v1</code> 的那条，格式换成 OpenAI
-                  兼容。
+                  想用 GPT / Gemini / DeepSeek 系？在上面下拉里换一个，地址会变成带 <code>/v1</code> 的那条，格式换成
+                  {FORMAT_LABELS.responses}。
                 </>
               ) : (
                 <>
                   {' '}
                   想用 Claude 系？在上面下拉里换一个 claude- 开头的，地址会变回不带 <code>/v1</code> 的那条，格式换成
-                  Anthropic Messages。
+                  {FORMAT_LABELS.anthropic}。
                 </>
               )}
             </p>
@@ -598,7 +599,7 @@ function GuideContent() {
                 </li>
                 <li>
                   <strong>连接超时 / 提示 404</strong>
-                  两个地址各试一次：Claude-haha 的 Anthropic 格式用不带 <code>/v1</code> 的那条；OpenAI 兼容格式用带 <code>/v1</code> 的那条，两者别混。
+                  两个地址各试一次：Claude-haha 的 Anthropic 格式用不带 <code>/v1</code> 的那条；{FORMAT_LABELS.responses} 用带 <code>/v1</code> 的那条，两者别混。
                 </li>
                 <li>
                   <strong>Claude-haha 里「获取模型」是空的</strong>
