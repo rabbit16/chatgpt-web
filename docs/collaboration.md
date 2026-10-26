@@ -1,7 +1,9 @@
 # 与站长仓库的协作与同步方案
 
 > 目的：你在这里和我改前端，站长在 GitHub 上维护/部署，两边不打架、不丢改动、可回滚。
-> 适用仓库：`rabbit16/chatgpt-web`（`main` + `feature/dev`）
+> 适用仓库：`rabbit16/chatgpt-web`（`main` + `release`）
+>
+> **2026-10-27 站长改规矩**：`feature/dev` 已合并进 `release` 并删除（本地 + 远程都已删）。以后**开发一律从 `release` 拉分支**，不再有 dev 这条线。
 
 ---
 
@@ -9,7 +11,7 @@
 
 ```
 ┌──────────────────────┐    push     ┌─────────────────┐   merge   ┌──────────────┐
-│ 本地工作区 (这里)      │ ─────────> │ feat/redesign-* │ ───────> │ feature/dev  │
+│ 本地工作区 (这里)      │ ─────────> │ feat/xxx        │ ───────> │   release    │
 │ 设计 + 代码 + 截图     │            │ 每次任务一个分支  │          │ 集成/验收     │
 └──────────────────────┘            └─────────────────┘          └──────┬───────┘
           ↑                                                              │
@@ -19,12 +21,13 @@
                                                                     线上 www.rabbitj.top
 ```
 
-- **`main`**：线上发布分支，只由站长合并/发布；
-- **`feature/dev`**：集成分支，我的任务分支合并到这里；
-- **`feat/redesign-*`**：每个任务一个短分支（如 `feat/redesign-a-shell`）；
+- **`main`**：发布分支，只由站长合并/发布；
+- **`release`**：**主开发分支**（原 `feature/dev` 的内容已全部合并进来）。新任务一律从这里拉分支；
+- **`feat/xxx`**：每个任务一个短分支（如 `feat/redesign-chat`），完成后由站长合并进 `release`；
 - **本地工作区**：设计稿、截图、临时文件可以留在本地，只有"要交付的"才进仓库。
 
-> 不建议直接在 `main` 上改，也不建议我和站长同时改同一批文件。
+> 不建议直接在 `main` 或 `release` 上改，也不建议我和站长同时改同一批文件。
+> `release` 现在是站长合并进来的集成分支：**我推任务分支、他去合**；只有他明确说"直接推 release"时才直接推。
 
 ---
 
@@ -34,22 +37,22 @@
 
 ```bash
 cd chatgpt-web
-git fetch --all --prune
+git fetch --all --prune                  # --prune 会把已删掉的 feature/dev 从本地记录里清掉
 git status
-git log --oneline HEAD..origin/main            # 站长是否已合入 main
-git log --oneline HEAD..origin/feature/dev     # 集成分支是否有新提交
-git rebase origin/feature/dev                  # 有就把我的分支接上去
+git log --oneline HEAD..origin/main      # 站长是否已合入 main
+git log --oneline HEAD..origin/release   # release 是否有新提交（站长部署的版本）
+git rebase origin/release                # 有就把我的分支接上去
 ```
 
-> 站长会把自己的开发分支合并进 `main`，而我的交付进 `feature/dev`；两个分支都要看，避免最后合并时大冲突。
+> 现在只有 `main` 和 `release` 两条主线：**`release` 看着写代码，`main` 看着对线上**。每次两边都要看。
 
 我给你一句同步报告：
 
-> 站长新增 2 个提交（已进 main），涉及 `src/pages/price`；`feature/dev` 无变化，我的分支已同步，无冲突。
+> 站长新增 2 个提交（已进 release），涉及 `src/pages/price`；我的分支已同步，无冲突。
 
 ### 2.2 工作中
 
-- 一个任务一个分支，分支从最新 `origin/feature/dev` 开出；
+- 一个任务一个分支，**分支从最新 `origin/release` 开出**；
 - 小步提交，提交信息写清改了什么；
 - 页面截图、对比图先放本地，任务完成再选几张进 PR 描述；
 - 不碰 `.env`、不碰站长负责的接口逻辑。
@@ -57,22 +60,21 @@ git rebase origin/feature/dev                  # 有就把我的分支接上去
 ### 2.3 任务完成（我执行，你确认）
 
 ```bash
-npm run build                     # 必须通过
+npm run build                                        # 必须通过
 git add -A
 git commit -m "feat(ui): 重构对话页三栏布局"
-git push origin HEAD:refs/heads/feat/redesign-a-chat   # 备份/可回看
-git push origin HEAD:feature/dev                       # 站长已授权直接推
+git push origin HEAD:refs/heads/feat/redesign-chat   # 只推任务分支，站长来合
 ```
 
-- 任务分支留作备份和对比；`feature/dev` 是站长合并到 `main` 的入口；
-- **只推代码，不部署**；部署由站长完成；
+- 任务分支留作备份和对比；**合并进 `release` 由站长做**；
+- **只推任务分支，不推 release、不碰 main、不部署**；
 - 推完给站长一句：改了哪些页面、是否需要重新构建、有没有接口变动。
 
 ### 2.4 站长侧
 
-- 站长把自己的开发分支合并到 `main`，再把 `feature/dev` 合并到 `main`；
-- 由站长构建、部署，我不碰线上服务器；
-- 如果他先合了自己的改动，我下次会把 `main` 合回 `feature/dev`，保持两边接近；
+- 站长把任务分支合并到 `release`，由他构建、部署；
+- 我不碰线上服务器；
+- 如果他先合了自己的改动，我下次会把 `release` 合进我的任务分支，保持两边接近；
 - 部署完我用浏览器截图复核线上，确认没有回归。
 
 ---
@@ -102,7 +104,7 @@ git push origin HEAD:feature/dev                       # 站长已授权直接�
 
 | 问题 | 现状 | 处理 |
 |---|---|---|
-| 本地 `feature/dev` 无 upstream | 克隆时只跟踪了 `main` | 补 fetch refspec + 设置 upstream |
+| ~~本地 `feature/dev` 无 upstream~~ | 已随 dev 分支删除而作废 | 现在跟踪 `main` + `release` 两条即可 |
 | Git 提交身份为空 | `user.name` / `user.email` 未配置 | 配一个提交身份（你定名字/邮箱） |
 | `package-lock.json` 被忽略 | `.gitignore` 第 10 行 | 建议移除忽略、提交锁文件，保证两边构建一致 |
 | `tsconfig.node.json` 改动未提交 | 修构建的 `skipLibCheck` | 作为第一条基线提交 |
@@ -115,7 +117,7 @@ git push origin HEAD:feature/dev                       # 站长已授权直接�
 
 - **先拉后改**：每次开始 fetch + rebase，减少冲突；
 - **小步交付**：一个任务一个分支，避免长期大分支；
-- **不 force push 共享分支**：`main`、`feature/dev` 永远不强制推；
+- **不 force push 共享分支**：`main`、`release` 永远不强制推；
 - **冲突处理**：代码冲突我来解；`package-lock` 冲突直接 `npm install` 重生成；
 - **回滚**：每个任务分支保留；发布前打 tag（如 `design-v1`）；线上出问题由站长回滚到上一个 tag；
 - **备份**：大改前我本地打 `backup/日期` 分支或 tag。
@@ -145,9 +147,9 @@ git push origin HEAD:feature/dev                       # 站长已授权直接�
 
 | 事项 | 答复 | 对流程的影响 |
 |---|---|---|
-| 发布分支 | 站长合并到 `main` | 我只推 `feature/dev`，不碰 `main`，不部署 |
-| 站长是否开发 | 会，但会新建自己的分支 | 我每次同时看 `main` 和 `feature/dev`，避免冲突 |
-| 我的推送权限 | 可直接推 `feature/dev` | 任务分支 + `feature/dev` 双推，留备份 |
+| 发布分支 | 站长合并到 `release` 再部署 | 我只推任务分支，不碰 `main`/`release`，不部署 |
+| 站长是否开发 | 会，但会新建自己的分支 | 我每次同时看 `main` 和 `release`，避免冲突 |
+| 我的推送权限 | 可推任务分支（2026-10-27 站长改规矩） | 任务分支推上去，由站长合并进 `release` |
 | 文档/锁文件 | 进仓库，一起收纳 | 建 `docs/design/`、`docs/api/`，并提交 `package-lock.json` |
 
 ## 8. 提交身份怎么定
@@ -179,13 +181,13 @@ GitHub 会把提交归到 [AUGUSTQJR](https://github.com/AUGUSTQJR) 账号；推
 
 ## 9. 初始化步骤（身份确定后执行）
 
-1. 修 fetch refspec，让 `main` 和 `feature/dev` 都能跟踪；
+1. 修 fetch refspec，让 `main` 和 `release` 都能跟踪；
 2. 设置提交身份；
 3. 从 `.gitignore` 移除 `package-lock.json`，重新生成并提交；
 4. 在仓库建 `docs/design/`、`docs/api/`、`docs/collaboration.md`，把该同步的文档放进去；
-5. 新建 `feat/redesign-a` 工作分支（从 `origin/feature/dev`）；
+5. 新建任务工作分支（从 `origin/release`）；
 6. 提交基线（`tsconfig.node.json` 修复 + 锁文件 + 文档）；
-7. 推送 `feat/redesign-a` 和 `feature/dev`（**不部署、不碰 main**）；
+7. 推送任务分支（**不部署、不碰 main / release**）；
 8. 给你同步报告和站长可核对的文件清单。
 
 > 每次任务结束后，你只需要看一眼我的同步报告，确认“推 / 不推”。
