@@ -553,7 +553,7 @@ function PricePage() {
           </section>
 
           {!token ? (
-            <div className={styles.publicNote}>
+            <div className={`${styles.publicNote} ${styles.pricePublicNote}`}>
               <span className={styles.publicNoteText}>
                 {PUBLIC_PRICING_NOTE} · 更新于 {PUBLIC_PRICING_UPDATED_AT}
                               </span>

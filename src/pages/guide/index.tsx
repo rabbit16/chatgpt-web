@@ -340,8 +340,9 @@ function GuideContent() {
             </p>
             <h1>接入指南</h1>
             <p className={styles.lead}>
-              全程按 <b>Claude-haha</b> 的实际界面走：装 Claude-haha → 复制本站地址和密钥 → 照着 Claude-haha 的「添加模型」
-              窗口填 4 个框。其他客户端最后附一句对照，不用来回翻。
+              <span className={styles.fullLead}>全程按 <b>Claude-haha</b> 的实际界面走：装 Claude-haha → 复制本站地址和密钥 → 照着 Claude-haha 的「添加模型」
+              窗口填 4 个框。其他客户端最后附一句对照，不用来回翻。</span>
+              <span className={styles.mobileLead}>安装 Claude-haha → 复制地址和密钥 → 填入软件。</span>
             </p>
             {/* 2026-10-24 站长反馈：客户为了找地址和密钥，在教程里翻了半天。
                 这两个值已经搬到独立的「接入」页，这里给它一个显眼的入口，

@@ -79,6 +79,8 @@
 	}
 }
 
+.mobileLead { display: none; }
+
 /**
  * 页头的「去接入页拿值」入口（2026-10-24）
  * ------------------------------------------------------------
@@ -1044,6 +1046,11 @@
 }
 
 @media (max-width: 640px) {
+	.fullLead { display: none; }
+	.mobileLead { display: inline; }
+	.headCta { margin-top: 10px; gap: 6px; }
+	.headCta > span { display: none; }
+	.guideBody { gap: 14px; }
 	.wrap {
 		padding: 18px var(--space-4) 44px;
 		gap: 16px;

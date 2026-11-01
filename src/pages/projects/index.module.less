@@ -348,6 +348,8 @@
 /* 官方：品牌色实心小徽标，比 Tag 更醒目但不抢标题 */
 .badgeOfficial {
 	display: inline-flex;
+	flex: 0 0 auto;
+	white-space: nowrap;
 	align-items: center;
 	height: 20px;
 	padding: 0 8px;
@@ -489,32 +491,28 @@
 }
 
 /**
- * 主排窄屏（≤640）：四个页签放大后总宽 356px，比 390 屏的可用宽 332px 还大，
- * 「我的提交」会被裁掉半边（实测右边界 385 > 槽右边界 362）。
- * 处理方式和第二排一致：单行 + 横向滚动 + 隐藏滚动条，保证每个按钮都能滑到、看得全。
- * 注意：这里只让「槽内部」滚动，页面本身仍然不产生横向溢出（docScrollWidth 保持 390）。
+ * 主排窄屏（≤640）：四项等分可用宽度，避免「我的提交」被裁掉。
+ * 第二排分类数量不固定，仍保留横向滚动。
  */
 @media (max-width: 640px) {
 	.sourceRail {
-		overflow-x: auto;
-		overflow-y: hidden;
-		overscroll-behavior-x: contain;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-
-		&::-webkit-scrollbar {
-			display: none;
-		}
-
 		> div {
-			width: max-content;
-			max-width: none;
+			width: 100%;
+			max-width: 100%;
 		}
 
-		/* 右侧渐隐，暗示「还能往右滑」（mask 只用 alpha，深浅色都不受影响） */
-		mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
-		-webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+		> div > button {
+			flex: 1 1 0;
+			min-width: 0;
+			padding-inline: 4px;
+			font-size: 12px;
+		}
 	}
+
+	.row { gap: 10px; padding: 12px; }
+	.rowTitle { flex-wrap: wrap; gap: 4px 6px; overflow-wrap: anywhere; }
+	.badgeUser { flex: 0 0 auto; white-space: nowrap; }
+	.rowMeta { gap: 6px; }
 }
 
 /**
