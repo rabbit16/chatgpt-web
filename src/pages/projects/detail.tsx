@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Empty, Spin, Tag } from 'antd'
+import { Button, Empty, Spin, Tag, message } from 'antd'
 import {
   AppleOutlined,
   ArrowLeftOutlined,
@@ -7,15 +7,18 @@ import {
   DownloadOutlined,
   GithubOutlined,
   InboxOutlined,
+  LinkOutlined,
   LinuxOutlined,
   WindowsOutlined
 } from '@ant-design/icons'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import CoverBadge from '@/components/CoverBadge'
+import { copyToClipboard } from '@/utils'
 import {
   PLATFORM_LABEL,
   REVIEW_LABEL,
+  channelsOf,
   formatFileSize,
   getMarketDetail,
   platformsOf,
@@ -83,6 +86,18 @@ function ProjectDetailPage() {
 
   // 平台列表统一走 platformsOf：兼容后端只返回单数 platform 的过渡期
   const entries = platformsOf(item)
+  // 网盘 / 官网等非平台渠道：后台只填了百度网盘的那些软件靠它才有下载入口
+  const channels = channelsOf(item)
+
+  /** 复制网盘提取码：失败时提示手动选，不静默吞掉 */
+  const copyCode = async (code: string) => {
+    try {
+      await copyToClipboard(code)
+      message.success('已复制提取码')
+    } catch {
+      message.warning('浏览器限制了自动复制，请手动选中复制')
+    }
+  }
   const isOfficial = item.source === 'official'
   const PLATFORM_ICON: Record<string, JSX.Element> = {
     windows: <WindowsOutlined />,
@@ -135,35 +150,62 @@ function ProjectDetailPage() {
           <section className={styles.downloads}>
             <h2>下载</h2>
             <div className={styles.releaseList}>
-              {entries.length ? (
-                entries.map((entry) => (
-                  <div key={entry.platform} className={styles.releaseRow}>
-                    <span className={styles.releaseIcon}>{PLATFORM_ICON[entry.platform]}</span>
-                    <div className={styles.releaseMeta}>
-                      <strong>
-                        {PLATFORM_LABEL[entry.platform]} 安装包
-                        {entry.version || item.version ? ` · v${entry.version || item.version}` : ''}
-                      </strong>
-                      <span>
-                        {formatFileSize(entry.file_size || item.file_size) || '体积未标注'}
-                        {entry.download_count ? ` · 下载 ${entry.download_count} 次` : ''}
-                      </span>
-                    </div>
-                    {entry.file_url ? (
-                      <Button
-                        type="primary"
-                        icon={<CloudDownloadOutlined />}
-                        href={entry.file_url}
-                        target="_blank"
-                      >
-                        下载
-                      </Button>
-                    ) : (
-                      <Tag>安装包待上传</Tag>
-                    )}
+              {entries.map((entry) => (
+                <div key={entry.platform} className={styles.releaseRow}>
+                  <span className={styles.releaseIcon}>{PLATFORM_ICON[entry.platform]}</span>
+                  <div className={styles.releaseMeta}>
+                    <strong>
+                      {PLATFORM_LABEL[entry.platform]} 安装包
+                      {entry.version || item.version ? ` · v${entry.version || item.version}` : ''}
+                    </strong>
+                    <span>
+                      {formatFileSize(entry.file_size || item.file_size) || '体积未标注'}
+                      {entry.download_count ? ` · 下载 ${entry.download_count} 次` : ''}
+                    </span>
                   </div>
-                ))
-              ) : (
+                  {entry.file_url ? (
+                    <Button
+                      type="primary"
+                      icon={<CloudDownloadOutlined />}
+                      href={entry.file_url}
+                      target="_blank"
+                    >
+                      下载
+                    </Button>
+                  ) : (
+                    <Tag>安装包待上传</Tag>
+                  )}
+                </div>
+              ))}
+              {/* 网盘 / 官网等渠道：后台没填平台只有 links 的软件靠这里给下载入口 */}
+              {channels.map((channel) => (
+                <div key={channel.url} className={styles.releaseRow}>
+                  <span className={styles.releaseIcon}>
+                    <LinkOutlined />
+                  </span>
+                  <div className={styles.releaseMeta}>
+                    <strong>{channel.label}</strong>
+                    <span>{channel.code ? `提取码 ${channel.code}` : '外部下载地址'}</span>
+                  </div>
+                  {channel.code ? (
+                    <Button
+                      icon={<DownloadOutlined />}
+                      onClick={() => void copyCode(channel.code as string)}
+                    >
+                      复制提取码
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="primary"
+                    icon={<CloudDownloadOutlined />}
+                    href={channel.url}
+                    target="_blank"
+                  >
+                    去下载
+                  </Button>
+                </div>
+              ))}
+              {!entries.length && !channels.length ? (
                 <div className={styles.releaseRow}>
                   <span className={styles.releaseIcon}>
                     <InboxOutlined />
@@ -174,7 +216,7 @@ function ProjectDetailPage() {
                   </div>
                   <Tag>安装包待上传</Tag>
                 </div>
-              )}
+              ) : null}
             </div>
             {!isOfficial && item.review_status === 'pending' ? (
               <p className={styles.pendingNote}>这份投稿正在等待站长审核，通过后会出现在公开列表。</p>

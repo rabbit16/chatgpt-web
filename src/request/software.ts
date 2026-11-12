@@ -650,6 +650,51 @@ export function platformFromLabel(label?: string): SoftwarePlatform | null {
 /** @deprecated 用 platformsOf()；保留旧名仅为兼容既有注释/调用 */
 export const recordPlatforms = platformsOf
 
+/** links 里「不是平台」的那些条目：网盘、官网、镜像站等 */
+export type SoftwareChannelLink = {
+  label: string
+  url: string
+  code?: string
+}
+
+/**
+ * 取一条记录里的「非平台下载渠道」
+ * ------------------------------------------------------------
+ * 2026-11-12 站长反馈：商城里 claude-haha / codex / claudecode 三条软件
+ * 详情页全部显示「安装包待上传」，可后台明明填了百度网盘链接。
+ *
+ * 根因：这几条记录只有 `links: [{label:'百度网盘', url, code}]`，
+ * 既没有 `platforms` 也没有单数 `platform`；而 platformsOf() 的 links 兜底
+ * 只认「Windows/macOS/Linux」这类平台名，`百度网盘` 认不出平台就被跳过了，
+ * 结果一个下载入口都没有。
+ *
+ * 修法：把「认不出平台」的链接原样交还给页面，由详情页渲染成网盘行
+ * （带提取码复制）。platformsOf() 的返回结构不动，避免污染 SoftwarePlatform 枚举。
+ *
+ * 注意：即使 platforms 有值也要走这里 —— 后端更新多平台时会保留网盘链接
+ * （见 gpt_backend `_merge_links_with_platforms`），那类记录要同时显示
+ * 平台安装包和网盘渠道。
+ */
+export function channelsOf(record: SoftwareRecord): SoftwareChannelLink[] {
+  if (!Array.isArray(record.links) || !record.links.length) return []
+  const seen = new Set<string>()
+  const cleaned: SoftwareChannelLink[] = []
+  for (const link of record.links) {
+    const url = typeof link?.url === 'string' ? link.url.trim() : ''
+    const label = typeof link?.label === 'string' ? link.label.trim() : ''
+    if (!url || platformFromLabel(label)) continue
+    // 同一地址只留一条，避免后台重复填导致详情页出现两行一样的网盘
+    if (seen.has(url)) continue
+    seen.add(url)
+    cleaned.push({
+      label: label || '下载链接',
+      url,
+      code: typeof link?.code === 'string' && link.code.trim() ? link.code.trim() : undefined
+    })
+  }
+  return cleaned
+}
+
 /* ------------------------------------------------------------------ */
 /* 用户侧                                                              */
 /* ------------------------------------------------------------------ */

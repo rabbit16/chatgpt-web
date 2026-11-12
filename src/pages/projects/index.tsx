@@ -31,6 +31,7 @@ import { userStore } from '@/store'
 import {
   PLATFORM_LABEL,
   REVIEW_LABEL,
+  channelsOf,
   formatFileSize,
   getMarketCategories,
   getMarketList,
@@ -360,7 +361,15 @@ function ProjectsPage() {
   const renderRow = (item: SoftwareRecord) => {
     const entries = platformsOf(item)
     const ready = entries.filter((entry) => entry.file_url)
+    const channels = channelsOf(item)
     const size = formatFileSize(ready[0]?.file_size ?? entries[0]?.file_size)
+    /**
+     * 右侧那格文字：有包体积就报体积，没有包但有网盘链接就报「网盘下载」，
+     * 两者都没有才是「体积待补」。
+     * 2026-11-12 站长反馈：只填百度网盘的软件列表行显示「体积待补」，
+     * 看上去像没得下，实际详情页有网盘入口 —— 列表得先给出可下载的信号。
+     */
+    const metaText = size || (channels.length ? '网盘下载' : '体积待补')
     return (
       <button
         key={String(item.id)}
@@ -411,7 +420,15 @@ function ProjectsPage() {
               ))}
             </span>
           ) : null}
-          <span className={styles.rowCount}>{size || '体积待补'}</span>
+          {channels.length ? (
+            <span
+              className={styles.rowPlatform}
+              title={`${channels.map((channel) => channel.label).join(' / ')} 可下载`}
+            >
+              <LinkOutlined />
+            </span>
+          ) : null}
+          <span className={styles.rowCount}>{metaText}</span>
           <RightOutlined className={styles.rowArrow} />
         </span>
       </button>
