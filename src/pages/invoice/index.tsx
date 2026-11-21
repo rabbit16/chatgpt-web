@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Checkbox, Empty, Pagination, Select, Spin, Tag, message } from 'antd'
+import { useSearchParams } from 'react-router-dom'
+import { Alert, Button, Checkbox, Empty, Pagination, Popconfirm, Select, Spin, Tag, message } from 'antd'
 import {
   FileTextOutlined,
   HistoryOutlined,
@@ -66,6 +67,8 @@ function formatTime(value?: string) {
 }
 
 export function InvoicePanel() {
+  const [searchParams] = useSearchParams()
+  const orderId = searchParams.get('order')
   const [summary, setSummary] = useState<InvoiceSummary>(EMPTY_SUMMARY)
   const [records, setRecords] = useState<InvoiceRecord[]>([])
   const [total, setTotal] = useState(0)
@@ -103,10 +106,11 @@ export function InvoicePanel() {
     const priority: Record<string, number> = { issued: 4, issuing: 3, pending: 2, rejected: 1 }
     const map = new Map<string, InvoiceRecord>()
     for (const record of records) {
-      const key = String(record.bill_id || record.order_no || '')
-      if (!key) continue
-      const prev = map.get(key)
-      if (!prev || (priority[record.status] || 0) > (priority[prev.status] || 0)) map.set(key, record)
+      const ids = String(record.bill_id || record.order_no || '').split(',').map((id) => id.trim()).filter(Boolean)
+      for (const id of ids) {
+        const previous = map.get(id)
+        if (!previous || (priority[record.status] || 0) > (priority[previous.status] || 0)) map.set(id, record)
+      }
     }
     return map
   }, [records])
@@ -180,6 +184,11 @@ export function InvoicePanel() {
         getInvoiceSummary(),
         getInvoiceList({ page: nextPage, page_num: PAGE_SIZE, status: nextStatus })
       ])
+      for (const res of [summaryRes, listRes]) {
+        if (String(res?.code ?? '') !== '0' || (res?.data?.code != null && String(res.data.code) !== '0')) {
+          throw new Error('开票服务暂不可用')
+        }
+      }
       const sum = (summaryRes as any)?.data || {}
       setSummary({ ...EMPTY_SUMMARY, ...sum })
       const payload = (listRes as any)?.data || {}
@@ -250,7 +259,8 @@ export function InvoicePanel() {
 
   const cancel = async (record: InvoiceRecord) => {
     try {
-      await cancelInvoice(record.id)
+      const response = await cancelInvoice(record.id)
+      if (String(response.data?.code ?? response.code) !== '0') throw new Error('撤销未确认')
       message.success('已撤销申请')
       void loadAll(page, status)
     } catch {
@@ -259,7 +269,7 @@ export function InvoicePanel() {
   }
 
   const summaryCards = [
-    { label: '已开票', value: money(summary.issued_amount), hint: '电子发票会发到你填的邮箱' },
+    { label: '已开票', value: money(summary.issued_amount), hint: '在开票记录中核对送达信息' },
     { label: '审核中', value: money(summary.pending_amount), hint: '等站长处理，不用重复提交' },
     // 副标题原来是「累计充值 ¥370.00」，主数字也是 ¥370.00，同一张卡同一个数字出现两次；
     // 改成说明这个数字是什么（可开票上限），避免看起来像重复渲染。
@@ -285,7 +295,7 @@ export function InvoicePanel() {
       const meta = STATUS_META[status] || STATUS_META.pending
       return <Tag color={meta.color}>{meta.label}</Tag>
     }
-    if (!backendReady) return <span className={styles.billMuted}>开票服务未开通</span>
+    if (!backendReady) return <span className={styles.billMuted}>开票服务暂不可用</span>
     return (
       <Button size="small" type="primary" ghost onClick={() => setInvoiceTarget(bill)}>
         开发票
@@ -301,7 +311,7 @@ export function InvoicePanel() {
       <header className={styles.pageHead}>
         <div>
           <h1>开票中心</h1>
-          <p>电子发票由站长人工审核，1–3 个工作日发到你填的邮箱；一笔订单只能开一张。</p>
+          <p>请先从已支付的充值记录选择订单，申请后可在此查看审核和开票进度。</p>
         </div>
       </header>
 
@@ -327,85 +337,7 @@ export function InvoicePanel() {
       <div className={styles.bottomGrid}>
       <section className={styles.card}>
         <div className={styles.cardHead}>
-          <IconBadge icon={<HistoryOutlined />} tone="violet" size="sm" />
-          <div>
-            <h2>开票记录</h2>
-            <p>待审核 / 开票中可以撤销。</p>
-          </div>
-          <div className={styles.headActions}>
-            <Select
-              value={status}
-              style={{ width: 120 }}
-              onChange={(value) => {
-                setStatus(value)
-                setPage(1)
-              }}
-              options={[
-                { value: 'all', label: '全部状态' },
-                { value: 'pending', label: '待审核' },
-                { value: 'issuing', label: '开票中' },
-                { value: 'issued', label: '已开票' },
-                { value: 'rejected', label: '已驳回' }
-              ]}
-            />
-            <Button icon={<ReloadOutlined />} onClick={() => void loadAll(page, status)}>
-              刷新
-            </Button>
-          </div>
-        </div>
-
-        <Spin spinning={loading}>
-          {records.length === 0 ? (
-            <Empty description={backendReady ? '还没有开票记录' : '开票记录：接口未开通'} />
-          ) : (
-            <div className={styles.records}>
-              {records.map((record) => {
-                const meta = STATUS_META[record.status] || STATUS_META.pending
-                const billId = record.bill_id || record.order_no
-                return (
-                  <article key={record.id} className={styles.record}>
-                    <div className={styles.recordTop}>
-                      <strong>{money(record.amount)}</strong>
-                      <Tag color={meta.color}>{meta.label}</Tag>
-                      <span className={styles.recordTitle}>{record.title}</span>
-                      <time>{record.created_at}</time>
-                    </div>
-                    <div className={styles.recordMeta}>
-                      <span>电子普通发票</span>
-                      {billId ? <span>订单号 {billId}</span> : null}
-                      <span>{record.email}</span>
-                      {record.tax_no ? <span>税号 {record.tax_no}</span> : null}
-                      {record.invoice_no ? <span>发票号 {record.invoice_no}</span> : null}
-                    </div>
-                    {record.reject_reason ? <p className={styles.reject}>驳回原因：{record.reject_reason}</p> : null}
-                    {record.status === 'pending' || record.status === 'issuing' ? (
-                      <Button size="small" onClick={() => void cancel(record)}>
-                        撤销申请
-                      </Button>
-                    ) : null}
-                  </article>
-                )
-              })}
-            </div>
-          )}
-        </Spin>
-
-        {total > PAGE_SIZE ? (
-          <div className={styles.pager}>
-            <Pagination
-              current={page}
-              pageSize={PAGE_SIZE}
-              total={total}
-              showSizeChanger={false}
-              onChange={(next) => void loadAll(next, status)}
-            />
-          </div>
-        ) : null}
-      </section>
-
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <IconBadge icon={<WalletOutlined />} tone="green" size="sm" />
+          <IconBadge icon={<WalletOutlined />} tone="mint" size="sm" />
           <div>
             <h2>充值记录</h2>
             <p>
@@ -428,6 +360,16 @@ export function InvoicePanel() {
           </div>
         </div>
 
+        {orderId && <Alert
+          showIcon type="info"
+          message={`订单 ${orderId}`}
+          description={billsLoading || loading ? '正在核对开票资格' : !backendReady ? '开票服务暂不可用' : !bills.some((bill) => String(bill.bill_id) === orderId) ? '当前充值记录中未找到该订单，请核对订单号' : '已选中此订单，请核对后申请'}
+          action={(() => {
+            const bill = bills.find((item) => String(item.bill_id) === orderId)
+            return bill && backendReady && !loading && canMergeBill(bill)
+              ? <Button onClick={() => setInvoiceTarget(bill)}>申请开票</Button> : undefined
+          })()}
+        />}
         <Spin spinning={billsLoading}>
           {bills.length === 0 ? (
             <Empty description="还没有充值记录（充值到账后会出现在这里）" />
@@ -515,6 +457,85 @@ export function InvoicePanel() {
         ) : null}
       </section>
 
+      <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <IconBadge icon={<HistoryOutlined />} tone="violet" size="sm" />
+          <div>
+            <h2>开票记录</h2>
+            <p>待审核 / 开票中可以撤销。</p>
+          </div>
+          <div className={styles.headActions}>
+            <Select
+              value={status}
+              style={{ width: 120 }}
+              onChange={(value) => {
+                setStatus(value)
+                setPage(1)
+              }}
+              options={[
+                { value: 'all', label: '全部状态' },
+                { value: 'pending', label: '待审核' },
+                { value: 'issuing', label: '开票中' },
+                { value: 'issued', label: '已开票' },
+                { value: 'rejected', label: '已驳回' }
+              ]}
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => void loadAll(page, status)}>
+              刷新
+            </Button>
+          </div>
+        </div>
+
+        <Spin spinning={loading}>
+          {records.length === 0 ? (
+            <Empty description={backendReady ? '还没有开票记录' : '暂时无法读取开票记录'} />
+          ) : (
+            <div className={styles.records}>
+              {records.map((record) => {
+                const meta = STATUS_META[record.status] || STATUS_META.pending
+                const billId = record.bill_id || record.order_no
+                return (
+                  <article key={record.id} className={styles.record}>
+                    <div className={styles.recordTop}>
+                      <strong>{money(record.amount)}</strong>
+                      <Tag color={meta.color}>{meta.label}</Tag>
+                      <span className={styles.recordTitle}>{record.title}</span>
+                      <time>{record.created_at}</time>
+                    </div>
+                    <div className={styles.recordMeta}>
+                      <span>电子普通发票</span>
+                      {billId ? <span>订单号 {billId}</span> : null}
+                      <span>{record.email}</span>
+                      {record.tax_no ? <span>税号 {record.tax_no}</span> : null}
+                      {record.invoice_no ? <span>发票号 {record.invoice_no}</span> : null}
+                    </div>
+                    {record.reject_reason ? <p className={styles.reject}>驳回原因：{record.reject_reason}</p> : null}
+                    {record.status === 'pending' || record.status === 'issuing' ? (
+                      <Popconfirm title="撤销这笔开票申请？" onConfirm={() => cancel(record)} okText="确认撤销" cancelText="返回">
+                        <Button size="small">撤销申请</Button>
+                      </Popconfirm>
+                    ) : null}
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </Spin>
+
+        {total > PAGE_SIZE ? (
+          <div className={styles.pager}>
+            <Pagination
+              current={page}
+              pageSize={PAGE_SIZE}
+              total={total}
+              showSizeChanger={false}
+              onChange={(next) => void loadAll(next, status)}
+            />
+          </div>
+        ) : null}
+      </section>
+
+
       </div>
 
       <p className={styles.footerTip}>
@@ -568,7 +589,7 @@ export function InvoicePanel() {
           </li>
           <li>
             <b>等站长审核</b>
-            <span>1–3 个工作日开出，状态在这里实时可见；审核中可以撤销。</span>
+            <span>审核进度和送达信息以开票记录为准。</span>
           </li>
         </ol>
         <ul className={styles.ruleList}>

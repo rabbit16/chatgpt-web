@@ -277,3 +277,20 @@
 		word-break: break-all;
 	}
 }
+
+
+.adminMobile {
+  padding: 12px;
+  min-height: 100dvh;
+  background: var(--canvas);
+  color: var(--text-1);
+
+  header { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+  details { margin: 12px 0; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  summary { cursor: pointer; font-weight: 650; }
+  nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+  nav a { padding: 6px; border-radius: var(--radius-md); }
+  nav a[aria-current='page'] { background: var(--brand-soft); color: var(--brand-text); }
+  main { min-width: 0; }
+  :global(.ant-table-content) { overflow-x: auto; }
+}

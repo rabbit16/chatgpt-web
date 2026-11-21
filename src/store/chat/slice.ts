@@ -43,7 +43,7 @@ export interface ChatState {
   getAllChatList: (data: any,id:any) => void
   // 搜索跳转时写入/更新会话，确保不在当前页也能打开
   upsertChat: (chat: ChatsInfo) => void
-  setPage:(value:number,total:number)=>void
+  setPage:(total:number)=>void
   changPage:(value:number)=>void
   updateRepeatedly:(value:boolean)=>void
 }
@@ -99,11 +99,13 @@ const chatStore = create<ChatState>()(
         }
       }),
     addChat: async (value) => {
-      let res = await addUserMessages({ userId: userStore.getState().user_info?.data?.bodyMessage?.userId })
-      let id = String(res?.data?.newChatId || '')
+      const userId = userStore.getState().user_info?.data?.bodyMessage?.userId
+      if (!userId) return
+      const res = await addUserMessages({ userId })
+      const id = String(res?.data?.newChatId || '')
       if (!id || id === 'undefined') return
       set((state: ChatState) => {
-        let info = generateChatInfo(value)
+        const info = generateChatInfo(value)
         info.id = id
         info.path = id
         const onFirstPage = state.page === 1

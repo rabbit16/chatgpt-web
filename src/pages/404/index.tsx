@@ -1,21 +1,21 @@
-import styles from './index.module.less'
+import { Button, Card, Result, Space } from 'antd'
+import { Link, useLocation } from 'react-router-dom'
+import Layout from '@/components/Layout'
 
-function Page404 (){
-    return (
-        <div className={styles.page404}>
-            <img className={styles.page404_icon} src="https://u1.dl0.cn/images/l2963j.png" alt="" srcSet="" />
-            <div className={styles.page404_text}>
-                <h3>抱歉，您访问的页面不存在!</h3>
-                <p>请确认链接地址是否正确后重新尝试</p>
-            </div>
-            <div className={styles.page404_button} onClick={()=>{
-                location.href = '/'
-            }}
-            >
-                回到首页
-            </div>
-        </div>
-    )
+export default function Page404() {
+  const { state } = useLocation()
+  const forbidden = state?.forbidden === true
+  return <Layout>
+    <Card style={{ maxWidth: 720, margin: '24px auto', borderRadius: 16 }}>
+      <Result status={forbidden ? '403' : '404'}
+        title={forbidden ? '当前账号没有访问权限' : '找不到这个页面'}
+        subTitle={forbidden ? '你可以返回首页，或继续浏览公开的模型价格和接入文档。' : '链接可能已经调整。可从公开入口继续浏览。'}
+        extra={<Space wrap>
+          <Link to="/"><Button type="primary">返回首页</Button></Link>
+          <Link to="/price"><Button>模型价格</Button></Link>
+          <Link to="/guide"><Button>接入文档</Button></Link>
+        </Space>}
+      />
+    </Card>
+  </Layout>
 }
-
-export default Page404;

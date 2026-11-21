@@ -1,11 +1,13 @@
 import { MenuDataItem, ProLayout } from '@ant-design/pro-components'
 import HeaderRender from '../HeaderRender'
 import { ChatsInfo } from '@/types'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MenuProps } from 'antd'
 import { configStore } from '@/store'
 import { sanitizeHtml } from '@/utils'
 import { useNarrow } from '@/hooks/useNarrow'
+import SiteFooter from '@/components/SiteFooter'
+import layoutStyles from './index.module.less'
 
 type Props = {
   menuExtraRender?: () => React.ReactNode
@@ -25,6 +27,9 @@ type Props = {
   menuFooterRender?: (props?: any) => React.ReactNode
   menuProps?: MenuProps
   keepSiderWhenMenuEmpty?: boolean
+  homeAppearance?: boolean
+  siderCollapsed?: boolean
+  onSiderCollapsedChange?: (collapsed: boolean) => void
   children?: React.ReactNode
 }
 
@@ -32,6 +37,12 @@ function Layout(props: Props) {
   const { menuExtraRender = () => <></>, menuItemRender = () => undefined } = props
   // 窄屏布局内边距：与 src/hooks/useNarrow 同一断点，保证各页判断一致
   const isNarrowLayout = useNarrow()
+  const [workspaceCollapsed, setWorkspaceCollapsed] = useState(false)
+  const effectiveWorkspaceCollapsed = props.siderCollapsed ?? workspaceCollapsed
+  const changeWorkspaceCollapsed = (collapsed: boolean) => {
+    setWorkspaceCollapsed(collapsed)
+    props.onSiderCollapsedChange?.(collapsed)
+  }
 
   const website_logo = configStore((state) => state.website_logo)
   const website_title = configStore((state) => state.website_title)
@@ -55,6 +66,7 @@ function Layout(props: Props) {
   }, [])
   return (
     <ProLayout
+      className={layoutStyles.neon}
       title={website_title}
       logo={website_logo}
       layout="mix"
@@ -62,32 +74,31 @@ function Layout(props: Props) {
       contentWidth="Fluid"
       fixedHeader
       fixSiderbar
-      headerHeight={56}
       headerRender={HeaderRender}
       contentStyle={{
-        background: 'var(--surface)'
+        background: 'transparent'
       }}
-      /* ProLayout 默认给内容区左右各 40px 内边距，页面自己又加 24px，
-         390 屏上真正可用宽度只剩 262px（理论 342px）。
-         窄屏把框架这层压到 12，配合页面级 .wrap 在窄屏归零，把 80px 还给内容。
-         桌面（>768）保持原值，视觉不变。 */
       token={{
         pageContainer: {
-          paddingInlinePageContainerContent: isNarrowLayout ? 12 : 40,
-          paddingBlockPageContainerContent: isNarrowLayout ? 8 : 24
+          paddingInlinePageContainerContent: props.homeAppearance ? 0 : isNarrowLayout ? 12 : 40,
+          paddingBlockPageContainerContent: props.homeAppearance ? 0 : isNarrowLayout ? 8 : 24
         }
       }}
+      footerRender={() => <SiteFooter />}
       siderMenuType="group"
       style={{
-        background: 'var(--surface)'
+        background: 'transparent'
       }}
       menu={{
-        hideMenuWhenCollapsed: true,
+        hideMenuWhenCollapsed: false,
         locale: false,
         collapsedShowGroupTitle: false
       }}
       suppressSiderWhenMenuEmpty={!props.keepSiderWhenMenuEmpty}
       siderWidth={264}
+      collapsed={props.keepSiderWhenMenuEmpty ? effectiveWorkspaceCollapsed : undefined}
+      onCollapse={props.keepSiderWhenMenuEmpty ? changeWorkspaceCollapsed : undefined}
+      collapsedButtonRender={props.keepSiderWhenMenuEmpty ? false : undefined}
       menuExtraRender={menuExtraRender}
       menuItemRender={menuItemRender}
       route={props.route}
@@ -98,7 +109,6 @@ function Layout(props: Props) {
         render: (p, dom) => <>{dom}</>
       }}
       menuFooterRender={(p) => {
-        
         return (
           <div>
             {props.menuFooterRender?.(p)}

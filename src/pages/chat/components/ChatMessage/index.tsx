@@ -1,16 +1,15 @@
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
 import React, { memo, useLayoutEffect, useMemo, useRef } from 'react'
 import { create } from 'zustand'
 import { copyToClipboard, joinTrim } from '@/utils'
 import { renderMarkdown } from '@/utils/renderMarkdown'
 import styles from './index.module.less'
-import OpenAiLogo from '@/components/OpenAiLogo'
 import { Dropdown, message } from 'antd'
 import 'katex/dist/katex.min.css'
 import { CopyOutlined, DeleteOutlined, MoreOutlined, RedoOutlined } from '@ant-design/icons'
 import avatarIcon from '@/assets/avatar.png'
 
-/** 助手统一用本站品牌标，旧版 OpenAI 图标不再出现 */
-const ASSISTANT_MARK = '/logo-rabbit.svg'
+const ASSISTANT_MARK = rabbitLogo
 
 const dropdownItems = [
   {
@@ -199,13 +198,15 @@ function ChatMessage({
             position === 'right' ? styles.right : styles.left
           ])}
         >
-          {status === 'loading' && !displayText ? <OpenAiLogo rotate /> : renderText}
-          <div
-            className={styles.chatMessage_content_operate}
-            style={{
-              left: position === 'right' ? -20 : 'none',
-              right: position === 'left' ? -20 : 'none'
-            }}
+          {status === 'loading' && !displayText ? (
+            <div className={styles.thinking} role="status">
+              <span>rabbitJ 正在思考</span>
+              <span className={styles.thinkingDots} aria-hidden="true"><i /><i /><i /></span>
+            </div>
+          ) : renderText}
+        </div>
+        {!streaming && <div
+            className={joinTrim([styles.chatMessage_content_operate, position === 'right' ? styles.operateRight : ''])}
           >
             <Dropdown
               placement="topRight"
@@ -229,12 +230,11 @@ function ChatMessage({
                 }
               }}
             >
-              <div className={styles.chatMessage_content_operate_icon}>
+              <button type="button" aria-label="消息操作" className={styles.chatMessage_content_operate_icon}>
                 <MoreOutlined />
-              </div>
+              </button>
             </Dropdown>
-          </div>
-        </div>
+          </div>}
       </div>
       {chatAvatar({
         style: { marginLeft: 8 },

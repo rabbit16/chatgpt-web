@@ -2,10 +2,15 @@
  * 登录页样式（T3 · 方向 A 分屏）
  * 左品牌 / 右表单；窄屏时合并为单列，品牌区缩成顶部条。
  */
+.page {
+	min-height: 100dvh;
+	background: transparent;
+}
+
 .login {
 	display: flex;
 	min-height: 100vh;
-	background: var(--surface);
+	background: transparent;
 
 	/* ---------- 左侧品牌面板 ---------- */
 	&__brand {
@@ -162,7 +167,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: 40px 24px;
-		background: var(--canvas);
+		background: transparent;
 	}
 
 	&__card {
@@ -223,7 +228,7 @@
 
 		&__panel {
 			padding: 28px 20px 48px;
-			background: var(--surface);
+			background: transparent;
 		}
 
 		&__card {

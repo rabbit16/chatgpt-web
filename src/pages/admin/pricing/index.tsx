@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Form, InputNumber, message } from 'antd'
+import { Alert, Button, Form, InputNumber, Modal, message } from 'antd'
 import { ReloadOutlined, SaveOutlined } from '@ant-design/icons'
 import { getGlobalPricing, updateGlobalPricing, type GlobalPricing } from '@/request/api'
 import styles from './index.module.less'
@@ -67,7 +67,15 @@ function AdminPricing() {
         description="扣费：上游美元成本 × 汇率 × 加价系数 × 用户倍率 × 用户折扣。前台价目展示为应付美元价（不含汇率）。已产生的账单不会重算。供应商 base_url 请到「供应商」栏目管理。"
       />
 
-      <Form form={form} layout="vertical" onFinish={save} className={styles.form}>
+      <Form form={form} layout="vertical" onFinish={(values) => {
+        Modal.confirm({
+          title: '确认更新全局费率？',
+          content: `汇率 ${current?.usd_cny_rate} → ${values.usd_cny_rate}，加价系数 ${current?.profit_multiplier} → ${values.profit_multiplier}。新费率用于后续计费，已产生的账单保持原金额。`,
+          okText: '更新费率',
+          cancelText: '返回核对',
+          onOk: () => save(values)
+        })
+      }} className={styles.form}>
         <Form.Item
           name="usd_cny_rate"
           label="美元兑人民币汇率"

@@ -60,7 +60,7 @@ function ProfilePage() {
         email: body.email || '',
         username: body.username || ''
       })
-    })
+    }).catch(() => message.warning('暂时无法刷新账户资料，当前显示已保存的信息'))
   }, [form])
 
   const onFinish = async (values: {
@@ -90,7 +90,7 @@ function ProfilePage() {
         old_password: values.old_password ? md5(values.old_password) : undefined,
         new_password: values.new_password ? md5(values.new_password) : undefined
       })
-      if (res?.data?.code === '0' || res?.code === 0) {
+      if (String(res?.data?.code ?? res?.code) === '0') {
         message.success(res?.data?.codeMsg || '资料已更新')
         if (res?.data?.bodyMessage) patchStoredProfile(res.data.bodyMessage)
         form.setFieldsValue({
@@ -98,7 +98,11 @@ function ProfilePage() {
           new_password: '',
           new_password_second: ''
         })
+      } else {
+        message.error(res?.data?.codeMsg || '保存失败，输入已保留')
       }
+    } catch {
+      message.error('暂时无法确认保存结果，请刷新资料后核对')
     } finally {
       setSaving(false)
     }

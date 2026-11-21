@@ -2,13 +2,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-width: 320px;
-  max-width: 560px;
+  min-width: 0;
   height: 100%;
-  /* 米色稿纸改成和全站一致的白色卡片：留缝、圆角、发丝线 */
   background: var(--surface);
-  border-left: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  margin: 0;
+  overflow: hidden;
 
   &_header {
     display: flex;
@@ -212,6 +210,54 @@
         border: none;
         border-bottom: 1px solid var(--border-soft);
         background: var(--surface-sunken);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+
+        .ql-formats {
+          display: inline-flex;
+          align-items: center;
+          margin-right: 4px;
+        }
+
+        button {
+          width: 30px;
+          height: 30px;
+          min-height: 30px;
+          padding: 6px;
+          border-radius: var(--radius-md);
+          flex: 0 0 auto;
+        }
+
+        button svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        .ql-picker {
+          height: 30px;
+          font-size: 12px;
+        }
+
+        .ql-picker-label {
+          display: inline-flex;
+          align-items: center;
+          padding-right: 18px;
+        }
+
+        .ql-color-picker .ql-picker-label,
+        .ql-icon-picker .ql-picker-label {
+          justify-content: center;
+          padding: 6px;
+        }
+
+        .ql-color-picker .ql-picker-label svg,
+        .ql-icon-picker .ql-picker-label svg {
+          width: 18px;
+          height: 18px;
+          flex: none;
+        }
       }
 
       .ql-container.ql-snow {

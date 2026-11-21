@@ -1,8 +1,10 @@
-const SELECTION_STORAGE = 'rabbitj_api_key_selection'
+import { demoEnabled } from '@/demo/runtime'
+
+const SELECTION_STORAGE = demoEnabled ? 'rabbitj.demo.key-selection' : 'rabbitj_api_key_selection'
 const LEGACY_SECRET_STORAGE = 'rabbitj_api_secrets'
 const sessionSecrets: Record<string, Record<string, string>> = {}
 
-try {
+if (!demoEnabled) try {
   localStorage.removeItem(LEGACY_SECRET_STORAGE)
 } catch {
   // Storage may be unavailable in restricted browser contexts.

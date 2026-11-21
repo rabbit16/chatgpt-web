@@ -1,17 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Input, InputNumber, Select, Table, Tag } from 'antd'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import {
-  ArrowRightOutlined,
-  DownOutlined,
-  ExportOutlined,
-  FileTextOutlined,
-  ImportOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  ThunderboltOutlined,
-  WalletOutlined
-} from '@ant-design/icons'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { DownOutlined, ReloadOutlined, SearchOutlined, WalletOutlined } from '@ant-design/icons'
 import HorizontalDrag from '@/components/HorizontalDrag'
 import IconBadge from '@/components/IconBadge'
 import Layout from '@/components/Layout'
@@ -38,6 +28,7 @@ import {
   pickFeaturedModelIds,
   type ModelProvider
 } from '@/data/modelPricing'
+import { demoEnabled, demoScenario } from '@/demo/runtime'
 import styles from './index.module.less'
 
 type TabKey = 'all' | ModelProvider
@@ -47,7 +38,10 @@ type ViewTab = 'price' | 'wallet'
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'all', label: '全部' },
-  ...Object.entries(PROVIDER_META).map(([key, meta]) => ({ key: key as ModelProvider, label: meta.label }))
+  ...Object.entries(PROVIDER_META).map(([key, meta]) => ({
+    key: key as ModelProvider,
+    label: meta.label
+  }))
 ]
 
 /**
@@ -71,6 +65,23 @@ const PUBLIC_PRICING: PublicPricingShape = {
 function formatPrice(amount: number) {
   if (amount === 0) return '$0'
   return formatUsd(amount) === '$0.00' ? `$${amount.toExponential(2)}` : formatUsd(amount)
+}
+
+function PriceComparison({ current, official }: { current: number; official?: number | null }) {
+  if (typeof official !== 'number' || !Number.isFinite(official) || official <= 0) {
+    return <small className={styles.officialPending}>官方价待核实</small>
+  }
+
+  const discounted = current <= official
+  const ratio = (current / official) * 10
+  return (
+    <span className={styles.priceComparison}>
+      <del>{formatPrice(official)}</del>
+      <Tag color={discounted ? 'orange' : 'default'}>
+        {discounted ? `${ratio.toFixed(1)} 折` : '高于官方价'}
+      </Tag>
+    </span>
+  )
 }
 
 /**
@@ -125,6 +136,7 @@ function PricePage() {
   // 拖到最右也看不到数字——这正是「拖到边上还是看不到价格」的根因。
   const narrow = useNarrow()
   const navigate = useNavigate()
+  const { hash } = useLocation()
   // 充值商城：两个页签同页切换（模型价格 / 我的钱包），URL 用 ?tab= 记住位置
   const [searchParams, setSearchParams] = useSearchParams()
   // 模型广场搜索关键词
@@ -168,18 +180,18 @@ function PricePage() {
     setSearchParams(nextParams, { replace: true })
   }
 
-  const TAB_META: Record<ViewTab, { title: string; lead: string }> = {
+  const TAB_META: Record<ViewTab, { title: string }> = {
     price: {
-      title: '模型价格',
-      lead: '按当前供应商可用模型展示 · 美元（USD）/ 百万 Tokens · 新模型优先'
+      title: '模型价格'
     },
     wallet: {
-      title: '我的钱包',
-      lead: '当前余额、充值与支付记录都在这里；充值到账后可直接给某一笔开票'
+      title: '我的钱包'
     }
   }
   const { token, user_info, setLoginModal, llm_api_key } = userStore()
-  const info = user_info as { data?: { bodyMessage?: { telephone?: string } }; telephone?: string } | undefined
+  const info = user_info as
+    | { data?: { bodyMessage?: { telephone?: string } }; telephone?: string }
+    | undefined
   const phone = info?.data?.bodyMessage?.telephone || info?.telephone
   const credential =
     (llm_api_key || '').startsWith('sk-') || /^1[3-9]\d{9}$/.test(llm_api_key || '')
@@ -187,7 +199,7 @@ function PricePage() {
       : phone || ''
   // 页头充值条用：余额取一次，点「去充值」直接切到钱包页签
   const [balance, setBalance] = useState<number | null>(null)
-  // 窄屏「费用估算」展开/收起（默认收起，先让价格表露出来）
+  // 费用估算默认收起，先让价格卡片露出来
   const [calcOpen, setCalcOpen] = useState(false)
   const requestRef = useRef(0)
   const [pricing, setPricing] = useState<UserPricing | null>(null)
@@ -236,7 +248,8 @@ function PricePage() {
         const message = res?.data?.userMessage || {}
         const raw = message.token ?? message.balance ?? message.money
         if (typeof raw === 'number' && Number.isFinite(raw)) setBalance(raw)
-        else if (typeof raw === 'string' && raw.trim() !== '' && Number.isFinite(Number(raw))) setBalance(Number(raw))
+        else if (typeof raw === 'string' && raw.trim() !== '' && Number.isFinite(Number(raw)))
+          setBalance(Number(raw))
       })
       .catch(() => undefined)
     return () => {
@@ -248,11 +261,12 @@ function PricePage() {
     const controller = new AbortController()
     setPricing(null)
     setError('')
-    if (token && credential) {
+    if (token && (credential || demoEnabled)) {
       void loadPricing(controller.signal)
     } else if (!token) {
       // 未登录：用公开参考价，页面不再是空白 + 一句"登录后可见"
-      setPricing(PUBLIC_PRICING)
+      if (demoEnabled && demoScenario() === 'normal') setPricing(PUBLIC_PRICING)
+      else if (demoEnabled) void loadPricing(controller.signal)
     }
     return () => {
       controller.abort()
@@ -337,14 +351,66 @@ function PricePage() {
     if (searching) return searched
     return tab === 'all' ? models : models.filter((item) => item.provider === tab)
   }, [models, tab, searching, searched])
+  const requestedModel = searchParams.get('model')
+  const requestedMatch = models.find((item) => item.id === requestedModel)
+  const [cardView, setCardView] = useState(true)
+  const [pricesExpanded, setPricesExpanded] = useState(false)
+  const [cardColumns, setCardColumns] = useState(1)
+  const cardsRef = useRef<HTMLDivElement>(null)
+  const previewCount = cardView ? cardColumns * 3 : 10
+  const visibleModels = pricesExpanded ? list : list.slice(0, previewCount)
+
+  useEffect(() => {
+    setPricesExpanded(false)
+  }, [search, tab, cardView])
+
+  useEffect(() => {
+    const cards = cardsRef.current
+    if (!cards) return
+    const observer = new ResizeObserver(([entry]) => {
+      setCardColumns(Math.max(1, Math.floor((entry.contentRect.width + 12) / 252)))
+    })
+    observer.observe(cards)
+    return () => observer.disconnect()
+  }, [cardView, list.length])
+  const goToEstimate = (id: string) => {
+    setModelId(id)
+    setTier('standard')
+    setCalcOpen(true)
+    document.getElementById('estimate')?.scrollIntoView({ block: 'start' })
+  }
+  useEffect(() => {
+    if (requestedMatch) goToEstimate(requestedMatch.id)
+  }, [requestedMatch])
+  useEffect(() => {
+    if (hash === '#estimate') setCalcOpen(true)
+    if (!pricing || !['#estimate', '#image-pricing'].includes(hash)) return
+    document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
+  }, [hash, pricing])
   const currentModel = models.find((item) => item.id === modelId) || models[0]
   const selectedRate =
     currentModel?.rates.find((item) => item.service_tier === tier) ||
     currentModel?.rates.find((item) => item.service_tier === 'standard') ||
     currentModel?.rates[0]
 
-  const unit = (value: number) => formatPrice(value)
-  const estimate = (value: number, tokens: number) => (value * tokens) / 1_000_000
+  const [imageModelId, setImageModelId] = useState('')
+  const [imageTier, setImageTier] = useState('1k')
+  const [imageCount, setImageCount] = useState(1)
+  const perImageModels = imageModels.filter(isPerImageBilling)
+  const imageModel = perImageModels.find((item) => item.model === imageModelId) || perImageModels[0]
+  const imageRate = imageModel?.per_image_tiers?.[imageTier]
+  const currency = pricing?.currency || 'USD'
+  const unit = (value?: number) =>
+    typeof value !== 'number' || !Number.isFinite(value)
+      ? '暂无报价'
+      : currency === 'USD'
+      ? formatPrice(value)
+      : `${value.toPrecision(5)} ${currency}`
+  const estimate = (value: number | null | undefined, tokens: number) => {
+    if (tokens === 0) return 0
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return NaN
+    return (value * tokens) / 1_000_000
+  }
   const promptTokens = inputTokens + cachedHitTokens + cacheWriteTokens
   const useLong = promptUsesLongContext(selectedRate, promptTokens)
   const billedRate =
@@ -372,12 +438,17 @@ function PricePage() {
       render: (_: string, record: (typeof models)[number]) => (
         <div>
           <div className={styles.modelCellName}>
-            <Tag color={PROVIDER_META[record.provider].color}>{PROVIDER_META[record.provider].label}</Tag>
+            <Tag color={PROVIDER_META[record.provider].color}>
+              {PROVIDER_META[record.provider].label}
+            </Tag>
             {highlight(record.name || '', terms)}
             {record.recommend ? <Tag color="blue">推荐</Tag> : null}
           </div>
           <div className={styles.modelCellId}>{highlight(record.id, terms)}</div>
           <div className={styles.modelIntro}>{record.intro}</div>
+          <Button type="link" size="small" onClick={() => goToEstimate(record.id)}>
+            估算此型号
+          </Button>
         </div>
       )
     },
@@ -391,39 +462,57 @@ function PricePage() {
       title: '输入',
       dataIndex: 'rates',
       width: 120,
-      render: (rates: UserModelRate[]) => (
-        <span className={styles.usdOnly}>{unit(standardRate(rates).input)}</span>
-      )
+      render: (rates: UserModelRate[]) => {
+        const rate = standardRate(rates)
+        return (
+          <div className={styles.rateCell}>
+            <span className={styles.usdOnly}>{unit(rate.input)}</span>
+            <PriceComparison current={rate.input} official={rate.original_input} />
+          </div>
+        )
+      }
     },
     {
       title: '缓存读取',
       dataIndex: 'rates',
       width: 130,
-      render: (rates: UserModelRate[]) => (
-        <span className={styles.usdOnly}>
-          {unit(standardRate(rates).cache_read)}
-        </span>
-      )
+      render: (rates: UserModelRate[]) => {
+        const rate = standardRate(rates)
+        return (
+          <div className={styles.rateCell}>
+            <span className={styles.usdOnly}>{unit(rate.cache_read)}</span>
+            <PriceComparison current={rate.cache_read} official={rate.original_cache_read} />
+          </div>
+        )
+      }
     },
     {
       title: '缓存写入',
       dataIndex: 'rates',
       width: 130,
-      render: (rates: UserModelRate[]) => (
-        <span className={styles.usdOnly}>
-          {unit(standardRate(rates).cache_write)}
-        </span>
-      )
+      render: (rates: UserModelRate[]) => {
+        const rate = standardRate(rates)
+        return (
+          <div className={styles.rateCell}>
+            <span className={styles.usdOnly}>{unit(rate.cache_write)}</span>
+            <PriceComparison current={rate.cache_write} official={rate.original_cache_write} />
+          </div>
+        )
+      }
     },
     {
       title: '输出',
       dataIndex: 'rates',
       width: 120,
-      render: (rates: UserModelRate[]) => (
-        <span className={styles.usdOnly}>
-          {unit(standardRate(rates).output)}
-        </span>
-      )
+      render: (rates: UserModelRate[]) => {
+        const rate = standardRate(rates)
+        return (
+          <div className={styles.rateCell}>
+            <span className={styles.usdOnly}>{unit(rate.output)}</span>
+            <PriceComparison current={rate.output} official={rate.original_output} />
+          </div>
+        )
+      }
     },
     {
       title: '长上下文',
@@ -459,58 +548,54 @@ function PricePage() {
            * 注意：删掉的只是这排 UI 按钮，
            *   · ?tab= 的解析（viewTab）**保留**，顶部导航靠它区分两个菜单项；
            *   · 页内大标题（TAB_META[viewTab].title）**保留**，用户得知道自己在哪一页。
-           * 页面顶部现在直接是充值条，所以下方不要再留多余的空白。
+           * 价格页的充值条放在标题下；钱包页使用自己的合并摘要，不重复显示。
            */}
-          <div className={styles.rechargeBar}>
-            <div className={styles.rechargeLead}>
-              <span className={styles.rechargeIcon}>
-                <WalletOutlined />
-              </span>
-              <div>
-                <strong>
-                  {token
-                    ? balance != null
-                      ? `当前余额 ${formatMoney(balance)}`
-                      : '充值后即可调用全部 58 个模型'
-                    : '充值后即可调用全部 58 个模型'}
-                </strong>
-                <p>按实际用量扣费，充多少到账多少，最低 1 元起</p>
-              </div>
-            </div>
-            <div className={styles.rechargeActions}>
-              <Button
-                type="primary"
-                icon={<WalletOutlined />}
-                onClick={() => {
-                  if (token) switchTab('wallet')
-                  else setLoginModal(true)
-                }}
-              >
-                {token ? '立即充值' : '登录并充值'}
-              </Button>
-              {token ? (
-                // 发票已独立成「开票中心」页面，这里做成真跳转（原来是 switchTab，
-                // 页签删掉后就变成了点了没反应的死按钮）
-                <Button type="text" icon={<FileTextOutlined />} onClick={() => navigate('/invoice')}>
-                  开票中心 <ArrowRightOutlined />
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
           <header className={styles.pageHead}>
             <div>
               <h1>{TAB_META[viewTab].title}</h1>
-              <p>{TAB_META[viewTab].lead}</p>
             </div>
             {viewTab === 'price' && token && (
-              <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadPricing()}>
+              <Button
+                icon={<ReloadOutlined />}
+                loading={loading}
+                onClick={() => void loadPricing()}
+              >
                 刷新价格
               </Button>
             )}
           </header>
 
-          {/* 页签只剩「模型价格 / 我的钱包」，发票已独立成 /invoice */}
+          {viewTab === 'price' ? (
+            <div className={styles.rechargeBar}>
+              <div className={styles.rechargeLead}>
+                <span className={styles.rechargeIcon}>
+                  <WalletOutlined />
+                </span>
+                <div>
+                  <strong>
+                    {token && balance != null
+                      ? `当前余额 ${formatMoney(balance)}`
+                      : '查看可用模型与充值入口'}
+                  </strong>
+                  <p>按实际用量扣费，充值前请核对渠道和金额</p>
+                </div>
+              </div>
+              <div className={styles.rechargeActions}>
+                <Button
+                  type="primary"
+                  icon={<WalletOutlined />}
+                  onClick={() => {
+                    if (token) switchTab('wallet')
+                    else setLoginModal(true)
+                  }}
+                >
+                  {token ? '立即充值' : '登录并充值'}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          {/* 2026-11-20 站长：页头下的提示条删掉，信息密度留给价格列表本身 */}
           {viewTab !== 'price' ? (
             token ? (
               <ShopPanel />
@@ -524,386 +609,530 @@ function PricePage() {
             )
           ) : (
             <>
-          {/* 怎么算钱：三个图标讲清计费构成，长解释交给下方表格 */}
-          <section className={styles.moneyFlow} aria-label="计费构成">
-            <div className={styles.moneyFlowItem}>
-              <IconBadge icon={<ImportOutlined />} tone="brand" size="md" />
-              <div>
-                <strong>输入 Tokens</strong>
-                <span>你发出去的内容</span>
-              </div>
-            </div>
-            <div className={styles.moneyFlowItem}>
-              <IconBadge icon={<ExportOutlined />} tone="mint" size="md" />
-              <div>
-                <strong>输出 Tokens</strong>
-                <span>它回答的内容</span>
-              </div>
-            </div>
-            <div className={styles.moneyFlowItem}>
-              <IconBadge icon={<ThunderboltOutlined />} tone="violet" size="md" />
-              <div>
-                <strong>缓存读取</strong>
-                <span>重复内容按折扣价</span>
-              </div>
-            </div>
-            <p className={styles.moneyFlowFormula}>
-              费用 = 单价 × Tokens ÷ 100 万，用多少算多少，没有最低消费
-            </p>
-          </section>
-
-          {!token ? (
-            <div className={styles.publicNote}>
-              <span className={styles.publicNoteText}>
-                {PUBLIC_PRICING_NOTE} · 更新于 {PUBLIC_PRICING_UPDATED_AT}
-                              </span>
-              <Button type="primary" onClick={() => setLoginModal(true)}>
-                登录 / 注册
-              </Button>
-            </div>
-          ) : !credential ? (
-            /* 没密钥的用户在这里是「想用但不知道怎么开始」的准客户，
+              {!token ? (
+                <div className={styles.publicNote}>
+                  <span className={styles.publicNoteText}>
+                    {demoEnabled
+                      ? `访客参考价 · 本地快照演示 · ${PUBLIC_PRICING_NOTE} · ${PUBLIC_PRICING_UPDATED_AT}`
+                      : '访客参考价暂不可用：当前价目接口需要账号凭证。登录后可查看个人价。'}
+                  </span>
+                  <Button type="primary" onClick={() => setLoginModal(true)}>
+                    登录 / 注册
+                  </Button>
+                </div>
+              ) : !credential && !demoEnabled ? (
+                /* 没密钥的用户在这里是「想用但不知道怎么开始」的准客户，
                原来只有一句不可点击的提示，还用了导航里早已不存在的旧名
                「Agent 接入」，全页除导航栏外没有任何入口
                （2026-10-24 流程检验第 2 条：阻塞交易）。
                落点指 /agent 而不是 /guide：接入值已经独立成页，
                用户要的是「拿密钥」，教程是「怎么填」，不该再让他多绕一步。 */
-            <Alert
-              showIcon
-              type="warning"
-              message="还没有密钥：先到「接入」页创建一个 sk- 密钥，再回来看你的个人费率"
-              action={
-                <Button size="small" type="primary" onClick={() => navigate('/agent')}>
-                  去接入
-                </Button>
-              }
-            />
-          ) : loading && !pricing ? (
-            <Alert showIcon type="info" message="正在获取当前账号价格…" />
-          ) : error ? (
-            <Alert showIcon type="error" message={error} action={<Button onClick={() => void loadPricing()}>重试</Button>} />
-          ) : null}
+                <Alert
+                  showIcon
+                  type="warning"
+                  message="还没有密钥：先到「接入」页创建一个 sk- 密钥，再回来看你的个人费率"
+                  action={
+                    <Button size="small" type="primary" onClick={() => navigate('/agent')}>
+                      去接入
+                    </Button>
+                  }
+                />
+              ) : loading && !pricing ? (
+                <Alert showIcon type="info" message="正在获取当前账号价格…" />
+              ) : error ? (
+                <Alert
+                  showIcon
+                  type="error"
+                  message={error}
+                  action={<Button onClick={() => void loadPricing()}>重试</Button>}
+                />
+              ) : null}
 
-          {pricing && (
-            <>
-              <section className={styles.calculator}>
-                {/* 窄屏默认折叠：这块在 390 下占 793px，把价格表推到 1456px，
-                    首屏完全看不到价格。折叠后只留一行「预计消费」，要算明细再点开。
-                    桌面端始终展开，不受影响。 */}
-                {narrow ? (
-                  <button
-                    type="button"
-                    className={styles.calcToggle}
-                    aria-expanded={calcOpen}
-                    onClick={() => setCalcOpen((v) => !v)}
+              {requestedModel && !loading && !requestedMatch && (
+                <Alert
+                  showIcon
+                  type="info"
+                  message={`当前无法查看型号 ${requestedModel}`}
+                  action={<Button onClick={() => navigate('/price')}>查看可用模型</Button>}
+                />
+              )}
+              {pricing && (
+                <>
+                  <section
+                    id="estimate"
+                    className={styles.calculator}
+                    style={{ scrollMarginTop: 80 }}
                   >
-                    <span>
-                      <b>费用估算</b>
-                      <small>
-                        当前选型 {currentModel?.name || '—'} · 预计 {formatPrice(input + hit + write + output)}
-                      </small>
-                    </span>
-                    <DownOutlined rotate={calcOpen ? 180 : 0} />
-                  </button>
-                ) : (
-                  <>
-                    <h2>费用估算</h2>
-                    <p>
-                      依据当前账号单价估算。若模型设有长短上下文差价，将按非缓存输入、缓存读取与缓存写入的合计自动切换计价档位。
-                    </p>
-                    {currentModel?.intro ? <p className={styles.modelPickHint}>当前选型：{currentModel.intro}</p> : null}
-                  </>
-                )}
-                {/* 窄屏收起时不渲染，display:flex 会让 hidden 失效，所以用条件渲染 */}
-                {narrow && !calcOpen ? null : (
-                <div className={styles.calcRow}>
-                  <div className={styles.field}>
-                    <label>模型</label>
-                    <Select
-                      showSearch
-                      optionFilterProp="label"
-                      value={currentModel?.id}
-                      onChange={(value) => {
-                        setModelId(value)
-                        setTier('standard')
-                      }}
-                      options={models.map((item) => ({
-                        value: item.id,
-                        label: `${PROVIDER_META[item.provider].label} · ${item.name}`
-                      }))}
-                    />
-                  </div>
-                  <div className={styles.field}>
-                    <label>处理模式</label>
-                    <Select
-                      value={selectedRate?.service_tier}
-                      onChange={setTier}
-                      options={currentModel?.rates.map((item) => ({ value: item.service_tier, label: item.service_tier })) || []}
-                    />
-                  </div>
-                  <div className={styles.field}>
-                    <label>非缓存输入 tokens</label>
-                    <InputNumber min={0} value={inputTokens} onChange={(value) => setInputTokens(Number(value || 0))} />
-                  </div>
-                  <div className={styles.field}>
-                    <label>缓存读取 tokens</label>
-                    <InputNumber min={0} value={cachedHitTokens} onChange={(value) => setCachedHitTokens(Number(value || 0))} />
-                  </div>
-                  <div className={styles.field}>
-                    <label>缓存写入 tokens</label>
-                    <InputNumber min={0} value={cacheWriteTokens} onChange={(value) => setCacheWriteTokens(Number(value || 0))} />
-                  </div>
-                  <div className={styles.field}>
-                    <label>输出 tokens</label>
-                    <InputNumber min={0} value={outputTokens} onChange={(value) => setOutputTokens(Number(value || 0))} />
-                  </div>
-                </div>
-                )}
-                {narrow && !calcOpen ? null : (
-                <div className={styles.calcFooter}>
-                  {selectedRate?.long_context ? (
-                    <span className={[styles.tierBadge, useLong ? styles.tierLong : ''].join(' ')}>
-                      {useLong ? '长上下文' : '短上下文'}
-                    </span>
-                  ) : null}
-                  <div className={styles.calcBreakdown}>
-                    <span>输入 {formatPrice(input)}</span>
-                    <span>缓存读取 {formatPrice(hit)}</span>
-                    <span>缓存写入 {formatPrice(write)}</span>
-                    <span>输出 {formatPrice(output)}</span>
-                  </div>
-                  <div className={styles.calcResult}>
-                    <span>预计消费（USD）</span>
-                    <strong>{formatPrice(input + hit + write + output)}</strong>
-                  </div>
-                </div>
-                )}
-              </section>
+                    <button
+                      type="button"
+                      className={styles.calcToggle}
+                      aria-expanded={calcOpen}
+                      onClick={() => setCalcOpen((v) => !v)}
+                    >
+                      <span>
+                        <b>费用估算</b>
+                        <small>
+                          当前选型 {currentModel?.name || '—'} · 预计{' '}
+                          {billedRate ? unit(input + hit + write + output) : '暂无报价'}
+                        </small>
+                      </span>
+                      <DownOutlined rotate={calcOpen ? 180 : 0} />
+                    </button>
+                    {calcOpen ? (
+                      <div className={styles.calcIntro}>
+                        <p>
+                          {token ? '个人价' : '访客参考价'} · {currency} · 按百万
+                          tokens。若模型设有长短上下文差价，将按非缓存输入、缓存读取与缓存写入的合计自动切换计价档位。
+                        </p>
+                        {currentModel?.intro ? (
+                          <p className={styles.modelPickHint}>当前选型：{currentModel.intro}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {/* 窄屏收起时不渲染，display:flex 会让 hidden 失效，所以用条件渲染 */}
+                    {!calcOpen ? null : (
+                      <div className={styles.calcRow}>
+                        <div className={styles.field}>
+                          <label>模型</label>
+                          <Select
+                            showSearch
+                            optionFilterProp="label"
+                            value={currentModel?.id}
+                            onChange={(value) => {
+                              setModelId(value)
+                              setTier('standard')
+                            }}
+                            options={models.map((item) => ({
+                              value: item.id,
+                              label: `${PROVIDER_META[item.provider].label} · ${item.name}`
+                            }))}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label>处理模式</label>
+                          <Select
+                            value={selectedRate?.service_tier}
+                            onChange={setTier}
+                            options={
+                              currentModel?.rates.map((item) => ({
+                                value: item.service_tier,
+                                label: item.service_tier
+                              })) || []
+                            }
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label>非缓存输入 tokens</label>
+                          <InputNumber
+                            min={0}
+                            value={inputTokens}
+                            onChange={(value) => setInputTokens(Number(value || 0))}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label>缓存读取 tokens</label>
+                          <InputNumber
+                            min={0}
+                            value={cachedHitTokens}
+                            onChange={(value) => setCachedHitTokens(Number(value || 0))}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label>缓存写入 tokens</label>
+                          <InputNumber
+                            min={0}
+                            value={cacheWriteTokens}
+                            onChange={(value) => setCacheWriteTokens(Number(value || 0))}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label>输出 tokens</label>
+                          <InputNumber
+                            min={0}
+                            value={outputTokens}
+                            onChange={(value) => setOutputTokens(Number(value || 0))}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!calcOpen ? null : (
+                      <div className={styles.calcFooter}>
+                        {selectedRate?.long_context ? (
+                          <span
+                            className={[styles.tierBadge, useLong ? styles.tierLong : ''].join(' ')}
+                          >
+                            {useLong ? '长上下文' : '短上下文'}
+                          </span>
+                        ) : null}
+                        <div className={styles.calcBreakdown}>
+                          <span>
+                            输入 {inputTokens} tokens · {unit(input)}
+                          </span>
+                          <span>
+                            缓存读取 {cachedHitTokens} tokens · {unit(hit)}
+                          </span>
+                          <span>
+                            缓存写入 {cacheWriteTokens} tokens · {unit(write)}
+                          </span>
+                          <span>
+                            输出 {outputTokens} tokens · {unit(output)}
+                          </span>
+                        </div>
+                        <div className={styles.calcResult}>
+                          <span>预计消费（{currency}）</span>
+                          <strong>
+                            {billedRate ? unit(input + hit + write + output) : '暂无报价'}
+                          </strong>
+                        </div>
+                      </div>
+                    )}
+                  </section>
 
-              <section className={styles.tableCard}>
-                <div className={styles.tableHead}>
-                  <h2>
-                    完整价目{' '}
-                    <small>
-                      {searching
-                        ? `搜索「${search.trim()}」，已在全部厂商中查找`
-                        : '当前可用模型 · 最新在前'}
-                    </small>
-                  </h2>
-                  <Input
-                    allowClear
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="搜索模型名或 ID"
-                    prefix={<SearchOutlined />}
-                    className={styles.modelSearch}
-                    aria-label="搜索模型"
-                    onKeyDown={(e) => {
-                      // 规格 §3：按 Esc 也能清空，和点 ✕ 等价
-                      if (e.key === 'Escape' && search) {
-                        e.preventDefault()
-                        setSearch('')
-                      }
-                    }}
-                  />
-                </div>
-                {/* 页签行：厂商页签（语义=列表筛选）+ 搜索命中数（语义=全局检索结果注解）。
+                  <section className={styles.tableCard}>
+                    <div className={styles.tableHead}>
+                      <div className={styles.tableHeading}>
+                        <h2>
+                          完整价目{' '}
+                          <small>
+                            {searching
+                              ? `搜索「${search.trim()}」，已在全部厂商中查找`
+                              : '当前可用模型 · 最新在前'}
+                          </small>
+                        </h2>
+                        <Button onClick={() => setCardView(!cardView)}>
+                          {cardView ? '列表视图' : '卡片视图'}
+                        </Button>
+                      </div>
+                      <Input
+                        allowClear
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="搜索模型名或 ID"
+                        prefix={<SearchOutlined />}
+                        className={styles.modelSearch}
+                        aria-label="搜索模型"
+                        onKeyDown={(e) => {
+                          // 规格 §3：按 Esc 也能清空，和点 ✕ 等价
+                          if (e.key === 'Escape' && search) {
+                            e.preventDefault()
+                            setSearch('')
+                          }
+                        }}
+                      />
+                    </div>
+                    {/* 页签行：厂商页签（语义=列表筛选）+ 搜索命中数（语义=全局检索结果注解）。
                     为什么合并成一行（2026-10-24 修复「找到 X 个模型」重合）：
                     命中数原来单独占一行、还用 -6px 负边距向上贴页签，实测压进页签 6px，
                     下面离「按住表格左右拖动」只剩 12px。改成和页签同一 flex 行之后，
                     桌面端命中数落在页签右侧（不再多吃一行高度），窄屏由 CSS 换成上下排。
                     两块之间的间距全部由 .tabRow 的 gap 提供，没有负边距。 */}
-                <div className={styles.tabRow}>
-                  <div className={styles.tabs}>
-                    {tabs.map(({ key, label }) => (
-                      <button
-                        key={key}
-                        /* 搜索时始终高亮「全部」：用「范围=全部厂商」表达全局搜索，
+                    <div className={styles.tabRow}>
+                      <div className={styles.tabs}>
+                        {tabs.map(({ key, label }) => (
+                          <button
+                            key={key}
+                            /* 搜索时始终高亮「全部」：用「范围=全部厂商」表达全局搜索，
                            而不是把所有页签一起变灰（那会被读成功能坏了） */
-                        className={(searching ? key === 'all' : tab === key) ? styles.tabActive : undefined}
-                        data-muted={(searching && key !== 'all') || undefined}
-                        onClick={() => {
-                          // 点页签 = 退出搜索，回到该厂商列表
-                          if (searching) setSearch('')
-                          setTab(key)
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  {/* 搜索命中数：让用户知道「搜到了没有」，而不是盯着空表格发呆。
+                            className={
+                              (searching ? key === 'all' : tab === key)
+                                ? styles.tabActive
+                                : undefined
+                            }
+                            data-muted={(searching && key !== 'all') || undefined}
+                            onClick={() => {
+                              // 点页签 = 退出搜索，回到该厂商列表
+                              if (searching) setSearch('')
+                              setTab(key)
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      {/* 搜索命中数：让用户知道「搜到了没有」，而不是盯着空表格发呆。
                       这里只负责「数」——0 已经说明没匹配；为什么不匹配、怎么办，
                       由下面空状态完整讲一次（两处都说就是重复表达）。 */}
-                  {searching ? (
-                    <div className={styles.searchMeta} role="status" aria-live="polite">
-                      找到 <b>{searched.length}</b> 个模型
+                      {searching ? (
+                        <div className={styles.searchMeta} role="status" aria-live="polite">
+                          找到 <b>{searched.length}</b> 个模型
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
-                {/* 无结果时给一个专门的空状态，不要再让表格自己弹 antd 的
+                    {/* 无结果时给一个专门的空状态，不要再让表格自己弹 antd 的
                     「暂无数据」大空框——那会和上方「找到 0 个模型」重复两次。 */}
-                {searching && searched.length === 0 ? (
-                  <div className={styles.searchEmpty}>
-                    <IconBadge icon={<SearchOutlined />} tone="sky" size="md" />
-                    <strong>没有找到「{search.trim()}」的模型</strong>
-                    <p>换个更短的关键词，或者清空搜索看全部 {models.length} 个模型。</p>
-                    <Button type="primary" onClick={() => setSearch('')}>
-                      查看全部 {models.length} 个模型
-                    </Button>
-                  </div>
-                ) : (
-                <HorizontalDrag watch={list.length + tab}>
-                {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
+                    {searching && searched.length === 0 ? (
+                      <div className={styles.searchEmpty}>
+                        <IconBadge icon={<SearchOutlined />} tone="sky" size="md" />
+                        <strong>没有找到「{search.trim()}」的模型</strong>
+                        <p>换个更短的关键词，或者清空搜索看全部 {models.length} 个模型。</p>
+                        <Button type="primary" onClick={() => setSearch('')}>
+                          查看全部 {models.length} 个模型
+                        </Button>
+                      </div>
+                    ) : list.length === 0 ? (
+                      <div className={styles.searchEmpty} role="status">
+                        <strong>{tab === 'all' ? '暂时没有文本报价' : '该厂商暂无报价'}</strong>
+                        <Button
+                          onClick={() => (tab === 'all' ? void loadPricing() : setTab('all'))}
+                        >
+                          {tab === 'all' ? '刷新报价' : '查看全部厂商'}
+                        </Button>
+                      </div>
+                    ) : cardView ? (
+                      <div ref={cardsRef} className={styles.modelCards}>
+                        {visibleModels.map((model) => {
+                          const rate = standardRate(model.rates)
+                          return (
+                            <article key={model.id}>
+                              <Tag>{PROVIDER_META[model.provider].label}</Tag>
+                              <h3>{model.name}</h3>
+                              <p>
+                                {model.id} · {rate.service_tier}
+                              </p>
+                              <div className={styles.modelCardRates}>
+                                <div>
+                                  <span>输入 / 百万 tokens</span>
+                                  <strong>{unit(rate.input)}</strong>
+                                  <PriceComparison
+                                    current={rate.input}
+                                    official={rate.original_input}
+                                  />
+                                </div>
+                                <div>
+                                  <span>输出 / 百万 tokens</span>
+                                  <strong>{unit(rate.output)}</strong>
+                                  <PriceComparison
+                                    current={rate.output}
+                                    official={rate.original_output}
+                                  />
+                                </div>
+                              </div>
+                              <Button onClick={() => goToEstimate(model.id)}>估算此型号</Button>
+                            </article>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <HorizontalDrag watch={list.length + tab}>
+                        {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
                     并加 scroll.y 让表头固定：否则 390 下要滚 960px 才摸到数字、
                     而且表头早就滚出屏幕，用户不知道每一列是什么。 */}
-                <Table
-                  rowKey="id"
-                  loading={loading}
-                  pagination={{ pageSize: 15, showSizeChanger: false }}
-                  columns={columns}
-                  dataSource={list}
-                  scroll={{ x: narrow ? 800 : 1180, y: narrow ? 420 : undefined }}
-                  expandable={{
-                    rowExpandable: (record) => record.rates.length > 1,
-                    expandedRowRender: (record) => (
-                      <div className={styles.expand}>
-                        {record.rates
-                          .filter((item) => item.service_tier !== 'standard')
-                          .map((item) => (
-                            <p key={item.service_tier}>
-                              {item.service_tier}：输入 {unit(item.input)} · 缓存读取 {unit(item.cache_read)} · 缓存写入{' '}
-                              {unit(item.cache_write)} · 输出 {unit(item.output)} / 百万 tokens
-                            </p>
-                          ))}
+                        <Table
+                          rowKey="id"
+                          loading={loading}
+                          pagination={false}
+                          columns={columns}
+                          dataSource={visibleModels}
+                          scroll={{ x: narrow ? 800 : 1180, y: narrow ? 420 : undefined }}
+                          expandable={{
+                            rowExpandable: (record) => record.rates.length > 1,
+                            expandedRowRender: (record) => (
+                              <div className={styles.expand}>
+                                {record.rates
+                                  .filter((item) => item.service_tier !== 'standard')
+                                  .map((item) => (
+                                    <p key={item.service_tier}>
+                                      {item.service_tier}：输入 {unit(item.input)} · 缓存读取{' '}
+                                      {unit(item.cache_read)} · 缓存写入 {unit(item.cache_write)} ·
+                                      输出 {unit(item.output)} / 百万 tokens
+                                    </p>
+                                  ))}
+                              </div>
+                            )
+                          }}
+                        />
+                      </HorizontalDrag>
+                    )}
+                    {list.length > previewCount ? (
+                      <div className={styles.priceDisclosure}>
+                        <Button
+                          aria-expanded={pricesExpanded}
+                          icon={<DownOutlined rotate={pricesExpanded ? 180 : 0} />}
+                          onClick={() => setPricesExpanded(!pricesExpanded)}
+                        >
+                          {pricesExpanded ? '收起价目' : `展开全部 ${list.length} 个模型`}
+                        </Button>
                       </div>
-                    )
-                  }}
-                />
-                </HorizontalDrag>
-                )}
-              </section>
+                    ) : null}
+                  </section>
 
-              {imageModels.length > 0 ? (
-                <section className={styles.tableCard}>
-                  <div className={styles.tableHead}>
-                    <h2>
-                      图像模型 <small>跟随供应商价目 · 最新在前</small>
-                    </h2>
-                  </div>
-                  <HorizontalDrag watch={imageModels.length}>
-                  <Table
-                    rowKey={(row) => `${row.model}-${row.service_tier || 'standard'}`}
-                    loading={loading}
-                    pagination={false}
-                    dataSource={imageModels}
-                    scroll={{ x: narrow ? 720 : 980 }}
-                    columns={[
-                      {
-                        title: '模型',
-                        dataIndex: 'name',
-                        width: narrow ? 200 : undefined,
-                        render: (_: string, record: (typeof imageModels)[number]) => (
-                          <div>
-                            <div className={styles.modelCellName}>
-                              <Tag color={PROVIDER_META[record.provider].color}>
-                                {PROVIDER_META[record.provider].label}
-                              </Tag>
-                              {record.name}
-                              {isPerImageBilling(record) ? (
-                                <Tag color="green" style={{ marginLeft: 8 }}>
-                                  按张
-                                </Tag>
-                              ) : (
-                                <Tag style={{ marginLeft: 8 }}>tokens</Tag>
-                              )}
-                            </div>
-                            <div className={styles.modelCellId}>{record.model}</div>
-                            <div className={styles.modelIntro}>{record.intro}</div>
+                  {imageModels.length > 0 ? (
+                    <section
+                      id="image-pricing"
+                      className={styles.tableCard}
+                      style={{ scrollMarginTop: 80 }}
+                    >
+                      <div className={styles.tableHead}>
+                        <h2>
+                          图像模型 <small>跟随供应商价目 · 最新在前</small>
+                        </h2>
+                      </div>
+                      <HorizontalDrag watch={imageModels.length}>
+                        <Table
+                          rowKey={(row) => `${row.model}-${row.service_tier || 'standard'}`}
+                          loading={loading}
+                          pagination={false}
+                          dataSource={imageModels}
+                          scroll={{ x: narrow ? 720 : 980 }}
+                          columns={[
+                            {
+                              title: '模型',
+                              dataIndex: 'name',
+                              width: narrow ? 200 : undefined,
+                              render: (_: string, record: (typeof imageModels)[number]) => (
+                                <div>
+                                  <div className={styles.modelCellName}>
+                                    <Tag color={PROVIDER_META[record.provider].color}>
+                                      {PROVIDER_META[record.provider].label}
+                                    </Tag>
+                                    {record.name}
+                                    {isPerImageBilling(record) ? (
+                                      <Tag color="green" style={{ marginLeft: 8 }}>
+                                        按张
+                                      </Tag>
+                                    ) : (
+                                      <Tag style={{ marginLeft: 8 }}>tokens</Tag>
+                                    )}
+                                  </div>
+                                  <div className={styles.modelCellId}>{record.model}</div>
+                                  <div className={styles.modelIntro}>{record.intro}</div>
+                                </div>
+                              )
+                            },
+                            {
+                              title: '1K / 张',
+                              key: 'tier_1k',
+                              render: (_: unknown, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>
+                                    {unit(record.per_image_tiers?.['1k'])}
+                                  </span>
+                                ) : (
+                                  <span className={styles.usdOnly}>—</span>
+                                )
+                            },
+                            {
+                              title: '2K / 张',
+                              key: 'tier_2k',
+                              render: (_: unknown, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>
+                                    {unit(record.per_image_tiers?.['2k'])}
+                                  </span>
+                                ) : (
+                                  <span className={styles.usdOnly}>—</span>
+                                )
+                            },
+                            {
+                              title: '4K / 张',
+                              key: 'tier_4k',
+                              render: (_: unknown, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>
+                                    {unit(record.per_image_tiers?.['4k'])}
+                                  </span>
+                                ) : (
+                                  <span className={styles.usdOnly}>—</span>
+                                )
+                            },
+                            {
+                              title: '文本输入',
+                              dataIndex: 'text_input',
+                              render: (v: number, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>—</span>
+                                ) : (
+                                  <span className={styles.usdOnly}>{unit(v)}</span>
+                                )
+                            },
+                            {
+                              title: '图像输入',
+                              dataIndex: 'image_input',
+                              render: (v: number, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>—</span>
+                                ) : (
+                                  <span className={styles.usdOnly}>{unit(v)}</span>
+                                )
+                            },
+                            {
+                              title: '输出',
+                              dataIndex: 'output',
+                              render: (v: number, record: (typeof imageModels)[number]) =>
+                                isPerImageBilling(record) ? (
+                                  <span className={styles.usdOnly}>—</span>
+                                ) : (
+                                  <span className={styles.usdOnly}>{unit(v)}</span>
+                                )
+                            }
+                          ]}
+                        />
+                      </HorizontalDrag>
+                      {imageModel && (
+                        <div className={styles.imageEstimate}>
+                          <h3>按张估算</h3>
+                          <div className={styles.calcRow}>
+                            <label className={styles.field}>
+                              图像型号
+                              <Select
+                                value={imageModel.model}
+                                options={perImageModels.map((item) => ({
+                                  value: item.model,
+                                  label: item.name
+                                }))}
+                                onChange={setImageModelId}
+                              />
+                            </label>
+                            <label className={styles.field}>
+                              输出尺寸
+                              <Select
+                                value={imageTier}
+                                options={['1k', '2k', '4k'].map((value) => ({
+                                  value,
+                                  label: value.toUpperCase()
+                                }))}
+                                onChange={setImageTier}
+                              />
+                            </label>
+                            <label className={styles.field}>
+                              张数
+                              <InputNumber
+                                min={1}
+                                precision={0}
+                                value={imageCount}
+                                onChange={(value) => setImageCount(value ?? 1)}
+                              />
+                            </label>
                           </div>
-                        )
-                      },
-                      {
-                        title: '1K / 张',
-                        key: 'tier_1k',
-                        render: (_: unknown, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>
-                              {formatPrice(record.per_image_tiers?.['1k'] ?? 0)}
-                            </span>
+                          <p>
+                            {imageModel.model} · {imageTier.toUpperCase()} · {imageCount} 张 ·{' '}
+                            {token ? '个人价' : '访客参考价'} ({currency})
+                          </p>
+                          {typeof imageRate === 'number' && Number.isFinite(imageRate) ? (
+                            <p>
+                              单价 {unit(imageRate)}／张 · 合计{' '}
+                              <strong>{unit(imageRate * imageCount)}</strong>
+                            </p>
                           ) : (
-                            <span className={styles.usdOnly}>—</span>
-                          )
-                      },
-                      {
-                        title: '2K / 张',
-                        key: 'tier_2k',
-                        render: (_: unknown, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>
-                              {formatPrice(record.per_image_tiers?.['2k'] ?? 0)}
-                            </span>
-                          ) : (
-                            <span className={styles.usdOnly}>—</span>
-                          )
-                      },
-                      {
-                        title: '4K / 张',
-                        key: 'tier_4k',
-                        render: (_: unknown, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>
-                              {formatPrice(record.per_image_tiers?.['4k'] ?? 0)}
-                            </span>
-                          ) : (
-                            <span className={styles.usdOnly}>—</span>
-                          )
-                      },
-                      {
-                        title: '文本输入',
-                        dataIndex: 'text_input',
-                        render: (v: number, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>—</span>
-                          ) : (
-                            <span className={styles.usdOnly}>{formatPrice(v)}</span>
-                          )
-                      },
-                      {
-                        title: '图像输入',
-                        dataIndex: 'image_input',
-                        render: (v: number, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>—</span>
-                          ) : (
-                            <span className={styles.usdOnly}>{formatPrice(v)}</span>
-                          )
-                      },
-                      {
-                        title: '输出',
-                        dataIndex: 'output',
-                        render: (v: number, record: (typeof imageModels)[number]) =>
-                          isPerImageBilling(record) ? (
-                            <span className={styles.usdOnly}>—</span>
-                          ) : (
-                            <span className={styles.usdOnly}>{formatPrice(v)}</span>
-                          )
-                      }
-                    ]}
-                  />
-                  </HorizontalDrag>
-                  <p className={styles.footnote} style={{ marginTop: 12 }}>
-                    图像生成入口：侧栏「绘图」。Teamo GPT Image 按输出最长边分 1K/2K/4K 按张计费；Gemini
-                    Image 等按 text / image input / output tokens（USD / 百万 tokens）。价格含站点利润与用户倍率。
-                  </p>
-                </section>
-              ) : null}
+                            <p>该型号和尺寸暂无报价。</p>
+                          )}
+                        </div>
+                      )}
+                      <p className={styles.footnote} style={{ marginTop: 12 }}>
+                        图像生成入口：侧栏「绘图」。Teamo GPT Image 按输出最长边分 1K/2K/4K
+                        按张计费；Gemini Image 等按 text / image input / output tokens（USD / 百万
+                        tokens）。价格含站点利润与用户倍率。
+                      </p>
+                    </section>
+                  ) : null}
 
-              <p className={styles.footnote}>
-                列表完全跟随当前供应商价目；本地简介仅作选型参考。单位为美元 / 百万 tokens。长上下文价按整笔请求切换，阈值按非缓存输入、缓存读取与缓存写入合计计算。
-              </p>
-            </>
-          )}
+                  <p className={styles.footnote}>
+                    列表完全跟随当前供应商价目；本地简介仅作选型参考。文本报价单位为 {currency} /
+                    百万
+                    tokens。长上下文价按整笔请求切换，阈值按非缓存输入、缓存读取与缓存写入合计计算。
+                  </p>
+                </>
+              )}
             </>
           )}
         </div>

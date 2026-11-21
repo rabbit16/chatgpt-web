@@ -11,7 +11,7 @@ type Props = {
   message?: string
   description?: string
   status?: number
-  userInfo?: UserInfo
+  userInfo?: UserInfo & { avatar?: string; account?: string }
   buttons: Array<React.ReactNode>
 }
 

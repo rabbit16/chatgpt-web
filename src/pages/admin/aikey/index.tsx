@@ -443,7 +443,7 @@ function AikeyPage() {
                   {
                     required: true,
                     message: '请输入正确对应的Host',
-                    pattern: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*[^\/]$/i
+                    pattern: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*[^/]$/i
                   }
                 ]}
               />

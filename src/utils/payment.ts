@@ -1,12 +1,16 @@
+import { demoEnabled } from '@/demo/runtime'
+
 // 虎皮椒手机端跳走再回来会刷新页面，订单号必须落盘，回来后再查一次。
 export type PendingOrder = {
   outTradeNo: string
-  channel: 'xunhupay'
+  channel: 'xunhupay' | 'lantu'
   money: number
   createdAt: number
+  awaitingReturn?: boolean
+  userId?: string
 }
 
-const PENDING_KEY = 'pending_pay_order'
+const PENDING_KEY = demoEnabled ? 'rabbitj.demo.pending-pay-order' : 'pending_pay_order'
 
 /**
  * 后端返回有两套形状：
@@ -15,7 +19,7 @@ const PENDING_KEY = 'pending_pay_order'
  * 页面只想要一个对象，这里统一成「顶层为主、data 里的对象补进来」。
  */
 export function normalizePayload<T = Record<string, any>>(res: any): T & { code?: string | number; codeMsg?: string } {
-  if (!res || typeof res !== 'object') return {} as T
+  if (!res || typeof res !== 'object') return {} as T & { code?: string | number; codeMsg?: string }
   const nested = res.data && typeof res.data === 'object' && !Array.isArray(res.data) ? res.data : null
   return (nested ? { ...res, ...nested } : { ...res }) as T & { code?: string | number }
 }
@@ -45,19 +49,16 @@ export function readPendingOrder(): PendingOrder | null {
     if (!raw) return null
     const parsed = JSON.parse(raw) as PendingOrder
     if (!parsed?.outTradeNo) return null
-    // 超过 30 分钟的订单不再自动确认。
-    if (Date.now() - Number(parsed.createdAt || 0) > 30 * 60 * 1000) {
-      clearPendingOrder()
-      return null
-    }
+    if (!['xunhupay', 'lantu'].includes(parsed.channel) || !Number.isFinite(parsed.money)) return null
     return parsed
   } catch {
     return null
   }
 }
 
-export function clearPendingOrder() {
+export function clearPendingOrder(expectedId?: string) {
   try {
+    if (expectedId && readPendingOrder()?.outTradeNo !== expectedId) return
     localStorage.removeItem(PENDING_KEY)
   } catch {
     // 忽略。

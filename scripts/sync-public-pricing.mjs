@@ -135,7 +135,7 @@ export const PUBLIC_PRICING_NOTE = '参考价（站内标准倍率），登录�
 
 export const PUBLIC_MODEL_IDS: string[] = ${JSON.stringify(modelIds, null, 0)}
 
-export const PUBLIC_MODELS: UserModelRate[] = ${JSON.stringify(models, null, 2)}
+export const PUBLIC_MODELS: (UserModelRate & { original_input?: number | null; original_output?: number | null; billing_basis?: string })[] = ${JSON.stringify(models, null, 2)}
 
 export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = ${JSON.stringify(imageModels, null, 2)}
 `

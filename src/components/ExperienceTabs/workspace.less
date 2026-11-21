@@ -1,0 +1,52 @@
+.workspaceSurface() {
+  [class*='ant-pro-layout-bg-list'],
+  [class*='ant-pro-layout-container'],
+  [class*='ant-pro-layout-content'] {
+    background: transparent !important;
+  }
+
+  [class*='ant-pro-layout-content'] {
+    padding: 0 !important;
+  }
+
+  :global(.ant-btn),
+  :global(.ant-select-selector),
+  :global(.ant-input-affix-wrapper) {
+    border-radius: 12px;
+    box-shadow: none;
+  }
+}
+
+.workspaceGlow() {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background: transparent;
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -32% -18%;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 21% 43%, #bbd2ffb3, transparent 46%),
+      radial-gradient(ellipse at 55% 65%, #d5c5ff99, transparent 47%),
+      radial-gradient(ellipse at 82% 46%, #ffd7c999, transparent 45%);
+    animation: workspace-glow 24s ease-in-out infinite alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+    }
+  }
+}
+
+@keyframes workspace-glow {
+  from {
+    transform: translate(-3%, -2%) rotate(-5deg);
+  }
+  to {
+    transform: translate(5%, 4%) rotate(7deg);
+  }
+}

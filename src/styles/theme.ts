@@ -33,7 +33,7 @@ const baseToken: ThemeConfig['token'] = {
 export const antdTheme: ThemeConfig = {
   token: {
     ...baseToken,
-    colorPrimary: '#1877ff',
+    colorPrimary: '#2457e8',
     colorInfo: '#1877ff',
     colorSuccess: '#12b76a',
     colorWarning: '#f79009',
@@ -54,45 +54,23 @@ export const antdTheme: ThemeConfig = {
   },
   components: {
     Button: {
-      primaryShadow: 'none',
-      defaultShadow: 'none',
-      fontWeight: 500,
-      paddingInline: 16,
-      // 验收阻塞项 4：antd 把 colorPrimary #5b8af0 推导成更暗的 #5078cf，
-      // 配白字只有 4.26:1 未达 AA。显式给近黑字，在 #5078cf 上约 8.2:1。
-      primaryColor: '#141417'
-    },
-    Input: {
-      paddingInline: 12,
-      activeShadow: '0 0 0 3px rgba(24, 119, 255, 0.16)'
-    },
-    InputNumber: {
-      activeShadow: '0 0 0 3px rgba(24, 119, 255, 0.16)'
-    },
-    Select: {
-      optionSelectedBg: '#e8f1ff'
+      borderRadius: 999,
+      borderRadiusSM: 999,
+      borderRadiusLG: 999
     },
     Card: {
       paddingLG: 24,
       headerFontSize: 16,
       boxShadowTertiary: '0 8px 24px rgba(16, 24, 40, 0.05)'
     },
-    Table: {
-      headerBg: '#f8fafc',
-      headerColor: '#475467',
-      headerSplitColor: 'transparent',
-      rowHoverBg: '#f7f9fd',
-      borderColor: '#eef2f7',
-      cellPaddingBlock: 12
-    },
     Tabs: {
-      itemSelectedColor: '#1877ff',
-      inkBarColor: '#1877ff',
+      itemSelectedColor: '#2457e8',
+      inkBarColor: '#2457e8',
       titleFontSize: 14
     },
     Menu: {
       itemSelectedBg: '#e8f1ff',
-      itemSelectedColor: '#1877ff',
+      itemSelectedColor: '#2457e8',
       itemHoverBg: '#f4f6fb',
       itemHeight: 40
     },
@@ -105,12 +83,11 @@ export const antdTheme: ThemeConfig = {
     },
     Tag: {
       defaultBg: '#f4f6fb',
-      borderRadiusSM: 6
+      borderRadiusSM: 999
     },
     Segmented: {
       itemSelectedBg: '#ffffff',
-      trackBg: '#f4f6fb',
-      borderRadius: 8
+      borderRadius: 999
     },
     Pagination: {
       itemActiveBg: '#e8f1ff'
@@ -123,10 +100,6 @@ export const antdTheme: ThemeConfig = {
     },
     Tooltip: {
       borderRadius: 8
-    },
-    Form: {
-      labelColor: '#344054',
-      labelFontSize: 14
     },
     Empty: {
       colorTextDescription: '#98a2b3'
@@ -143,9 +116,7 @@ export const antdDarkTheme: ThemeConfig = {
   algorithm: antdAlgorithm.darkAlgorithm,
   token: {
     ...baseToken,
-    // 深色主按钮：原来 #6f9dff + 白字只有 2.64:1（AA 要求 4.5），手机上发虚。
-    // 换成 #5b8af0 + 近黑字 #141417 = 5.55:1，达到 AA（2026-10-24 视觉验收 P7）。
-    colorPrimary: '#5b8af0',
+    colorPrimary: '#2457e8',
     colorInfo: '#6f9dff',
     colorSuccess: '#4ade80',
     colorWarning: '#fbbf24',
@@ -169,33 +140,15 @@ export const antdDarkTheme: ThemeConfig = {
     boxShadowSecondary: '0 18px 44px rgba(0, 0, 0, 0.5)'
   },
   components: {
+    /* 与浅色版同理：按钮全站药丸化，保持两套主题同一语言 */
     Button: {
-      primaryShadow: 'none',
-      defaultShadow: 'none',
-      fontWeight: 500,
-      paddingInline: 16
-    },
-    Input: {
-      paddingInline: 12,
-      activeShadow: '0 0 0 3px rgba(111, 157, 255, 0.24)'
-    },
-    InputNumber: {
-      activeShadow: '0 0 0 3px rgba(111, 157, 255, 0.24)'
-    },
-    Select: {
-      optionSelectedBg: '#2b3546'
+      borderRadius: 999,
+      borderRadiusSM: 999,
+      borderRadiusLG: 999
     },
     Card: {
       paddingLG: 24,
       headerFontSize: 16
-    },
-    Table: {
-      headerBg: '#1f1f23',
-      headerColor: '#cfcfd6',
-      headerSplitColor: 'transparent',
-      rowHoverBg: '#26262b',
-      borderColor: '#2a2a30',
-      cellPaddingBlock: 12
     },
     Tabs: {
       itemSelectedColor: '#8ab0ff',
@@ -217,12 +170,11 @@ export const antdDarkTheme: ThemeConfig = {
     },
     Tag: {
       defaultBg: '#2a2a2f',
-      borderRadiusSM: 6
+      borderRadiusSM: 999
     },
     Segmented: {
       itemSelectedBg: '#2a2a31',
-      trackBg: '#1c1c20',
-      borderRadius: 8
+      borderRadius: 999
     },
     Pagination: {
       itemActiveBg: '#2b3546'
@@ -235,10 +187,6 @@ export const antdDarkTheme: ThemeConfig = {
     },
     Tooltip: {
       borderRadius: 8
-    },
-    Form: {
-      labelColor: '#cfcfd6',
-      labelFontSize: 14
     },
     Empty: {
       colorTextDescription: '#87878f'

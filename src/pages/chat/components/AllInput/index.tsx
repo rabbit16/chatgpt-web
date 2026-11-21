@@ -5,34 +5,15 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { promptStore } from '@/store'
 import useDocumentResize from '@/hooks/useDocumentResize'
 import { htmlToImage } from '@/utils/htmlToImage'
-import { UploadOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
-import {  Upload } from 'antd';
+import { demoEnabled } from '@/demo/runtime'
 type Props = {
   onSend: (value: string) => Promise<boolean>
   disabled?: boolean
   clearMessage?: () => void
   onStopFetch?: () => void
 }
-const propsUpload: UploadProps = {
-  name: 'file',
-  action: '',  //https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188
-  headers: {
-    authorization: 'authorization-text',
-  },
-  onChange(info) {
-    if (info.file.status !== 'uploading') {
-      console.log(info.file, info.fileList);
-    }
-    if (info.file.status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully`);
-    } else if (info.file.status === 'error') {
-      message.error(`${info.file.name} 对不起，功能正在开发中，后续加入文件问答！`);
-    }
-  },
-};
 function AllInput(props: Props) {
-  const draftKey = 'chat_unsent_draft'
+  const draftKey = demoEnabled ? 'rabbitj.demo.chat-draft' : 'chat_unsent_draft'
   const [prompt, setPrompt] = useState(() => localStorage.getItem(draftKey) || '')
   const promptRef = useRef(prompt)
   const { localPrompt } = promptStore()
@@ -47,10 +28,10 @@ function AllInput(props: Props) {
   const send = async () => {
     const value = promptRef.current
     if (!value.trim()) return
+    updatePrompt('')
     const sent = await props.onSend(value)
-    if (sent && promptRef.current === value) updatePrompt('')
+    if (!sent && !promptRef.current) updatePrompt(value)
   }
-  const [inputFile,setInputFile] = useState();
   const bodyResize = useDocumentResize()
   const [downloadModal, setDownloadModal] = useState({
     open: false,
@@ -91,14 +72,7 @@ function AllInput(props: Props) {
   }, [])
   return (
     <div className={styles.allInput}>
-  <Upload {...propsUpload} 
-    maxCount={1}
-    multiple
-  >
-  <div className={styles.allInput_icon} title="上传附件（开发中）">
-          <PaperClipOutlined />
-        </div>
-  </Upload>
+      <Button type="text" icon={<PaperClipOutlined />} disabled aria-label="附件上传尚未开放" title="附件上传尚未开放" />
       {bodyResize.width > 800 && (
         <div
           className={styles.allInput_icon}

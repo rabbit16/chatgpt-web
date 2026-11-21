@@ -4,51 +4,22 @@
  */
 .page {
 	min-height: 100vh;
-	background: var(--canvas);
+	background: transparent;
 
 	[class*='ant-pro-layout-content'] {
 		padding-block: 0;
-		background: var(--canvas) !important;
+		background: transparent !important;
 	}
 }
 
 .wrap {
 	width: 100%;
-	max-width: 1180px;
+	max-width: var(--content-max); /* 与首页同一内容宽（2026-11-20 全站留白统一） */
 	margin: 0 auto;
 	padding: 24px var(--container-pad) 56px;
 	display: flex;
 	flex-direction: column;
 	gap: 18px;
-}
-
-.head {
-	h1 {
-		margin: 8px 0 8px;
-		font-size: 28px;
-		line-height: 1.25;
-		letter-spacing: -0.02em;
-	}
-}
-
-.kicker {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0;
-	font-size: 12px;
-	letter-spacing: 0.04em;
-	/* 2026-10-25：12px 品牌色文字用 --brand 时，浅底 --canvas 上只有 3.89:1，
-	   改用 --brand-text（浅 5.07:1 / 深 8.21:1）。 */
-	color: var(--brand-text);
-}
-
-.lead {
-	margin: 0;
-	max-width: 52em;
-	font-size: 14px;
-	line-height: 1.7;
-	color: var(--text-4);
 }
 
 .tabs {
@@ -57,7 +28,7 @@
 	gap: 4px;
 	padding: 3px;
 	width: fit-content;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-pill);
 	background: var(--surface-muted);
 }
 
@@ -68,7 +39,7 @@
 	padding: 7px 16px;
 	border: none;
 	background: transparent;
-	border-radius: var(--radius-xs);
+	border-radius: var(--radius-pill);
 	font-size: 13px;
 	color: var(--text-4);
 	cursor: pointer;
@@ -89,9 +60,5 @@
 @media (max-width: 640px) {
 	.wrap {
 		padding: 18px var(--space-4) 40px;
-	}
-
-	.head h1 {
-		font-size: 22px;
 	}
 }

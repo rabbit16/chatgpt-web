@@ -30,7 +30,7 @@ type Props = {
  *
  * 三条容错（站长特别要求）：
  *   1. 坏图兜底：onError 时把 failed 置 true，回退成原来的图标，绝不显示破图标；
- *   2. object-fit: cover：封面比例与容器不一致时裁切而不是拉扁变形；
+ *   2. object-fit: contain：整张图等比缩进盒内，logo/带字截图不被裁角、不变形（2026-11-20 从 cover 改过来）；
  *   3. loading="lazy"：列表一屏多行时，屏幕外的图先不下载，省流量。
  * 另外容器底色用 --surface-sunken，图片解码完成前不会闪白块（深色模式尤其明显）。
  */

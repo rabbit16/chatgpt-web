@@ -3,17 +3,17 @@
  */
 .page {
 	min-height: 100vh;
-	background: var(--canvas);
+	background: transparent;
 
 	[class*='ant-pro-layout-content'] {
 		padding-block: 0;
-		background: var(--canvas) !important;
+		background: transparent !important;
 	}
 }
 
 .wrap {
 	width: 100%;
-	max-width: 1180px;
+	max-width: var(--content-max); /* 与首页同一内容宽（2026-11-20 全站留白统一） */
 	margin: 0 auto;
 	padding: 24px var(--container-pad) 56px;
 	display: flex;
@@ -28,16 +28,6 @@
 		line-height: 1.25;
 		letter-spacing: -0.02em;
 	}
-}
-
-.kicker {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0;
-	font-size: 12px;
-	letter-spacing: 0.04em;
-	color: var(--brand);
 }
 
 .lead {

@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import TeX  from '@matejmazur/react-katex';
 import '@matejmazur/react-katex/dist/react-katex.css';
 
-function MathRenderer({ formula, block }) {
+function MathRenderer({ formula, block }: { formula: string; block?: boolean }) {
   return <TeX math={formula} block={block} />;
 }
 
 MathRenderer.propTypes = {
-  equation: PropTypes.string.isRequired,
+  formula: PropTypes.string.isRequired,
   block: PropTypes.bool,
 };
 

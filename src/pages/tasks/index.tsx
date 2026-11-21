@@ -147,14 +147,7 @@ export function TasksPanel() {
 
   return (
     <div className={styles.wrapPanel}>
-          <Alert
-            showIcon
-            type="info"
-            className={styles.tip}
-            message="任务是怎么来的"
-            description="同一会话中连续的工具调用归并为同一任务：Claude 的 tool_use、OpenAI 的 function_call 表示仍在调用工具（进行中）；出现 end_turn / stop / completed 且无待执行工具时，该轮结束。"
-          />
-
+          {/* 2026-11-20 站长：「任务是怎么来的」解释条删掉，列表本身已经够清楚 */}
           {!token ? (
             <Alert
               showIcon
@@ -205,12 +198,12 @@ export function TasksPanel() {
                   ))}
                 </div>
                 <Space wrap>
-                  <Popconfirm title="把所有进行中的任务标成已完成？" okText="全部完成" cancelText="取消" onConfirm={() => void onCompleteAll()}>
+                  <Popconfirm title={`将 ${counts.running} 个进行中的任务标为已完成？`} okText="全部完成" cancelText="取消" onConfirm={() => void onCompleteAll()}>
                     <Button icon={<CheckOutlined />} disabled={counts.running === 0}>
                       一键全部完成
                     </Button>
                   </Popconfirm>
-                  <Popconfirm title="删除所有已完成任务？" okText="删除" cancelText="取消" onConfirm={() => void onDeleteDone()}>
+                  <Popconfirm title={`删除 ${counts.done} 个已完成任务？`} okText="删除" cancelText="取消" onConfirm={() => void onDeleteDone()}>
                     <Button icon={<DeleteOutlined />} disabled={counts.done === 0}>
                       删除已完成
                     </Button>
@@ -265,6 +258,7 @@ export function TasksPanel() {
                     render: (_value: string, row) => (
                       <div>
                         <div>{row.decision}</div>
+                        {row.last_request_id && <p><code>{row.last_request_id}</code> <Button size="small" type="link" onClick={() => void navigator.clipboard.writeText(row.last_request_id).then(() => message.success('已复制请求号'), () => message.error('复制失败，请手动选择请求号'))}>复制请求号</Button></p>}
                         <span style={{ color: '#667085', fontSize: 12 }}>
                           finish={row.finish || '-'} result={row.result || '-'} · {row.steps} 次请求
                         </span>
@@ -297,7 +291,7 @@ export function TasksPanel() {
                           disabled={busyId === row.id}
                           onChange={(value) => void onStatus(row, value)}
                         />
-                        <Popconfirm title="删除这个任务？" okText="删除" cancelText="取消" onConfirm={() => void onDelete(row)}>
+                        <Popconfirm title={`删除任务 #${row.id}？`} okText="删除" cancelText="取消" onConfirm={() => void onDelete(row)}>
                           <Button size="small" danger loading={busyId === row.id}>
                             删除
                           </Button>

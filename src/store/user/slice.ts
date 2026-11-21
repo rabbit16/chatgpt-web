@@ -1,3 +1,4 @@
+import { demoEnabled } from '@/demo/runtime'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { ConsumeRecordInfo, InvitationRecordInfo, ResponseLoginData, UserInfo } from '@/types'
@@ -59,7 +60,10 @@ const userStore = create<userState>()(
         ...data,
         token_expires_at: data.token ? Date.now() + TOKEN_TTL_MS : undefined
       })),
-      logout: () => set(() => ({ user_info: undefined, token: undefined, token_expires_at: undefined, llm_api_key: '', allow_phone_key: null })),
+      logout: () => {
+        if (demoEnabled) sessionStorage.removeItem('rabbitj.demo.role')
+        set({ user_info: undefined, token: undefined, token_expires_at: undefined, llm_api_key: '', allow_phone_key: null })
+      },
       expireSession: () => set(() => ({ loginModal: true, token: undefined, token_expires_at: undefined, llm_api_key: '' })),
       invitation_records: {
         count: 0,
@@ -110,8 +114,8 @@ const userStore = create<userState>()(
         })
     }),
     {
-      name: 'user_storage',
-      storage: createJSONStorage(() => localStorage),
+      name: demoEnabled ? 'rabbitj.demo.user' : 'user_storage',
+      storage: createJSONStorage(() => demoEnabled ? sessionStorage : localStorage),
       partialize: (state) => ({
         user_info: state.user_info,
         upglobal: state.upglobal,
@@ -131,7 +135,7 @@ const userStore = create<userState>()(
     }
   )
 )
-try {
+if (!demoEnabled) try {
   const persisted = localStorage.getItem('user_storage')
   if (persisted) {
     const parsed = JSON.parse(persisted)

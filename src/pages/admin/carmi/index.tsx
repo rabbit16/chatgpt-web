@@ -315,7 +315,7 @@ function CarmiPage() {
               })
                 .then((res) => {
                   if (res.code) return
-                  const keys = res.data.map((info) => `${info.key}`).join('\n')
+                  const keys = res.data.map((info: { key: string }) => `${info.key}`).join('\n')
                   setGenerateModal((g) => ({ ...g, loading: false, result: keys }))
                   tableActionRef.current?.reloadAndRest?.()
                 })

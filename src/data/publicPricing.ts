@@ -18,7 +18,7 @@ export const PUBLIC_PRICING_NOTE = '参考价（站内标准倍率），登录�
 
 export const PUBLIC_MODEL_IDS: string[] = ["MiniMax-M3","claude-fable-5","claude-fable-5-1","claude-haiku-4-5","claude-haiku-4-5-20251001","claude-haiku-5-5","claude-opus-4-6","claude-opus-4-7","claude-opus-4-8","claude-opus-5","claude-opus-5-5","claude-sonnet-4-6","claude-sonnet-5","claude-sonnet-5-5","deepseek-flash","deepseek-flash-1017","deepseek-flash-free","deepseek-v4-flash","deepseek-v4-flash-free","deepseek-v4-flash-vision-exp","deepseek-v4-pro","deepseek-v4-pro-260425","doubao-seed-2.0-lite","doubao-seed-2.1-pro","gemini-3.1-pro-preview","gemini-3.5-flash","gemini-3.5-flash-lite","gemini-3.6-flash","gemini-3.7-flash","gemini-3.8-flash","gemini-4-argon","gg(cursor)-46","gg(cursor)-47","glm-5.2","glm-5.3","glm-5.3-flash","glm-5.3-flash-free","gpt-5.4","gpt-5.4 (fast)","gpt-5.4-mini","gpt-5.4-mini (fast)","gpt-5.5","gpt-5.6-luna","gpt-5.6-luna (fast)","gpt-5.6-sol","gpt-5.6-sol (fast)","gpt-5.6-terra","gpt-5.6-terra (fast)","gpt-6-astra","gpt-6-astra (fast)","gpt-6-luna","gpt-6-sol","gpt-6.1-sol","grok-4.6","grok-4.7","kimi-k3","qwen3.7-flash","qwen3.8-max"]
 
-export const PUBLIC_MODELS: UserModelRate[] = [
+export const PUBLIC_MODELS: (UserModelRate & { original_input?: number | null; original_output?: number | null; billing_basis?: string })[] = [
   {
     "model": "MiniMax-M3",
     "display_name": "MiniMax M3",

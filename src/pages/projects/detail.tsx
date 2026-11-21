@@ -160,7 +160,6 @@ function ProjectDetailPage() {
                     </strong>
                     <span>
                       {formatFileSize(entry.file_size || item.file_size) || '体积未标注'}
-                      {entry.download_count ? ` · 下载 ${entry.download_count} 次` : ''}
                     </span>
                   </div>
                   {entry.file_url ? (
@@ -226,7 +225,7 @@ function ProjectDetailPage() {
             ) : null}
           </section>
 
-          {item.category_name || item.file_size || item.download_count !== undefined ? (
+          {item.category_name || item.insert_time ? (
             <section className={styles.downloads}>
               <h2>信息</h2>
               <div className={styles.releaseList}>
@@ -239,15 +238,6 @@ function ProjectDetailPage() {
                     </div>
                   </div>
                 ) : null}
-                <div className={styles.releaseRow}>
-                  <span className={styles.releaseIcon}>
-                    <DownloadOutlined />
-                  </span>
-                  <div className={styles.releaseMeta}>
-                    <strong>下载量</strong>
-                    <span>{item.download_count ?? 0} 次</span>
-                  </div>
-                </div>
                 {item.insert_time ? (
                   <div className={styles.releaseRow}>
                     <span className={styles.releaseIcon}>#</span>

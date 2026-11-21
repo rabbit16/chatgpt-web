@@ -1,3 +1,4 @@
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
 import styles from './index.module.less'
 
 const EXAMPLES = ['帮我把这段需求整理成函数签名', '对比 GPT 与 Claude 在长文写作上的差异', '解释一下什么是向量数据库']
@@ -10,7 +11,7 @@ const EXAMPLES = ['帮我把这段需求整理成函数签名', '对比 GPT 与 
 function Reminder() {
   return (
     <div className={styles.reminder}>
-      <img className={styles.reminderLogo} src="/logo-rabbit.svg" alt="rabbitJ" />
+      <img className={styles.reminderLogo} src={rabbitLogo} alt="rabbitJ" />
       <h2 className={styles.reminderTitle}>开始新的对话</h2>
       <p className={styles.reminderMessage}>
         支持多轮上下文与长文本，回答以流式逐字返回。也可以从左侧历史会话继续。

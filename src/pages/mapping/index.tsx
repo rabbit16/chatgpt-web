@@ -67,7 +67,7 @@ function MappingPage() {
 
     const reader = response.body?.getReader?.()
     let allContent = ''
-    while (true) {
+    while (reader) {
       const { done = true, value } = (await reader?.read()) || {}
       if (done) {
         setInputOptions((i) => ({ ...i, loading: false }))

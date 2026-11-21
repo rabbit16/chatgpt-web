@@ -35,11 +35,16 @@ type FeedbackItem = {
 
 const PAGE_SIZE = 10
 
+function isOwnerMessage(item: FeedbackItem) {
+  return item.nickname === '兔子' && item.content.startsWith('大家好，我是站长，这里是留言频道。')
+}
+
 export function FeedbackPanel() {
   const [form] = Form.useForm<FeedbackForm>()
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [list, setList] = useState<FeedbackItem[]>([])
+  const [ownerMessage, setOwnerMessage] = useState<FeedbackItem | null>(null)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const { token, user_info } = userStore()
@@ -54,6 +59,16 @@ export function FeedbackPanel() {
       setList(payload.list || [])
       setTotal(Number(payload.total || 0))
       setPage(Number(payload.page || nextPage))
+      if (nextPage === 1) {
+        let candidates: FeedbackItem[] = payload.list || []
+        let found = candidates.find(isOwnerMessage)
+        for (let next = 2; !found && next <= Math.ceil(Number(payload.total || 0) / PAGE_SIZE); next += 1) {
+          const response: any = await getFeedbackList({ page: next, page_num: PAGE_SIZE })
+          candidates = response?.data?.list || []
+          found = candidates.find(isOwnerMessage)
+        }
+        setOwnerMessage(found || null)
+      }
     } finally {
       setLoading(false)
     }
@@ -65,6 +80,7 @@ export function FeedbackPanel() {
 
   const onFinish = async (values: FeedbackForm) => {
     const content = (values.content || '').trim()
+    if (submitting) return
     if (content.length < 5) {
       message.warning('留言至少 5 个字')
       return
@@ -78,14 +94,18 @@ export function FeedbackPanel() {
           ? (values.nickname || '').trim() || undefined
           : (values.nickname || loggedName || '').trim() || undefined,
         anonymous: values.anonymous,
-        userId: false ? null : user_info?.data?.bodyMessage?.userId ?? null
+        userId: values.anonymous ? null : user_info?.data?.bodyMessage?.userId ?? null
       })
       if (res?.data?.code === '0' || res?.code === 0) {
         message.success(res?.data?.codeMsg || '留言已收到，感谢反馈')
         form.resetFields()
         form.setFieldsValue({ anonymous: true })
         await loadList(1)
+      } else {
+        message.error(res?.data?.codeMsg || '留言提交失败，输入已保留')
       }
+    } catch {
+      message.error('暂未确认留言是否提交，请刷新留言列表后再试')
     } finally {
       setSubmitting(false)
     }
@@ -94,124 +114,137 @@ export function FeedbackPanel() {
   // 公开墙不显示开票申请（含税号/邮箱），条数也要跟着减
   const visible = list.filter((item) => !isInvoiceApplication(item.content))
   const visibleCount = Math.max(total - (list.length - visible.length), visible.length)
+  const regularMessages = visible.filter((item) => item.id !== ownerMessage?.id)
 
   return (
-          <div className={styles.board}>
-            <section className={`${styles.card} ${styles.listCard}`}>
-              <div className={styles.listHead}>
-                <h2>全部留言</h2>
-                <span>共 {visibleCount} 条，按最新在前</span>
-              </div>
-              <Spin spinning={loading}>
-                {list.length === 0 ? (
-                  <Empty description="还没有留言，来写第一条吧" />
-                ) : (
-                  <div className={styles.list}>
-                    {visible.map((item) => (
-                      <article key={item.id} className={styles.item}>
-                        <div className={styles.itemMeta}>
-                          <strong>{item.nickname}</strong>
-                          {item.anonymous ? <Tag>匿名</Tag> : <Tag color="blue">署名</Tag>}
-                          <time>{item.insert_time}</time>
+    <>
+      {ownerMessage && (
+        <article className={`${styles.item} ${styles.ownerMessage}`}>
+          <div className={styles.itemMeta}>
+            <strong>站长留言</strong>
+            <Tag color="blue">置顶</Tag>
+            <time>{ownerMessage.insert_time}</time>
+          </div>
+          <p>{ownerMessage.content}</p>
+        </article>
+      )}
+      <div className={styles.board}>
+        <section className={`${styles.card} ${styles.listCard}`}>
+          <div className={styles.listHead}>
+            <h2>全部留言</h2>
+            <span>共 {visibleCount} 条，按最新在前</span>
+          </div>
+          <Spin spinning={loading}>
+            {list.length === 0 ? (
+              <Empty description="还没有留言，来写第一条吧" />
+            ) : (
+              <div className={styles.list}>
+                {regularMessages.map((item) => (
+                  <article key={item.id} className={styles.item}>
+                    <div className={styles.itemMeta}>
+                      <strong>{item.nickname}</strong>
+                      {item.anonymous ? <Tag>匿名</Tag> : <Tag color="blue">署名</Tag>}
+                      <time>{item.insert_time}</time>
+                    </div>
+                    <p>{item.content}</p>
+                    {item.reply ? (
+                      <div className={styles.reply}>
+                        <div className={styles.replyMeta}>
+                          <strong>管理员</strong>
+                          <Tag color="blue">回复</Tag>
+                          {item.reply_time ? <time>{item.reply_time}</time> : null}
                         </div>
-                        <p>{item.content}</p>
-                        {item.reply ? (
-                          <div className={styles.reply}>
-                            <div className={styles.replyMeta}>
-                              <strong>管理员</strong>
-                              <Tag color="blue">回复</Tag>
-                              {item.reply_time ? <time>{item.reply_time}</time> : null}
-                            </div>
-                            <p>{item.reply}</p>
-                          </div>
-                        ) : null}
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </Spin>
-              {total > PAGE_SIZE ? (
-                <div className={styles.pager}>
-                  <Pagination
-                    current={page}
-                    pageSize={PAGE_SIZE}
-                    total={total}
-                    showSizeChanger={false}
-                    onChange={(next) => loadList(next)}
-                  />
-                </div>
-              ) : null}
-            </section>
+                        <p>{item.reply}</p>
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+          </Spin>
+          {total > PAGE_SIZE ? (
+            <div className={styles.pager}>
+              <Pagination
+                current={page}
+                pageSize={PAGE_SIZE}
+                total={total}
+                showSizeChanger={false}
+                onChange={(next) => loadList(next)}
+              />
+            </div>
+          ) : null}
+        </section>
 
-            <section className={`${styles.card} ${styles.formCard}`}>
-              <h2>写一条留言</h2>
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={{ anonymous: true, nickname: '', contact: '' }}
-                onFinish={onFinish}
-              >
-                <Form.Item
-                  label="留言内容"
-                  name="content"
-                  rules={[
-                    { required: true, message: '请填写留言' },
-                    { min: 5, message: '至少 5 个字' },
-                    { max: 2000, message: '最多 2000 字' }
-                  ]}
-                >
-                  <Input.TextArea
-                    rows={6}
-                    maxLength={2000}
-                    showCount
-                    placeholder="想说的话写在这里，比如哪里不好用、希望支持什么模型。"
-                  />
-                </Form.Item>
-                <Form.Item
-                  label={anonymous ? '联系方式（选填，不填则不记录）' : '联系方式（选填，不公开）'}
-                  name="contact"
-                >
-                  <Input
-                    maxLength={100}
-                    placeholder={
-                      anonymous
-                        ? '可不填。填写后仅用于私下回复，不会出现在留言墙'
-                        : '微信 / 邮箱 / 手机，方便我们私下回复'
-                    }
-                  />
-                </Form.Item>
-                <Form.Item label="昵称（选填，会展示在墙上）" name="nickname">
-                  <Input maxLength={50} placeholder={anonymous ? '不填则显示「匿名用户」' : '方便大家认出你'} />
-                </Form.Item>
-                <Form.Item label="匿名提交" name="anonymous" valuePropName="checked">
-                  <Switch
-                    checkedChildren="匿名"
-                    unCheckedChildren="署名"
-                    onChange={(checked) => {
-                      if (checked) {
-                        form.setFieldsValue({
-                          nickname: loggedName,
-                          contact: form.getFieldValue('contact') || ''
-                        })
-                      } else if (token && loggedName) {
-                        form.setFieldsValue({ nickname: loggedName })
-                      }
-                    }}
-                  />
-                </Form.Item>
-                <p className={styles.hint}>
-                  {anonymous
-                    ? '匿名不会绑定登录账号，也不会记录身份信息。昵称、联系方式都可不填；不填就不会保存。'
-                    : token
-                      ? '署名会关联当前登录账号（不公开展示）。昵称会显示在留言墙上。'
-                      : '当前未登录，署名只会公开你填写的昵称。'}
-                </p>
-                <Button type="primary" htmlType="submit" size="large" loading={submitting} block>
-                  发布到留言板
-                </Button>
-              </Form>
-            </section>
-    </div>
+        <section className={`${styles.card} ${styles.formCard}`}>
+          <h2>写一条留言</h2>
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ anonymous: true, nickname: '', contact: '' }}
+            onFinish={onFinish}
+          >
+            <Form.Item
+              label="留言内容"
+              name="content"
+              rules={[
+                { required: true, message: '请填写留言' },
+                { min: 5, message: '至少 5 个字' },
+                { max: 2000, message: '最多 2000 字' }
+              ]}
+            >
+              <Input.TextArea
+                rows={6}
+                maxLength={2000}
+                showCount
+                placeholder="想说的话写在这里，比如哪里不好用、希望支持什么模型。"
+              />
+            </Form.Item>
+            <Form.Item
+              label={anonymous ? '联系方式（选填，不填则不记录）' : '联系方式（选填，不公开）'}
+              name="contact"
+            >
+              <Input
+                maxLength={100}
+                placeholder={
+                  anonymous
+                    ? '可不填。填写后仅用于私下回复，不会出现在留言墙'
+                    : '微信 / 邮箱 / 手机，方便我们私下回复'
+                }
+              />
+            </Form.Item>
+            <Form.Item label="昵称（选填，会展示在墙上）" name="nickname">
+              <Input maxLength={50} placeholder={anonymous ? '不填则显示「匿名用户」' : '方便大家认出你'} />
+            </Form.Item>
+            <Form.Item label="匿名提交" name="anonymous" valuePropName="checked">
+              <Switch
+                checkedChildren="匿名"
+                unCheckedChildren="署名"
+                onChange={(checked) => {
+                  if (checked) {
+                    form.setFieldsValue({
+                      nickname: loggedName,
+                      contact: form.getFieldValue('contact') || ''
+                    })
+                  } else if (token && loggedName) {
+                    form.setFieldsValue({ nickname: loggedName })
+                  }
+                }}
+              />
+            </Form.Item>
+            <p className={styles.hint}>
+              {anonymous
+                ? '匿名不会绑定登录账号，也不会记录身份信息。昵称、联系方式都可不填；不填就不会保存。'
+                : token
+                  ? '署名会关联当前登录账号（不公开展示）。昵称会显示在留言墙上。'
+                  : '当前未登录，署名只会公开你填写的昵称。'}
+            </p>
+            <Button type="primary" htmlType="submit" size="large" loading={submitting} block>
+              发布到留言板
+            </Button>
+          </Form>
+        </section>
+      </div>
+    </>
   )
 }
 

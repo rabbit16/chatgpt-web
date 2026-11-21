@@ -134,6 +134,28 @@
 				background-color: var(--tint-brand);
 			}
 		}
+
+		/**
+		 * 顶栏滚动后整排收小（2026-11-20 站长：「整体应该缩小」）
+		 * ------------------------------------------------------------
+		 * HeaderRender 在滚动后给根节点挂 .site-header-scrolled；
+		 * 这里配合把每项 34px → 30px、字号 13.5 → 12.5、图标 15 → 13.5，
+		 * 高度变小后项不再顶满胶囊，视觉重心居中。
+		 */
+		:global(.site-header-scrolled) & {
+			.item {
+				height: 30px;
+				padding: 0 8px;
+
+				&_icon {
+					font-size: 13.5px;
+				}
+
+				&_title {
+					font-size: 12.5px;
+				}
+			}
+		}
 	}
 
 	&_inline {
@@ -148,7 +170,7 @@
 		.item {
 			min-width: 200px;
 			padding: 6px 20px;
-			border-radius: var(--radius-sm);
+			border-radius: var(--radius-pill);
 			font-size: 30px;
 
 			&:hover {

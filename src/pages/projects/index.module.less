@@ -3,17 +3,17 @@
  */
 .page {
 	min-height: 100vh;
-	background: var(--canvas);
+	background: transparent;
 
 	[class*='ant-pro-layout-content'] {
 		padding-block: 0;
-		background: var(--canvas) !important;
+		background: transparent !important;
 	}
 }
 
 .wrap {
 	width: 100%;
-	max-width: 1180px;
+	max-width: var(--content-max); /* 与首页同一内容宽（2026-11-20 全站留白统一） */
 	margin: 0 auto;
 	padding: 24px var(--container-pad) 56px;
 	display: flex;
@@ -28,16 +28,6 @@
 		line-height: 1.25;
 		letter-spacing: -0.02em;
 	}
-}
-
-.kicker {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0;
-	font-size: 12px;
-	letter-spacing: 0.04em;
-	color: var(--brand);
 }
 
 .lead {
@@ -349,6 +339,9 @@
 .badgeOfficial {
 	display: inline-flex;
 	align-items: center;
+	/* 标题折行时徽章不被挤成竖排（390 验收发现） */
+	flex-shrink: 0;
+	white-space: nowrap;
 	height: 20px;
 	padding: 0 8px;
 	font-size: 11px;
@@ -363,6 +356,8 @@
 /* 用户上传：中性描边 Tag，不与官方抢眼 */
 .badgeUser {
 	margin-inline-end: 0;
+	flex-shrink: 0;
+	white-space: nowrap;
 	color: var(--text-4);
 	background: var(--surface-muted);
 	border-color: var(--border-soft);
@@ -429,8 +424,8 @@
  * 主排：来源页签（全部 / 官方软件 / 用户上传 / 我的提交）
  * ------------------------------------------------------------
  * 这里是「变体覆盖」：给 PillTabs 外面套一层，用 CSS Modules 的哈希类把它盖一层皮肤。
- * 原组件（src/components/PillTabs）一个字都没改 —— 它还服务 AI 工作台、
- * 充值商城、公告页，动组件等于三处一起变。
+ * 原组件只提供基础样式（2026-11-20 起按钮圆角随全站统一为全圆药丸），
+ * 它还服务 AI 工作台、充值商城、公告页，页面的个性化仍只写在这一层。
  *
  * 覆盖了什么（改前 → 改后）：
  *   槽内边距   3px        → 4px

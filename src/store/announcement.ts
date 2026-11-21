@@ -1,3 +1,4 @@
+import { demoEnabled } from '@/demo/runtime'
 import { create } from 'zustand'
 import { getLatestAnnouncement, type AnnouncementItem } from '@/request/api'
 
@@ -8,7 +9,7 @@ import { getLatestAnnouncement, type AnnouncementItem } from '@/request/api'
  * 已读 id 存在 localStorage（键 anygpt_announcement_seen），
  * 和公告弹窗共用同一把钥匙，所以「弹窗关掉」「进过公告页」都算读过。
  */
-export const ANNOUNCEMENT_SEEN_KEY = 'anygpt_announcement_seen'
+export const ANNOUNCEMENT_SEEN_KEY = demoEnabled ? 'rabbitj.demo.announcement-seen' : 'anygpt_announcement_seen'
 
 function readSeenId() {
   try {

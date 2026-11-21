@@ -157,10 +157,10 @@ function ClientDownloads() {
         return (
           <li key={item.id} className={styles.dlRow}>
             <div className={styles.dlMain}>
-              {/haha/i.test(item.name) ? <span className={styles.dlRec}>推荐</span> : null}
               <strong>{item.name}</strong>
-              <span className={styles.dlTag}>{item.version ? `v${item.version}` : '安装包'}</span>
+              {/haha/i.test(item.name) ? <span className={styles.dlRec}>推荐</span> : null}
             </div>
+            <span className={styles.dlTag}>{item.version ? `v${item.version}` : '安装包'}</span>
             <div className={styles.dlActions}>
               {(item.links || []).map((link, index) => (
                 <a
@@ -173,6 +173,8 @@ function ClientDownloads() {
                   <DownloadOutlined /> {link.label || '下载'}
                 </a>
               ))}
+            </div>
+            <div className={styles.dlCodeCell}>
               {first?.code ? (
                 <button
                   type="button"
@@ -362,7 +364,7 @@ function GuideContent() {
               <span className={styles.stepNo}>1</span>
               <div>
                 <h2>先装 Claude-haha</h2>
-                <p>本站教程默认用 Claude-haha：写代码、画图一个软件就够用，免费。装好再回来做第 2 步。</p>
+                <p>教程以 Claude-haha 为例。请在发布页确认系统、版本和功能，再下载安装。</p>
               </div>
             </div>
             <ClientDownloads />
@@ -418,8 +420,8 @@ function GuideContent() {
               <IconBadge icon={<SettingOutlined />} tone="brand" size="sm" />
               <p>
                 <b>下面全部以 Claude-haha 为例。</b>
-                用 Codex、Cursor、ChatBox、Cherry Studio 或其他客户端？填的东西是完全一样的三样：
-                <b>接口地址 + API 密钥 + 模型名</b>，照着同样的位置填进去就行，界面长得不一样不影响。
+                其他客户端的字段和兼容协议可能不同。优先核对这三项：
+                <b>接口地址 + API 密钥 + 模型名</b>，再按该客户端的文档填写。
               </p>
             </div>
 
@@ -546,8 +548,8 @@ function GuideContent() {
                 <strong>其他客户端参照执行</strong>
               </div>
               <p>
-                Codex、Cursor、Cline、ChatBox、Cherry Studio 都一样：在「服务商 / API / Base URL」里填上面三样——
-                接口地址（带 /v1）、API 密钥、模型名。找不到设置项时，在软件设置里搜 <code>API</code> 或 <code>模型</code>。
+                在客户端的「服务商 / API / Base URL」设置中，核对支持的协议以及以下配置：
+                该协议对应的接口地址、API 密钥、模型名。找不到设置项时，在软件设置里搜 <code>API</code> 或 <code>模型</code>。
               </p>
               <div className={styles.chips}>
                 {['Codex', 'Cursor', 'Cline', 'ChatBox', 'Cherry Studio'].map((name) => (
@@ -559,14 +561,21 @@ function GuideContent() {
             </div>
           </section>
 
-          {/* 第 4 步：验证 */}
+          <section className={styles.tryCard}>
+            <IconBadge icon={<ApiOutlined />} tone="brand" size="md" />
+            <div>
+              <h2>4. 检查连接（可选）</h2>
+              <p>客户端提供「获取模型」或「测试连接」时，按该版本的说明操作。没有这些按钮时，可手动填写模型 ID，再发一条消息验证。</p>
+            </div>
+          </section>
+
           <section className={styles.tryCard}>
             <IconBadge icon={<CheckCircleFilled />} tone="mint" size="md" />
             <div>
-              <h2>发一句话试试</h2>
+              <h2>5. 发起首次请求</h2>
               <p>
                 新建对话，发「用 Python 写一个猜数字游戏」。能正常回话就说明接通了，可以去{' '}
-                <Link to="/price">充值商城</Link> 看用量。
+                <Link to="/usage">使用记录</Link> 核对请求状态和费用。
               </p>
               <p className={styles.tryHint}>
                 报 401 → 密钥没复制全；提示找不到模型 → 模型名和价目页差一个字都不行。
@@ -603,14 +612,14 @@ function GuideContent() {
                 </li>
                 <li>
                   <strong>Claude-haha 里「获取模型」是空的</strong>
-                  说明地址或密钥有一个不对，回第 2 步按顺序重新复制一遍。
+                  先核对所用版本是否支持获取模型，再检查地址、密钥及模型权限。
                 </li>
               </ul>
             </div>
           </details>
 
           <p className={styles.footerTip}>
-            <KeyOutlined /> 密钥只保存在你自己的客户端里，本站不代管、不写入日志。
+            <KeyOutlined /> 请妥善保管密钥，避免在公开截图、代码仓库或留言里粘贴。
           </p>
     </div>
   )

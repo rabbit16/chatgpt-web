@@ -2,6 +2,8 @@ import {
   CommentOutlined,
   DeleteOutlined,
   FileTextOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   PlusOutlined,
   SearchOutlined
 } from '@ant-design/icons'
@@ -42,7 +44,7 @@ import useDocumentResize from '@/hooks/useDocumentResize'
 import Layout from '@/components/Layout'
 import MarketingBar from '@/components/MarketingBar'
 import ExperienceTabs from '@/components/ExperienceTabs'
-import useMobile from '@/hooks/useMobile'
+import IconBadge from '@/components/IconBadge'
 import MessageItem from './components/MessageItem'
 
 function parseSseJson(data: string): Record<string, any> | null {
@@ -109,17 +111,17 @@ function ChatPage() {
   const setChatDataInfo = chatStore((state) => state.setChatDataInfo)
   const delChatMessage = chatStore((state) => state.delChatMessage)
   const upsertChat = chatStore((state) => state.upsertChat)
-  const clearLoading = useRef(false)
 
   const bodyResize = useDocumentResize()
 
-  const isMobile = useMobile()
   /** append=普通对话追加文末；insert=光标续写；none=不同步文稿 */
   const docWriteMode = useRef<'append' | 'insert' | 'none'>('append')
   const docOnlyRef = useRef(false)
   const streamMsgId = useRef('')
   const documentPaneRef = useRef<DocumentPaneHandle | null>(null)
-  const [documentOpen, setDocumentOpen] = useState(true)
+  // 2026-11-20 站长：文稿板块默认收起，用户主动点右侧边条或「续写」时才展开
+  const [documentOpen, setDocumentOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileTab, setMobileTab] = useState<'chat' | 'doc'>('chat')
   const [searchText, setSearchText] = useState('')
   const [searchLoading, setSearchLoading] = useState(false)
@@ -180,7 +182,6 @@ function ChatPage() {
     const docOnly = docOnlyRef.current
     const writeMode = docWriteMode.current
     const startedAt = formatTime()
-    let accepted = false
     let allContent = ''
     let streamRaf = 0
     let streamProtocol = resolveLlmProtocol(
@@ -232,41 +233,48 @@ function ChatPage() {
 
     try {
       if (writeMode !== 'none') {
-        documentPaneRef.current?.beginWrite(writeMode === 'insert' ? 'insert' : 'append', assistantMessageId)
+        documentPaneRef.current?.beginWrite(
+          writeMode === 'insert' ? 'insert' : 'append',
+          assistantMessageId
+        )
       }
 
-      const previousMessages = chatStore.getState().chats.find((chat) => sameChatId(chat.id, selectChatId))?.data || []
-      const messages = previousMessages
-        .filter((message) => message.id !== userMessageId && message.id !== assistantMessageId && (message.role === 'user' || message.role === 'assistant') && message.status === 'pass' && message.text)
+      const previousMessages =
+        chatStore.getState().chats.find((chat) => sameChatId(chat.id, selectChatId))?.data || []
+      const assistantIndex = previousMessages.findIndex((message) => message.id === assistantMessageId)
+      const promptIndex = userMessageId
+        ? previousMessages.findIndex((message) => message.id === userMessageId)
+        : assistantIndex > 0 ? assistantIndex - 1 : -1
+      const history = promptIndex >= 0 ? previousMessages.slice(0, promptIndex) : previousMessages
+      const messages = history
+        .filter(
+          (message) =>
+            message.id !== assistantMessageId &&
+            (message.role === 'user' || message.role === 'assistant') &&
+            message.status === 'pass' &&
+            message.text
+        )
         .map((message) => ({ role: message.role as 'user' | 'assistant', content: message.text }))
       messages.push({ role: 'user', content: requestOptions.prompt })
       const model = requestOptions.options?.model || configStore.getState().config.model
       const chatConfig = configStore.getState().config
       const protocol = resolveLlmProtocol(model)
-      const response = await postStreamChatCompletions({
-        model,
-        messages: repeatedly ? messages.slice(-20) : messages.slice(-1),
-        stream: true,
-        max_tokens: chatConfig.max_tokens
-      }, signal)
+      const response = await postStreamChatCompletions(
+        {
+          model,
+          messages: repeatedly ? messages.slice(-20) : messages.slice(-1),
+          stream: true,
+          max_tokens: chatConfig.max_tokens
+        },
+        signal
+      )
       if (!response.ok || !response.body) {
         if (response.status === 401) userStore.getState().expireSession()
         const error = await response.text()
         throw new Error(error || `LLM 请求失败 (${response.status})`)
       }
-      accepted = true
-      if (!docOnly && userMessageId) {
-        setChatInfo(selectChatId, {
-          id: userMessageId, text: requestOptions.prompt, dateTime: formatTime(),
-          status: 'pass', role: 'user', requestOptions
-        })
-        setChatInfo(selectChatId, {
-          id: assistantMessageId, text: '', dateTime: formatTime(),
-          status: 'loading', role: 'assistant', requestOptions
-        })
-        scrollToBottom()
-      }
-      streamProtocol = (response as Response & { llmProtocol?: typeof protocol }).llmProtocol || protocol
+      streamProtocol =
+        (response as Response & { llmProtocol?: typeof protocol }).llmProtocol || protocol
       const reader = response.body.getReader()
       let leftover = ''
       const decoder = new TextDecoder()
@@ -277,7 +285,11 @@ function ChatPage() {
         const events = leftover.split('\n\n')
         leftover = events.pop() || ''
         for (const event of events) {
-          const data = event.split('\n').filter((line) => line.startsWith('data:')).map((line) => line.slice(5).trimStart()).join('\n')
+          const data = event
+            .split('\n')
+            .filter((line) => line.startsWith('data:'))
+            .map((line) => line.slice(5).trimStart())
+            .join('\n')
           if (consumeSsePayload(data)) {
             completed = true
             break
@@ -286,7 +298,11 @@ function ChatPage() {
         if (done) break
       }
       if (!completed && leftover) {
-        const data = leftover.split('\n').filter((line) => line.startsWith('data:')).map((line) => line.slice(5).trimStart()).join('\n')
+        const data = leftover
+          .split('\n')
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trimStart())
+          .join('\n')
         consumeSsePayload(data)
       }
       if (streamRaf) {
@@ -318,9 +334,13 @@ function ChatPage() {
               answer_time: formatTime()
             })
             // 同步侧边栏标题为最近一句用户问题
-            const chat = chatStore.getState().chats.find((item) => sameChatId(item.id, selectChatId))
+            const chat = chatStore
+              .getState()
+              .chats.find((item) => sameChatId(item.id, selectChatId))
             if (chat && (!chat.name || chat.name === '新的对话' || chat.name === '标题')) {
-              chatStore.getState().setChatInfo(selectChatId, undefined, { name: requestOptions.prompt.slice(0, 40) })
+              chatStore
+                .getState()
+                .setChatInfo(selectChatId, undefined, { name: requestOptions.prompt.slice(0, 40) })
             }
           } catch (error) {
             console.warn('保存对话上下文失败', error)
@@ -336,7 +356,7 @@ function ChatPage() {
       if (streamRaf) cancelAnimationFrame(streamRaf)
       if (signal.aborted) {
         if (writeMode !== 'none') documentPaneRef.current?.endWrite(allContent)
-        if (!docOnly && accepted) {
+        if (!docOnly) {
           commitAssistantMessage(selectChatId, assistantMessageId, {
             text: allContent || '已停止回答',
             status: allContent ? 'pass' : 'error'
@@ -346,7 +366,7 @@ function ChatPage() {
       }
       const message = error instanceof Error ? error.message : 'LLM 请求失败'
       notification.error({ message: 'LLM 请求失败', description: message })
-      if (!docOnly && (accepted || !userMessageId)) {
+      if (!docOnly) {
         commitAssistantMessage(selectChatId, assistantMessageId, { text: message, status: 'error' })
       }
       if (writeMode !== 'none') documentPaneRef.current?.endWrite('')
@@ -356,11 +376,13 @@ function ChatPage() {
       if (!docOnly) streamTextStore.getState().clearText(assistantMessageId)
       docWriteMode.current = 'append'
       docOnlyRef.current = false
+      activeRequest.current = null
       setFetchController(null)
     }
   }
 
   const [fetchController, setFetchController] = useState<AbortController | null>(null)
+  const activeRequest = useRef<AbortController | null>(null)
 
   // 对话；docMode: append=追加文末，insert=光标续写(不进对话)，none=不同步文稿
   async function sendChatCompletions(
@@ -368,6 +390,7 @@ function ChatPage() {
     refurbishOptions?: ChatGpt,
     options?: { docMode?: 'append' | 'insert' | 'none' }
   ) {
+    if (activeRequest.current) return false
     if (!token) {
       // 不直接弹"登录"，而是引导匿名注册（不用手机号），保住体验连续性
       userStore.getState().openAnonSignup()
@@ -405,19 +428,37 @@ function ChatPage() {
           dateTime: formatTime(),
           requestOptions
         })
+      } else {
+        setChatInfo(selectChatId, {
+          id: userMessageId,
+          text: vaule,
+          dateTime: formatTime(),
+          status: 'pass',
+          role: 'user',
+          requestOptions
+        })
+        setChatInfo(selectChatId, {
+          id: assistantMessageId,
+          text: '',
+          dateTime: formatTime(),
+          status: 'loading',
+          role: 'assistant',
+          requestOptions
+        })
       }
-      scrollToBottom()
+      requestAnimationFrame(scrollToBottom)
     }
-    clearLoading.current = false
     const controller = new AbortController()
     const signal = controller.signal
+    activeRequest.current = controller
     setFetchController(controller)
-    return serverChatCompletions({
+    await serverChatCompletions({
       requestOptions,
       signal,
       userMessageId: docOnly ? undefined : userMessageId,
       assistantMessageId
     })
+    return true
   }
 
   useEffect(() => {
@@ -435,7 +476,12 @@ function ChatPage() {
       try {
         const userId = userStore.getState().user_info?.data?.bodyMessage?.userId
         if (!userId) throw new Error('缺少 userId')
-        const response = await searchChatMessages({ userId: Number(userId), keyword, page: searchPage, page_num })
+        const response = await searchChatMessages({
+          userId: Number(userId),
+          keyword,
+          page: searchPage,
+          page_num
+        })
         if (requestId !== searchRequestId.current) return
         const payload = response.data
         if (String(payload?.code) !== '0' || !Array.isArray(payload?.context_dict)) {
@@ -450,7 +496,10 @@ function ChatPage() {
         setSearchChats(normalizeChatList(payload))
       } catch (error) {
         if (requestId !== searchRequestId.current) return
-        notification.error({ message: '搜索失败', description: error instanceof Error ? error.message : '请稍后重试' })
+        notification.error({
+          message: '搜索失败',
+          description: error instanceof Error ? error.message : '请稍后重试'
+        })
       } finally {
         if (requestId === searchRequestId.current) setSearchLoading(false)
       }
@@ -474,7 +523,9 @@ function ChatPage() {
   return (
     <div className={styles.chatPage}>
       <Layout
-        keepSiderWhenMenuEmpty={searching}
+        keepSiderWhenMenuEmpty
+        siderCollapsed={sidebarCollapsed}
+        onSiderCollapsedChange={setSidebarCollapsed}
         menuExtraRender={() => (
           <Space direction="vertical" style={{ width: '100%' }} size={8}>
             <CreateChat token={token} />
@@ -509,15 +560,21 @@ function ChatPage() {
                 isSelect={sameChatId(item.id, selectChatId)}
                 isPersona={false}
                 name={item.name}
-                onSelect={searching ? () => {
-                  const chat = searchChats.find((entry) => sameChatId(entry.id, item.id))
-                  if (chat) upsertChat(chat)
-                  if (isNarrow) setMobileTab('chat')
-                } : undefined}
+                onSelect={
+                  searching
+                    ? () => {
+                        const chat = searchChats.find((entry) => sameChatId(entry.id, item.id))
+                        if (chat) upsertChat(chat)
+                        if (isNarrow) setMobileTab('chat')
+                      }
+                    : undefined
+                }
                 onConfirm={() => {
                   chatAsync.fetchDelUserMessagesList({ id: item.id }).then(() => {
                     if (searching) {
-                      setSearchChats((items) => items.filter((entry) => !sameChatId(entry.id, item.id)))
+                      setSearchChats((items) =>
+                        items.filter((entry) => !sameChatId(entry.id, item.id))
+                      )
                       setSearchTotal((count) => Math.max(0, count - 1))
                       userStore.getState().upDataGlobal()
                     }
@@ -530,19 +587,12 @@ function ChatPage() {
         menuFooterRender={(props) => {
           return (
             <Space direction="vertical" style={{ width: '100%' }}>
-              <Pagination simple current={searching ? searchPage : page} pageSize={page_num} onChange={onChange} total={searching ? searchTotal : total} />
-              <Select
-                size="middle"
-                style={{ width: '100%' }}
-                defaultValue={config.model}
-                value={config.model}
-                options={models.map((m) => ({ ...m, label: '模型(点击选择): ' + m.label }))}
-                onChange={(e) => {
-                  changeConfig({
-                    ...config,
-                    model: e.toString()
-                  })
-                }}
+              <Pagination
+                simple
+                current={searching ? searchPage : page}
+                pageSize={page_num}
+                onChange={onChange}
+                total={searching ? searchTotal : total}
               />
               <Popconfirm
                 title="删除全部对话"
@@ -562,7 +612,13 @@ function ChatPage() {
                 okText="Yes"
                 cancelText="No"
               >
-                <Button block type="text" danger icon={<DeleteOutlined />} className={styles.clearChat}>
+                <Button
+                  block
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  className={styles.clearChat}
+                >
                   清除所有对话
                 </Button>
               </Popconfirm>
@@ -572,110 +628,136 @@ function ChatPage() {
       >
         <div className={styles.chatPage_container}>
           {!token && <MarketingBar onRegister={() => setLoginModal(true)} />}
-          <ExperienceTabs />
-          <div className={styles.chatPage_container_toolbar}>
-            {isNarrow ? (
-              <Button.Group>
-                <Button
-                  type={mobileTab === 'chat' ? 'primary' : 'default'}
-                  icon={<CommentOutlined />}
-                  onClick={() => setMobileTab('chat')}
-                >
-                  对话
-                </Button>
-                <Button
-                  type={mobileTab === 'doc' ? 'primary' : 'default'}
-                  icon={<FileTextOutlined />}
-                  onClick={() => setMobileTab('doc')}
-                >
-                  文稿
-                </Button>
-              </Button.Group>
-            ) : (
-              <Button
-                icon={<FileTextOutlined />}
-                onClick={() => setDocumentOpen((open) => !open)}
-              >
-                {documentOpen ? '收起文稿' : '展开文稿'}
-              </Button>
-            )}
+          <div className={styles.workspaceTabsRow}>
+            <button
+              type="button"
+              className={styles.sidebarToggle}
+              aria-label={sidebarCollapsed ? '展开会话侧栏' : '收起会话侧栏'}
+              title={sidebarCollapsed ? '展开会话侧栏' : '收起会话侧栏'}
+              aria-pressed={sidebarCollapsed}
+              onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+            >
+              <IconBadge
+                icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                size="sm"
+              />
+              {!sidebarCollapsed && !isNarrow && <span>收起侧栏</span>}
+            </button>
+            <ExperienceTabs />
+            <Button
+              className={styles.documentToggle}
+              icon={
+                <IconBadge
+                  icon={
+                    isNarrow && mobileTab === 'doc' ? <CommentOutlined /> : <FileTextOutlined />
+                  }
+                  size="sm"
+                />
+              }
+              aria-label={
+                isNarrow
+                  ? mobileTab === 'doc'
+                    ? '返回对话'
+                    : '打开文稿'
+                  : documentOpen
+                  ? '收起文稿'
+                  : '打开文稿'
+              }
+              title={
+                isNarrow
+                  ? mobileTab === 'doc'
+                    ? '返回对话'
+                    : '打开文稿'
+                  : documentOpen
+                  ? '收起文稿'
+                  : '打开文稿'
+              }
+              aria-pressed={isNarrow ? mobileTab === 'doc' : documentOpen}
+              onClick={() =>
+                isNarrow
+                  ? setMobileTab((tab) => (tab === 'doc' ? 'chat' : 'doc'))
+                  : setDocumentOpen((open) => !open)
+              }
+            >
+              {!isNarrow && (documentOpen ? '收起文稿' : '打开文稿')}
+            </Button>
           </div>
           <div className={styles.chatPage_container_workspace}>
             <div
               className={styles.chatPage_container_main}
               style={{ display: !isNarrow || mobileTab === 'chat' ? undefined : 'none' }}
             >
-                <div ref={scrollRef} className={styles.chatPage_container_one} onScroll={trackScroll}>
-                  <div id="image-wrapper">
-                    {chatMessages.map((item) => {
-                      return (
-                        <ChatMessage
-                          key={item.id || `${item.role}-${item.dateTime}`}
-                          streamId={item.id ? String(item.id) : undefined}
-                          position={item.role === 'user' ? 'right' : 'left'}
-                          status={item.status}
-                          content={item.text}
-                          time={item.dateTime}
-                          model={item.requestOptions?.options?.model}
-                          onDelChatMessage={() => {
-                            delChatMessage(selectChatId, item.id)
-                          }}
-                          onRefurbishChatMessage={() => {
-                            sendChatCompletions(item.requestOptions?.prompt || item.text, item)
-                          }}
-                        />
-                      )
-                    })}
-                    {chatMessages.length <= 0 && <Reminder />}
-                    <div style={{ height: 100 }} />
-                  </div>
+              <div ref={scrollRef} className={styles.chatPage_container_one} onScroll={trackScroll}>
+                <div id="image-wrapper">
+                  {chatMessages.map((item) => {
+                    return (
+                      <ChatMessage
+                        key={item.id || `${item.role}-${item.dateTime}`}
+                        streamId={item.id ? String(item.id) : undefined}
+                        position={item.role === 'user' ? 'right' : 'left'}
+                        status={item.status}
+                        content={item.text}
+                        time={item.dateTime}
+                        model={item.requestOptions?.options?.model}
+                        onDelChatMessage={() => {
+                          delChatMessage(selectChatId, item.id)
+                        }}
+                        onRefurbishChatMessage={() => {
+                          sendChatCompletions(item.requestOptions?.prompt || item.text, item)
+                        }}
+                      />
+                    )
+                  })}
+                  {chatMessages.length <= 0 && <Reminder />}
                 </div>
-                <div
-                  className={styles.chatPage_container_two}
-                  style={{
-                    position: isMobile ? 'fixed' : 'absolute'
-                  }}
-                >
-                  <div className={styles.chatPage_container_two_title}>
-                    开启记忆模式:
-                    <Switch
-                      checkedChildren="开"
-                      unCheckedChildren="关"
-                      checked={repeatedly}
-                      onChange={(e) => updateRepeatedly(e)}
-                    />
-                  </div>
-                  <AllInput
-                    disabled={!!fetchController}
-                    onSend={async (value) => {
-                      if (value.startsWith('/')) return false
-                      const sent = await sendChatCompletions(value)
-                      if (sent) scrollToBottomIfAtBottom()
-                      return sent
-                    }}
-                    clearMessage={() => {
-                      if (token) {
-                        chatAsync.fetchDelUserMessages({ id: selectChatId, type: 'clear' })
-                      } else {
-                        setLoginModal(true)
-                      }
-                    }}
-                    onStopFetch={() => {
-                      setFetchController((c) => {
-                        c?.abort()
-                        clearLoading.current = true
-                        return null
-                      })
-                    }}
+              </div>
+              <div className={styles.chatPage_container_two}>
+                <div className={styles.chatPage_container_two_title}>
+                  <Select
+                    aria-label="对话模型"
+                    className={styles.modelSelect}
+                    value={config.model}
+                    options={models}
+                    onChange={(model) => changeConfig({ ...config, model })}
+                    showSearch
+                    optionFilterProp="label"
                   />
+                  <span className={styles.chatPage_container_two_title_label}>记忆模式</span>
+                  <Switch aria-label="记忆模式" checked={repeatedly} onChange={(e) => updateRepeatedly(e)} />
+                  <span className={styles.chatPage_container_two_title_state}>
+                    {repeatedly ? '已开启' : '已关闭'}
+                  </span>
                 </div>
+                <AllInput
+                  disabled={!!fetchController}
+                  onSend={async (value) => {
+                    if (value.startsWith('/')) return false
+                    const sent = await sendChatCompletions(value)
+                    if (sent) scrollToBottomIfAtBottom()
+                    return sent
+                  }}
+                  clearMessage={() => {
+                    if (token) {
+                      chatAsync.fetchDelUserMessages({ id: selectChatId, type: 'clear' })
+                    } else {
+                      setLoginModal(true)
+                    }
+                  }}
+                  onStopFetch={() => {
+                    activeRequest.current?.abort()
+                  }}
+                />
+              </div>
             </div>
             <div
+              className={styles.documentPanel}
               style={{
                 display:
-                  (!isNarrow && documentOpen) || (isNarrow && mobileTab === 'doc') ? undefined : 'none',
+                  (!isNarrow && documentOpen) || (isNarrow && mobileTab === 'doc')
+                    ? undefined
+                    : 'none',
                 height: '100%',
-                width: isNarrow ? '100%' : '42%',
+                width: isNarrow ? '100%' : '40%',
                 minWidth: isNarrow ? 0 : 320,
                 maxWidth: isNarrow ? 'none' : 560,
                 flexShrink: 0
@@ -688,6 +770,7 @@ function ChatPage() {
                 initialText={documentSeed}
                 disabled={!!fetchController}
                 onContinue={handleContinueLine}
+                onCollapse={!isNarrow ? () => setDocumentOpen(false) : undefined}
               />
             </div>
           </div>

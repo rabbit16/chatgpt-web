@@ -1,368 +1,297 @@
-import { useMemo } from 'react'
-import { Button, Tag } from 'antd'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { Button } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  ApiOutlined,
-  ArrowRightOutlined,
-  BookOutlined,
-  CheckCircleFilled,
-  ExperimentOutlined,
-  RocketOutlined,
-  SafetyCertificateOutlined,
-  ThunderboltOutlined,
-  WalletOutlined
-} from '@ant-design/icons'
-import IconBadge from '@/components/IconBadge'
-import TechBackdrop from '@/components/TechBackdrop'
-import Reveal from '@/components/Reveal'
-import CountUp from '@/components/CountUp'
 import Layout from '@/components/Layout'
+import { PUBLIC_MODELS, PUBLIC_PRICING_UPDATED_AT } from '@/data/publicPricing'
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
+import { getUserPricing, type UserModelRate } from '@/request/api'
 import { userStore } from '@/store'
-import { PUBLIC_MODELS } from '@/data/publicPricing'
-import { PROVIDER_META, type ModelProvider } from '@/data/modelPricing'
 import styles from './index.module.less'
 
-const BASE_URL = 'https://www.rabbitj.top/v1'
-
-/** 首页只展示"好看的数字"：小于 1 的保留 4 位有效小数，大于 1 的保留 2–3 位 */
-function priceLabel(value: number): string {
-  if (!Number.isFinite(value)) return '—'
-  if (value >= 10) return `$${value.toFixed(1)}`
-  if (value >= 1) return `$${value.toFixed(2)}`
-  if (value >= 0.1) return `$${value.toFixed(3)}`
-  return `$${value.toFixed(4)}`
+type FeaturedModel = {
+  id: string
+  label: string
+  rate?: UserModelRate
+  live: boolean
 }
 
-/** 上游字段偶发为空时，用模型名前缀兜底，避免卡片上出现"通用"这种糊弄字 */
-function guessProvider(id: string): string {
-  if (/^gpt|^o[1-9]|^dall|^text-embedding/.test(id)) return 'OpenAI'
-  if (/^claude/.test(id)) return 'Claude'
-  if (/^gemini|^image-|^veo/.test(id)) return 'Google'
-  if (/^deepseek/.test(id)) return 'DeepSeek'
-  if (/^grok/.test(id)) return 'xAI'
-  if (/^glm/.test(id)) return '智谱'
-  return 'OpenAI 兼容'
+const FEATURED_MODELS = [
+  { id: 'deepseek-flash-1017', label: 'DeepSeek' },
+  { id: 'gpt-5.4-mini', label: 'GPT' },
+  { id: 'claude-sonnet-5-5', label: 'Claude' }
+]
+
+function formatPrice(value: number) {
+  if (!Number.isFinite(value)) return '暂无报价'
+  if (value === 0) return '$0'
+  if (value < 0.01) return `$${value.toExponential(2)}`
+  return `$${Number(value.toFixed(6))}`
 }
 
-/** 首页价格预览挑 4 个有代表性的模型：主力、旗舰、便宜、国产 */
-const FEATURED = ['gpt-6.1-sol', 'claude-sonnet-5', 'gemini-3.5-flash', 'deepseek-v4-pro']
-
-const steps = [
-  {
-    no: 1,
-    tone: 'brand' as const,
-    title: '创建密钥',
-    desc: '注册后在「API 密钥」生成 sk- 开头的密钥'
-  },
-  {
-    no: 2,
-    tone: 'amber' as const,
-    title: '填入地址',
-    desc: `把 base_url 设为 ${BASE_URL}`
-  },
-  {
-    no: 3,
-    tone: 'mint' as const,
-    title: '发出请求',
-    desc: '用任意 OpenAI 兼容客户端发第一条消息'
-  }
-]
-
-const features = [
-  {
-    icon: <ApiOutlined />,
-    tone: 'brand' as const,
-    title: '一个地址，全部模型',
-    desc: '三种协议共用一个入口，换模型只改一个字段。',
-    // 2026-10-24：这张卡讲的就是「地址」，点进去应该直接看到地址和密钥，
-    // 所以从 /guide（教程）改指 /agent（接入页）。
-    href: '/agent'
-  },
-  {
-    icon: <WalletOutlined />,
-    tone: 'mint' as const,
-    title: '按量付费，不订阅',
-    desc: '每次请求的 Token 与扣费，都能逐条核对。',
-    href: '/price'
-  },
-  {
-    icon: <SafetyCertificateOutlined />,
-    tone: 'violet' as const,
-    title: '密钥在你手里',
-    desc: '自行创建、随时吊销，不经过第三方。',
-    // 同理：这张卡说的是「密钥」，落地页应该是能创建/复制密钥的接入页
-    href: '/agent'
-  }
-]
-
-function HomePage() {
-  const navigate = useNavigate()
-  const setLoginModal = userStore((state) => state.setLoginModal)
-  const token = userStore((state) => state.token)
-
-  const stats = useMemo(() => {
-    const providers = new Set(PUBLIC_MODELS.map((m) => (m.owned_by || '').toLowerCase()).filter(Boolean))
-    return {
-      models: new Set(PUBLIC_MODELS.map((m) => m.model)).size,
-      providers: providers.size
-    }
-  }, [])
-
-  const pricePreview = useMemo(() => {
-    return FEATURED.map((id) => {
-      const rows = PUBLIC_MODELS.filter((m) => m.model === id && m.service_tier === 'standard')
-      const row = rows[0]
-      if (!row) return null
-      const provider = (row.owned_by || '') as ModelProvider
-      return {
-        id,
-        name: row.display_name || row.model,
-        provider: PROVIDER_META[provider]?.label || row.owned_by || guessProvider(id),
-        input: priceLabel(row.input),
-        output: priceLabel(row.output)
-      }
-    }).filter(Boolean) as { id: string; name: string; provider: string; input: string; output: string }[]
-  }, [])
+/**
+ * 官方价对照 + 橙色折扣标（2026-11-20 站长：价签卡要突出折扣）
+ * ------------------------------------------------------------
+ * 与价格页 PriceComparison 同一套口径：官方价划线、折扣 = 现价 / 官方价 × 10。
+ * 官方价缺失（接口没给 original_*）就整块不渲染，宁可空着也不写「待核实」占位。
+ * 输入/输出两行各比各的，只有至少一行有官方价时才显示。
+ */
+function OfficialCompare({
+  input,
+  output,
+  officialInput,
+  officialOutput
+}: {
+  input?: number
+  output?: number
+  officialInput?: number | null
+  officialOutput?: number | null
+}) {
+  const rows = [
+    { label: '输入', current: input, official: officialInput },
+    { label: '输出', current: output, official: officialOutput }
+  ].filter(
+    (row): row is { label: string; current: number; official: number } =>
+      typeof row.current === 'number' &&
+      Number.isFinite(row.current) &&
+      typeof row.official === 'number' &&
+      Number.isFinite(row.official) &&
+      row.official > 0 &&
+      // 与官方价持平（≈10 折）不算折扣，整行不显示，避免「10.0 折」的噪音（2026-11-20 截图验收）
+      (row.current / row.official < 0.995 || row.current / row.official > 1.005)
+  )
+  if (!rows.length) return null
 
   return (
-    <div className={styles.home}>
-      <Layout>
-        {/* ---------- Hero：一屏一主张 ---------- */}
-        <section className={styles.hero}>
-          <TechBackdrop variant="hero" parallax={0.35} />
-          <span className={styles.heroGlow} aria-hidden="true" />
-          <div className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <span className={styles.eyebrow}>
-                <ThunderboltOutlined /> 多模型 API 中转
-              </span>
-              <h1 className={styles.title}>
-                一个地址，
-                <br />
-                接通主流大模型
-              </h1>
-              <p className={styles.subtitle}>
-                兼容 OpenAI 协议接入，使用单一密钥即可调度 GPT、Claude、Gemini 等 {stats.models} 个模型。
-                按实际用量付费，余额与账单随时可查。
-              </p>
-
-              <div className={styles.ctas}>
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={token ? <ExperimentOutlined /> : <RocketOutlined />}
-                  onClick={() => (token ? navigate('/chat') : setLoginModal(true))}
-                >
-                  {token ? '进入对话' : '免费注册'}
-                </Button>
-                <Button size="large" onClick={() => navigate('/price')}>
-                  查看价格
-                </Button>
-              </div>
-
-              <div className={styles.heroMeta}>
-                <span>
-                  <CheckCircleFilled /> 无需绑卡
-                </span>
-                <span>
-                  <CheckCircleFilled /> 匿名可先体验
-                </span>
-                <span>
-                  <CheckCircleFilled /> 密钥随时吊销
-                </span>
-              </div>
-            </div>
-
-            {/* 右侧：一段真实可抄的请求，比形容词更能说明问题 */}
-            <div className={styles.codeCard}>
-              <div className={styles.codeHead}>
-                <span className={styles.codeDots} aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span className={styles.codeTitle}>POST /v1/chat/completions</span>
-                <Tag color="success" bordered={false}>
-                  200 OK
-                </Tag>
-              </div>
-              <pre className={styles.code}>{`curl ${BASE_URL}/chat/completions \\
-  -H "Authorization: Bearer sk-••••••" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "gpt-6.1-sol",
-    "messages": [{ "role": "user",
-                   "content": "你好" }],
-    "stream": true
-  }'`}</pre>
-              {/* 窄屏换一段更短的示例，避免横向裁切看着像坏掉 */}
-              <pre className={`${styles.code} ${styles.codeNarrow}`}>{`curl https://www.rabbitj.top\\
-/v1/chat/completions \\
-  -H "Authorization: Bearer sk-••" \\
-  -d '{"model":"gpt-6.1-sol",
-       "messages":[{"role":"user",
-                    "content":"你好"}]}'`}</pre>
-              <div className={styles.codeFoot}>
-                <span>接入文档</span>
-                <Link to="/docs" className={styles.codeLink}>
-                  看完整示例 <ArrowRightOutlined />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- 数据条：可核对的事实 ---------- */}
-        <section className={styles.statsBar}>
-          <div className={styles.stat}>
-            <b className="num">
-              <CountUp value={stats.models} />
+    <div className={styles.officialCompare}>
+      {rows.map((row) => {
+        const discounted = row.current < row.official
+        return (
+          <span key={row.label} className={styles.officialRow}>
+            <em>
+              {row.label}官方价 <del>{formatPrice(row.official)}</del>
+            </em>
+            <b className={discounted ? styles.discountTag : styles.discountTagPlain}>
+              {discounted ? `${((row.current / row.official) * 10).toFixed(1)} 折` : '高于官方价'}
             </b>
-            <span>个可用模型</span>
-          </div>
-          <div className={styles.stat}>
-            <b className="num">
-              <CountUp value={stats.providers} duration={900} />
-            </b>
-            <span>家上游供应商</span>
-          </div>
-          <div className={styles.stat}>
-            <b className="num">
-              <CountUp value={3} duration={700} />
-            </b>
-            <span>种协议兼容</span>
-          </div>
-          <div className={styles.stat}>
-            <b>按量</b>
-            <span>计费，无订阅</span>
-          </div>
-        </section>
-
-        {/* ---------- 价格预览 ---------- */}
-        <Reveal as="section" id="pricing" className={styles.section}>
-          <div className={styles.sectionHead}>
-            <div>
-              <h2>常用模型价格</h2>
-              <p>标准参考价，单位为美元 / 百万 tokens；注册后按你的等级计算实际单价。</p>
-            </div>
-            <Link to="/price" className={styles.moreLink}>
-              全部 {stats.models} 个模型 <ArrowRightOutlined />
-            </Link>
-          </div>
-          <div className={styles.priceGrid}>
-            {pricePreview.map((item) => (
-              <Link key={item.id} to="/price" className={styles.priceCard}>
-                <span className={styles.priceProvider}>{item.provider}</span>
-                <strong className={styles.priceName}>{item.name}</strong>
-                <div className={styles.priceRow}>
-                  <span>输入</span>
-                  <b className="num">{item.input}</b>
-                </div>
-                <div className={styles.priceRow}>
-                  <span>输出</span>
-                  <b className="num">{item.output}</b>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* ---------- 三步接入 ---------- */}
-        <Reveal as="section" id="how" className={styles.section}>
-          <div className={styles.sectionHead}>
-            <div>
-              <h2>三步接入</h2>
-              <p>不用改代码框架，任何支持自定义 base_url 的客户端都能用。</p>
-            </div>
-            <Link to="/docs" className={styles.moreLink}>
-              <BookOutlined /> 接入文档
-            </Link>
-          </div>
-          <div className={styles.stepGrid}>
-            {steps.map((step) => (
-              <div key={step.no} className={styles.stepCard}>
-                <IconBadge icon={<span className={styles.stepNo}>{step.no}</span>} tone={step.tone} size="lg" />
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* ---------- 为什么是这里 ---------- */}
-        <Reveal as="section" id="why" className={styles.section}>
-          <div className={styles.sectionHead}>
-            <div>
-              <h2>为什么选这里</h2>
-              <p>三个可以自己验证的事实。</p>
-            </div>
-          </div>
-          <div className={styles.featureGrid}>
-            {features.map((item) => (
-              <button
-                key={item.title}
-                type="button"
-                className={styles.featureCard}
-                onClick={() => navigate(item.href)}
-              >
-                <IconBadge icon={item.icon} tone={item.tone} size="lg" />
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-                <span className={styles.featureMore}>了解详情 →</span>
-              </button>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* ---------- 体验入口 ---------- */}
-        <Reveal as="section" className={styles.experience}>
-          <div>
-            <h2>先体验，再决定</h2>
-            <p>不注册也能对话和绘图，记录不留存。</p>
-          </div>
-          <div className={styles.experienceActions}>
-            <Button size="large" icon={<ExperimentOutlined />} onClick={() => navigate('/chat')}>
-              在线体验
-            </Button>
-            {!token && (
-              <Button type="link" size="large" onClick={() => setLoginModal(true)}>
-                先注册一个账号 <ArrowRightOutlined />
-              </Button>
-            )}
-          </div>
-        </Reveal>
-
-        {/* ---------- 底部 CTA ---------- */}
-        <Reveal as="section" className={styles.finalCta}>
-          <span className={styles.finalGlow} aria-hidden="true" />
-          <h2>把模型接入你的工作流</h2>
-          <p>注册并创建密钥后，约 5 分钟即可完成首次调用。</p>
-          <div className={styles.finalActions}>
-            <Button
-              type="primary"
-              size="large"
-              icon={token ? <ExperimentOutlined /> : <RocketOutlined />}
-              onClick={() => (token ? navigate('/chat') : setLoginModal(true))}
-            >
-              {token ? '继续对话' : '免费注册'}
-            </Button>
-            <Link to="/price" className={styles.finalSecondary}>
-              先看看价格
-            </Link>
-          </div>
-        </Reveal>
-
-        <footer className={styles.footer}>
-          <span>© {new Date().getFullYear()} rabbitJ · 大模型 API 中转服务</span>
-          <span className={styles.footerLinks}>
-            <Link to="/price">模型价格</Link>
-            <Link to="/docs">接入文档</Link>
-            <Link to="/notice">公告留言</Link>
           </span>
-        </footer>
-      </Layout>
+        )
+      })}
     </div>
   )
 }
 
-export default HomePage
+export default function HomePage() {
+  const navigate = useNavigate()
+  const { token, llm_api_key } = userStore()
+  const [rates, setRates] = useState<UserModelRate[]>([])
+  const [pricingDate, setPricingDate] = useState('')
+  const [pricingLoading, setPricingLoading] = useState(false)
+  const [pricingError, setPricingError] = useState('')
+
+  const hasCredential = Boolean((llm_api_key || '').trim())
+  const featuredModels = useMemo<FeaturedModel[]>(
+    () =>
+      FEATURED_MODELS.map((item) => {
+        const current = rates.find(
+          (rate) => rate.model === item.id && rate.service_tier === 'standard'
+        )
+        const reference = PUBLIC_MODELS.find(
+          (rate) => rate.model === item.id && rate.service_tier === 'standard'
+        )
+        return { ...item, rate: current || reference, live: Boolean(current) }
+      }),
+    [rates]
+  )
+
+  useEffect(() => {
+    if (!token || !hasCredential) {
+      setRates([])
+      setPricingDate('')
+      setPricingError('')
+      return
+    }
+
+    const controller = new AbortController()
+    setPricingLoading(true)
+    setPricingError('')
+    getUserPricing({ signal: controller.signal })
+      .then((pricing) => {
+        if (!Array.isArray(pricing.models)) throw new Error('价目数据不完整')
+        setRates(pricing.models)
+        setPricingDate(pricing.vendor?.last_synced_at || '')
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return
+        setRates([])
+        setPricingError(error instanceof Error ? error.message : '获取当前价目失败')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setPricingLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [token, hasCredential])
+
+  const currentPrices = Boolean(rates.length)
+
+  return (
+    <Layout homeAppearance>
+      <main className={styles.home}>
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>
+              <i /> 多模型接入 · 价格清晰
+            </span>
+            <h1>
+              <span className={styles.heroIntro}>Agent 接入大模型，</span>
+              <br />
+              <strong>本站优惠约三折</strong>
+            </h1>
+            <div className={styles.actions}>
+              <Button type="primary" size="large" onClick={() => navigate('/agent#api-keys')}>
+                获取 API Key <span aria-hidden="true">→</span>
+              </Button>
+              <Button size="large" onClick={() => navigate('/price')}>
+                探索模型价格
+              </Button>
+            </div>
+          </div>
+
+          <div className={styles.network} aria-label="常用工具经 rabbitJ 连接模型的示意图">
+            {/**
+             * 折线流程图 + 信息光球（2026-11-20 站长，第二版）
+             * ------------------------------------------------------------
+             * 站长看完第一版的意见：光球被 SVG 非等比拉伸压成了椭圆，
+             * 颜色也不要跟线走——统一「绿色送过去，黄色带回来」；
+             * 左右卡片要上下左右对齐；线要连进卡片里，光球从卡片下面穿过去。
+             *
+             * 落地：线仍是 SVG（圆角折线 + 虚线流动，端点延长到卡片底下）；
+             * 光球改成 HTML 圆点（永远正圆），按折线轨迹的关键帧跑，
+             * 两层光晕（绿/黄）用透明度在两端点处互换，变色藏在卡片下面。
+             * 层级：线 z-index:-1 < 光球 1 < 卡片/枢纽 2。
+             */}
+            <svg
+              className={styles.flow}
+              viewBox="0 0 1000 300"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                className={`${styles.flowLine} ${styles.flowLineBlue}`}
+                d="M-20,33 H380 Q395,33 395,48 V120 Q395,135 410,135 H500"
+              />
+              <path
+                className={`${styles.flowLine} ${styles.flowLineBlue}`}
+                d="M500,135 H590 Q605,135 605,120 V48 Q605,33 620,33 H1020"
+              />
+              <path className={`${styles.flowLine} ${styles.flowLinePurple}`} d="M-20,150 H500" />
+              <path className={`${styles.flowLine} ${styles.flowLinePurple}`} d="M500,150 H1020" />
+              <path
+                className={`${styles.flowLine} ${styles.flowLineOrange}`}
+                d="M-20,267 H380 Q395,267 395,252 V180 Q395,165 410,165 H500"
+              />
+              <path
+                className={`${styles.flowLine} ${styles.flowLineOrange}`}
+                d="M500,165 H590 Q605,165 605,180 V252 Q605,267 620,267 H1020"
+              />
+            </svg>
+            <span
+              className={`${styles.orb} ${styles.orbTop}`}
+              style={{ '--dur': '7s', '--del': '0s' } as CSSProperties}
+              aria-hidden="true"
+            >
+              <i className={styles.orbGo} />
+              <i className={styles.orbBack} />
+            </span>
+            <span
+              className={`${styles.orb} ${styles.orbMid}`}
+              style={{ '--dur': '8s', '--del': '-2.6s' } as CSSProperties}
+              aria-hidden="true"
+            >
+              <i className={styles.orbGo} />
+              <i className={styles.orbBack} />
+            </span>
+            <span
+              className={`${styles.orb} ${styles.orbBottom}`}
+              style={{ '--dur': '9s', '--del': '-5.2s' } as CSSProperties}
+              aria-hidden="true"
+            >
+              <i className={styles.orbGo} />
+              <i className={styles.orbBack} />
+            </span>
+            <span className={`${styles.networkNode} ${styles.nodeOne}`}>Agent 工具</span>
+            <span className={`${styles.networkNode} ${styles.nodeTwo}`}>网页对话</span>
+            <span className={`${styles.networkNode} ${styles.nodeThree}`}>API 接入</span>
+            <span className={`${styles.networkNode} ${styles.nodeFour}`}>DeepSeek</span>
+            <span className={`${styles.networkNode} ${styles.nodeFive}`}>Claude</span>
+            <span className={`${styles.networkNode} ${styles.nodeSix}`}>更多模型</span>
+            <span className={styles.hub}>
+              <img src={rabbitLogo} alt="rabbitJ" />
+            </span>
+            <small>连接示意 · 实际支持情况以本站为准</small>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <div>
+              <span className={styles.sectionEyebrow}>PRICE PREVIEW</span>
+              <h2>三款模型，价格一眼看</h2>
+            </div>
+            <Link to="/price">查看完整价目 →</Link>
+          </div>
+          <div className={styles.priceGrid}>
+            {featuredModels.map(({ id, label, rate, live }) => (
+              <Link
+                key={id}
+                className={styles.priceCard}
+                to={`/price?model=${encodeURIComponent(id)}#estimate`}
+              >
+                <div className={styles.priceCardHead}>
+                  <span>{label}</span>
+                  <span>{pricingLoading ? '正在更新' : live ? '当前账号价' : '访客参考价'}</span>
+                </div>
+                <h3>{rate?.display_name || rate?.model || id}</h3>
+                <div className={styles.priceValues}>
+                  <span>
+                    输入 <strong>{rate ? formatPrice(rate.input) : '暂无报价'}</strong>
+                    <small>/ 百万 tokens</small>
+                  </span>
+                  <span>
+                    输出 <strong>{rate ? formatPrice(rate.output) : '暂无报价'}</strong>
+                    <small>/ 百万 tokens</small>
+                  </span>
+                </div>
+                <OfficialCompare
+                  input={rate?.input}
+                  output={rate?.output}
+                  officialInput={rate?.original_input}
+                  officialOutput={rate?.original_output}
+                />
+                <span className={styles.cardLink}>
+                  查看计费档位与缓存价格 <span aria-hidden="true">→</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+          <p className={styles.priceNote} role="status">
+            {currentPrices
+              ? `价格来自当前账号价目${
+                  pricingDate ? ` · 同步 ${new Date(pricingDate).toLocaleDateString('zh-CN')}` : ''
+                }${
+                  featuredModels.some((model) => !model.live)
+                    ? '；未返回的型号沿用带日期的访客参考价'
+                    : ''
+                }。`
+              : token && !hasCredential
+              ? '当前账号尚无 API Key，暂不展示个人实时价。登录后到接入页创建密钥，再查看当前账号价目。'
+              : pricingError
+              ? `当前价目暂时无法获取。${pricingError} 登录后可在模型价格页重试。`
+              : `访客参考价取自 ${PUBLIC_PRICING_UPDATED_AT} 的公开快照，仅供参考。登录并配置 API Key 后可查看当前账号价目。`}
+          </p>
+        </section>
+
+      </main>
+    </Layout>
+  )
+}

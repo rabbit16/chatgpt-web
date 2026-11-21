@@ -1,663 +1,735 @@
-/**
- * 营销主页（S2 · 正式版）
- * ------------------------------------------------------------
- * 原则：一屏一个主张，每段都能跳到下一页（注册 / 价格 / 文档 / 体验）。
- * 视觉：白底 + 发丝线 + 单品牌蓝；用点阵、柔光、等宽数字做质感，不用大动效。
- */
 .home {
-	min-height: 100vh;
-	background: var(--canvas);
-	overflow-x: hidden;
+  --stroke: var(--border);
+  --muted: var(--text-3);
+  position: relative;
+  isolation: isolate;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 24px 36px;
+  color: var(--text-1);
 }
 
-/* ---------------- Hero ---------------- */
 .hero {
-	width: 100%;
-	box-sizing: border-box;
-	position: relative;
-	padding: 56px 0 44px;
-	overflow: hidden;
-	background: linear-gradient(180deg, var(--hero-gradient-start) 0%, var(--canvas) 100%);
-	border-bottom: 1px solid var(--border-soft);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
+  align-items: center;
+  gap: 36px;
+  min-height: 530px;
+  padding: 56px 24px 38px;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 16px;
 }
 
-.heroGlow {
-	position: absolute;
-	top: -140px;
-	right: -60px;
-	width: 420px;
-	height: 420px;
-	border-radius: 50%;
-	background: radial-gradient(circle, rgba(24, 119, 255, 0.14) 0%, rgba(24, 119, 255, 0) 68%);
-	pointer-events: none;
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(#8fa4d2 0.8px, transparent 0.8px);
+  background-size: 22px 22px;
+  opacity: 0.22;
+  mask-image: radial-gradient(ellipse, #000 22%, transparent 78%);
 }
 
-.heroInner {
-	position: relative;
-	z-index: 1;
-	max-width: var(--content-max);
-	margin: 0 auto;
-	padding: 0 var(--container-pad);
-	display: grid;
-	grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-	gap: 40px;
-	align-items: center;
+.heroCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 610px;
 }
 
-.eyebrow {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 4px 10px;
-	border-radius: var(--radius-pill);
-	background: var(--tint-brand);
-	color: var(--ink-brand);
-	font-size: 12px;
-	font-weight: 500;
+.eyebrow,
+.sectionEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--brand-text);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
 }
 
-.title {
-	margin: 16px 0 14px;
-	font-size: 44px;
-	line-height: 1.16;
-	letter-spacing: -0.03em;
-	font-weight: 700;
-	color: var(--text-1);
+.eyebrow i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7058ed;
+  box-shadow: 0 0 14px #7058ed80;
 }
 
-.subtitle {
-	margin: 0 0 24px;
-	max-width: 30em;
-	font-size: 15px;
-	line-height: 1.75;
-	color: var(--text-4);
+.hero h1 {
+  margin: 21px 0 16px;
+  color: var(--text-1);
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1.2;
+  letter-spacing: -1.7px;
+  text-wrap: balance;
+
+  strong {
+    color: transparent;
+    background: linear-gradient(100deg, #2457e8, #7552e6 60%, #e86d65);
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
 }
 
-.ctas {
-	display: flex;
-	gap: 12px;
-	flex-wrap: wrap;
+.heroIntro {
+  font-size: clamp(26px, 3.2vw, 42px);
+  white-space: nowrap;
 }
 
-.heroMeta {
-	display: flex;
-	gap: 18px;
-	flex-wrap: wrap;
-	margin-top: 18px;
-	font-size: 13px;
-	color: var(--text-4);
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 25px;
 
-	span {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
+  :global(.ant-btn-primary) {
+    background: linear-gradient(110deg, #2457e8, #634ce0);
+    border-color: #4e5cdd;
+  }
 
-		:global(.anticon) {
-			color: var(--success);
-			font-size: 12px;
-		}
-	}
+  :global(.ant-btn-primary:hover) {
+    background: #1947ce;
+  }
+
+  :global(.ant-btn:not(.ant-btn-primary)) {
+    border-color: var(--border);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    color: var(--text-2);
+  }
+
+  :global(.ant-btn:not(.ant-btn-primary):hover) {
+    border-color: var(--brand-soft);
+    background: var(--tint-brand);
+    color: var(--brand-text);
+  }
 }
 
-/* 代码卡片 */
-.codeCard {
-	min-width: 0;
-	max-width: 100%;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-card);
-	overflow: hidden;
+.network {
+  position: relative;
+  min-height: 330px;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--brand-soft) 55%, transparent),
+    transparent 65%
+  );
+
+  > small {
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-4);
+    font-size: 11px;
+    white-space: nowrap;
+  }
 }
 
-.codeHead {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 10px 14px;
-	border-bottom: 1px solid var(--divider);
-	background: var(--surface-muted);
+.flow {
+  position: absolute;
+  /* 铺满整个示意区：光球/卡片按 .network 高度的百分比定位，
+     SVG 必须同一个坐标系，否则光球会偏离线（2026-11-20 第二版修正） */
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.codeDots {
-	display: inline-flex;
-	gap: 5px;
-
-	i {
-		width: 9px;
-		height: 9px;
-		border-radius: 50%;
-		background: #dbe2ec;
-	}
+/**
+ * 折线流程线（2026-11-20 站长：斜直线太随便，要流程图折线）
+ * ------------------------------------------------------------
+ * 圆角折角 + 虚线匀速流动（stroke-dashoffset 行进一个 7+13 周期），
+ * 三条线速度错开。preserveAspectRatio="none" 拉伸时用
+ * vector-effect 保住线宽和虚线比例不被拉歪。
+ * 端点延长到 -20 / 1020：线从卡片（不透明底）下面穿过，
+ * 看起来像「插进卡片里」。
+ */
+.flowLine {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 7 13;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.8;
+  animation: dash-flow 1.4s linear infinite;
 }
 
-.codeTitle {
-	flex: 1 1 auto;
-	font-family: var(--font-mono);
-	font-size: 12px;
-	color: var(--text-4);
-	letter-spacing: 0.02em;
+.flowLineBlue {
+  stroke: #5280f1;
+}
+.flowLinePurple {
+  stroke: #9a70e9;
+  animation-duration: 1.7s;
+}
+.flowLineOrange {
+  stroke: #ed886f;
+  animation-duration: 2s;
 }
 
-.code {
-	margin: 0;
-	padding: 16px;
-	background: var(--ink-deep);
-	color: #e6edf7;
-	font-family: var(--font-mono);
-	font-size: 12px;
-	line-height: 1.75;
-	overflow-x: auto;
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
 }
 
-.codeNarrow {
-	display: none;
+/**
+ * 信息光球（2026-11-20 站长第二版）
+ * ------------------------------------------------------------
+ * 第一版光球画在 SVG 里，被 preserveAspectRatio="none" 的非等比
+ * 拉伸压成了椭圆 —— 改成 HTML 圆点，任何宽度下都是正圆，
+ * 光晕用 box-shadow，比 SVG 滤镜便宜也更柔。
+ *
+ * 轨迹：orb-run 关键帧照抄折线的拐点（百分比坐标），
+ * 去程绿（orbGo）返程黄（orbBack），两层光晕在两端折返点
+ * 互换透明度 —— 折返点藏在两侧卡片底下，变色瞬间看不见。
+ * --y0..--y3 是四条水平高度（行高/拐角/竖尾/入枢纽），
+ * 三条行（上/中/下）各给一组值，关键帧只需写一份。
+ * 时长 --dur、延迟 --del 在 tsx 里按行错开。
+ */
+.orb {
+  position: absolute;
+  z-index: 1;
+  left: 5%;
+  top: var(--y0, 50%);
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orb-run var(--dur, 8s) linear infinite;
+  animation-delay: var(--del, 0s);
+
+  i {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    animation-duration: var(--dur, 8s);
+    animation-delay: var(--del, 0s);
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
 }
 
-.codeFoot {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 10px 14px;
-	font-size: 12px;
-	color: var(--text-5);
+.orbGo {
+  background: radial-gradient(circle at 38% 32%, #effff6 0%, #4be08d 42%, #1cae61 78%);
+  box-shadow: 0 0 10px 3px rgba(45, 205, 120, 0.6), 0 0 22px 9px rgba(45, 205, 120, 0.25);
+  animation-name: orb-go-fade;
 }
 
-.codeLink {
-	color: var(--brand);
-	font-weight: 500;
-
-	&:hover {
-		color: var(--brand-hover);
-	}
+.orbBack {
+  background: radial-gradient(circle at 38% 32%, #fff9e3 0%, #ffd25e 42%, #eda415 78%);
+  box-shadow: 0 0 10px 3px rgba(245, 184, 46, 0.65), 0 0 22px 9px rgba(245, 184, 46, 0.28);
+  animation-name: orb-back-fade;
 }
 
-/* ---------------- 数据条 ---------------- */
-.statsBar {
-	width: 100%;
-	box-sizing: border-box;
-	max-width: var(--content-max);
-	margin: 0 auto;
-	padding: 0 var(--container-pad);
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	border-bottom: 1px solid var(--border-soft);
-
-	.stat {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 18px 18px 18px 0;
-
-		& + .stat {
-			padding-left: 18px;
-			border-left: 1px solid var(--divider);
-		}
-
-		b {
-			font-size: 24px;
-			line-height: 1.2;
-			letter-spacing: -0.02em;
-			color: var(--text-1);
-		}
-
-		/* 只作用于说明文字那一层，别把数字里的 span 一起改小 */
-		> span {
-			font-size: 12px;
-			color: var(--text-5);
-		}
-	}
+.orbTop {
+  --y0: 11%;
+  --y1: 16%;
+  --y2: 40%;
+  --y3: 45%;
+}
+.orbMid {
+  --y0: 50%;
+  --y1: 50%;
+  --y2: 50%;
+  --y3: 50%;
+}
+.orbBottom {
+  --y0: 89%;
+  --y1: 84%;
+  --y2: 60%;
+  --y3: 55%;
 }
 
-/* ---------------- 通用段落 ---------------- */
-.section {
-	width: 100%;
-	box-sizing: border-box;
-	max-width: var(--content-max);
-	margin: 0 auto;
-	padding: 44px var(--container-pad) 8px;
+/* 折返点两侧各留 0.4% 的交叉淡化，变色像「交付」而不是跳变 */
+@keyframes orb-go-fade {
+  0%,
+  49.6% {
+    opacity: 1;
+  }
+  50.4%,
+  99.6% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
-.sectionHead {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-	gap: 16px;
-	margin-bottom: 20px;
-
-	h2 {
-		margin: 0 0 6px;
-		font-size: 22px;
-		letter-spacing: -0.02em;
-	}
-
-	p {
-		margin: 0;
-		font-size: 13px;
-		color: var(--text-4);
-	}
+@keyframes orb-back-fade {
+  0%,
+  49.6% {
+    opacity: 0;
+  }
+  50.4%,
+  99.6% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
-.moreLink {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 13px;
-	color: var(--brand);
-	white-space: nowrap;
-
-	&:hover {
-		color: var(--brand-hover);
-	}
+/**
+ * 轨迹关键帧的时间点按各段路径长度（viewBox 单位）折算，
+ * 全程接近匀速；中间直线路径直接复用（四个高度相同，拐角退化）。
+ */
+@keyframes orb-run {
+  0% {
+    left: 5%;
+    top: var(--y0);
+  }
+  15.75% {
+    left: 38%;
+    top: var(--y0);
+  }
+  16.76% {
+    left: 39.5%;
+    top: var(--y1);
+  }
+  19.72% {
+    left: 39.5%;
+    top: var(--y2);
+  }
+  20.73% {
+    left: 41%;
+    top: var(--y3);
+  }
+  21.45% {
+    left: 42.5%;
+    top: var(--y3);
+  }
+  28.61% {
+    left: 57.5%;
+    top: var(--y3);
+  }
+  29.32% {
+    left: 59%;
+    top: var(--y3);
+  }
+  30.33% {
+    left: 60.5%;
+    top: var(--y2);
+  }
+  33.29% {
+    left: 60.5%;
+    top: var(--y1);
+  }
+  34.3% {
+    left: 62%;
+    top: var(--y0);
+  }
+  50% {
+    left: 95%;
+    top: var(--y0);
+  }
+  65.75% {
+    left: 62%;
+    top: var(--y0);
+  }
+  66.76% {
+    left: 60.5%;
+    top: var(--y1);
+  }
+  69.72% {
+    left: 60.5%;
+    top: var(--y2);
+  }
+  70.73% {
+    left: 59%;
+    top: var(--y3);
+  }
+  71.45% {
+    left: 57.5%;
+    top: var(--y3);
+  }
+  78.61% {
+    left: 42.5%;
+    top: var(--y3);
+  }
+  79.33% {
+    left: 41%;
+    top: var(--y3);
+  }
+  80.34% {
+    left: 39.5%;
+    top: var(--y2);
+  }
+  83.3% {
+    left: 39.5%;
+    top: var(--y1);
+  }
+  84.31% {
+    left: 38%;
+    top: var(--y0);
+  }
+  100% {
+    left: 5%;
+    top: var(--y0);
+  }
 }
 
-/* 价格卡 */
+/* 减少动态偏好：光球整条藏掉，线也停（全局规则已兜底，这里双保险） */
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    display: none;
+  }
+}
+
+/**
+ * 两侧信息卡片（2026-11-20 站长：「上下左右对齐」）
+ * ------------------------------------------------------------
+ * 左列齐左、右列齐右，三行固定在 11% / 50% / 89%（即三条线的高度），
+ * 统一宽度和高度，像网格一样对齐；不透明底盖住线头和光球折返点。
+ */
+.networkNode {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.nodeOne {
+  left: 0;
+  top: 11%;
+}
+.nodeTwo {
+  left: 0;
+  top: 50%;
+}
+.nodeThree {
+  left: 0;
+  top: 89%;
+}
+.nodeFour {
+  right: 0;
+  top: 11%;
+}
+.nodeFive {
+  right: 0;
+  top: 50%;
+}
+.nodeSix {
+  right: 0;
+  top: 89%;
+}
+
+.hub {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--brand-soft);
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--surface), var(--tint-brand));
+  box-shadow: 0 6px 18px #7567ff20;
+
+  img {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+  }
+}
+
+:global([data-theme='dark']) .hub img {
+  filter: invert(1);
+}
+
 .priceGrid {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 14px;
+  display: grid;
+  gap: 14px;
 }
 
 .priceCard {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 16px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-		border-color var(--dur) var(--ease);
-
-	&:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-hover);
-		border-color: var(--border);
-	}
+  min-width: 0;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  backdrop-filter: blur(12px);
 }
 
-.priceProvider {
-	font-size: 12px;
-	letter-spacing: 0.06em;
-	color: var(--text-5);
+.section {
+  padding: 34px 0 12px;
 }
 
-.priceName {
-	font-size: 15px;
-	font-weight: 600;
-	color: var(--text-1);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.sectionHead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 17px;
+
+  h2 {
+    margin: 4px 0 0;
+    font-size: clamp(21px, 2.7vw, 27px);
+    letter-spacing: -0.4px;
+  }
+  > a {
+    flex: none;
+    color: var(--brand);
+    font-weight: 700;
+    font-size: 13px;
+  }
 }
 
-.priceRow {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	font-size: 12px;
-	color: var(--text-5);
-
-	b {
-		font-size: 14px;
-		color: var(--text-2);
-		font-variant-numeric: tabular-nums;
-	}
+.sectionEyebrow {
+  color: var(--text-4);
+  font-size: 10px;
+  letter-spacing: 0.12em;
 }
 
-/* 步骤 */
-.stepGrid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16px;
+.priceGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.stepCard {
-	padding: 20px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+.priceCard {
+  display: flex;
+  flex-direction: column;
+  padding: 19px;
+  color: var(--text-1);
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease;
 
-	&:hover {
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-hover);
-	}
-
-	h3 {
-		margin: 14px 0 6px;
-		font-size: 15px;
-		font-weight: 600;
-	}
-
-	p {
-		margin: 0;
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--text-4);
-	}
-
-	code {
-		font-family: var(--font-mono);
-		font-size: 12px;
-	}
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #9db4f4;
+    color: var(--text-1);
+  }
+  h3 {
+    margin: 13px 0 16px;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
 }
 
-.stepNo {
-	font-size: 18px;
-	font-weight: 700;
-	line-height: 1;
+.priceCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  span:first-child {
+    font-size: 12px;
+    color: var(--text-3);
+    font-weight: 700;
+  }
+  span:last-child {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--tint-brand);
+    color: var(--brand-text);
+    font-size: 11px;
+    white-space: nowrap;
+  }
 }
 
-/* 特性 */
-.featureGrid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16px;
+.priceValues {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--stroke);
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: var(--text-4);
+    font-size: 12px;
+  }
+  strong {
+    color: var(--brand);
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+  small {
+    color: var(--text-4);
+    font-size: 10px;
+  }
 }
 
-.featureCard {
-	padding: 20px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-
-	h3 {
-		margin: 14px 0 6px;
-		font-size: 15px;
-		font-weight: 600;
-	}
-
-	p {
-		margin: 0;
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--text-4);
-	}
+.cardLink {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 15px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-/* 体验入口 */
-.experience {
-	width: 100%;
-	box-sizing: border-box;
-	max-width: var(--content-max);
-	margin: 40px auto 0;
-	padding: 24px var(--container-pad);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 24px;
-	flex-wrap: wrap;
-	border-top: 1px solid var(--border-soft);
-	border-bottom: 1px solid var(--border-soft);
-
-	h2 {
-		margin: 0 0 6px;
-		font-size: 20px;
-	}
-
-	p {
-		margin: 0;
-		max-width: 46em;
-		font-size: 13px;
-		line-height: 1.7;
-		color: var(--text-4);
-	}
+.priceNote {
+  margin: 11px 0 0;
+  color: var(--text-4);
+  font-size: 12px;
+  line-height: 1.65;
 }
 
-.experienceActions {
-	display: flex;
-	align-items: center;
-	gap: 14px;
+/* 官方价对照（2026-11-20）：划线官方价 + 橙色折扣标，紧跟价格行 */
+.officialCompare {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
 }
 
-/* 底部 CTA */
-.finalCta {
-	width: 100%;
-	box-sizing: border-box;
-	position: relative;
-	max-width: var(--content-max);
-	margin: 44px auto 0;
-	padding: 44px 32px;
-	text-align: center;
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	background:
-		radial-gradient(circle at 1px 1px, var(--pattern-dot) 1px, transparent 0) 0 0 / 22px 22px,
-		linear-gradient(180deg, var(--final-cta-start) 0%, var(--surface) 100%);
-	overflow: hidden;
+.officialRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 
-	h2 {
-		margin: 0 0 8px;
-		font-size: 26px;
-		letter-spacing: -0.02em;
-	}
+  em {
+    color: var(--text-4);
+    font-size: 11px;
+    font-style: normal;
 
-	p {
-		margin: 0 0 22px;
-		font-size: 14px;
-		color: var(--text-4);
-	}
+    del {
+      margin-left: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+  }
 }
 
-.finalGlow {
-	position: absolute;
-	left: 50%;
-	top: -120px;
-	width: 380px;
-	height: 380px;
-	transform: translateX(-50%);
-	border-radius: 50%;
-	background: radial-gradient(circle, rgba(24, 119, 255, 0.12) 0%, rgba(24, 119, 255, 0) 70%);
-	pointer-events: none;
+.discountTag,
+.discountTagPlain {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.finalActions {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
+.discountTag {
+  color: var(--ink-amber);
+  background: var(--warning-soft);
+  border: 1px solid color-mix(in srgb, var(--warning) 28%, transparent);
 }
 
-.finalSecondary {
-	font-size: 14px;
-	color: var(--brand);
-
-	&:hover {
-		color: var(--brand-hover);
-	}
+.discountTagPlain {
+  color: var(--text-3);
+  background: var(--surface-muted);
 }
 
-/* 页脚 */
-.footer {
-	width: 100%;
-	box-sizing: border-box;
-	max-width: var(--content-max);
-	margin: 0 auto;
-	padding: 24px var(--container-pad) 40px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	flex-wrap: wrap;
-	font-size: 12px;
-	color: var(--text-5);
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 10px;
+    padding: 42px 24px 22px;
+  }
+  .heroCopy {
+    max-width: 740px;
+  }
+  .network {
+    min-height: 265px;
+  }
 }
 
-.footerLinks {
-	display: inline-flex;
-	gap: 18px;
-	flex-wrap: wrap;
-
-	a {
-		color: var(--text-4);
-
-		&:hover {
-			color: var(--brand);
-		}
-	}
+@media (max-width: 560px) {
+  .home {
+    padding: 0 12px 24px;
+  }
+  .hero {
+    gap: 4px;
+    padding: 34px 17px 12px;
+  }
+  .hero h1 {
+    margin: 15px 0 12px;
+    font-size: 35px;
+    letter-spacing: -1px;
+  }
+  .actions {
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .actions :global(.ant-btn) {
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+  .network {
+    min-height: 224px;
+    margin-inline: -8px;
+  }
+  .networkNode {
+    min-width: 0;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+  .orb {
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+  }
+  .hub {
+    width: 52px;
+    height: 52px;
+  }
+  .hub img {
+    width: 38px;
+    height: 38px;
+  }
+  .network > small {
+    font-size: 9px;
+  }
+  .section {
+    padding-top: 27px;
+  }
+  .sectionHead {
+    align-items: flex-start;
+  }
+  .sectionHead h2 {
+    font-size: 21px;
+  }
+  .sectionHead > a {
+    font-size: 11px;
+  }
+  .priceGrid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+  .priceCard {
+    padding: 15px;
+  }
+  .priceCard h3 {
+    margin: 9px 0 12px;
+  }
+  .priceValues strong {
+    font-size: 18px;
+  }
 }
 
-/* ---------------- 响应式 ---------------- */
-@media (max-width: 1080px) {
-	.heroInner {
-		grid-template-columns: 1fr;
-		gap: 28px;
-	}
-
-	.title {
-		font-size: 36px;
-	}
-
-	.priceGrid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-
-	.stepGrid,
-	.featureGrid {
-		grid-template-columns: 1fr;
-	}
-}
-
-@media (max-width: 640px) {
-	.hero {
-		padding: 28px 0 32px;
-	}
-
-	.title {
-		font-size: 28px;
-	}
-
-	.subtitle {
-		font-size: 14px;
-	}
-
-	.statsBar {
-		grid-template-columns: repeat(2, 1fr);
-		padding: 0 var(--space-4);
-
-		.stat {
-			padding: 14px 12px 14px 0;
-
-			& + .stat {
-				padding-left: 12px;
-			}
-
-			&:nth-child(3) {
-				border-left: none;
-				padding-left: 0;
-			}
-
-			&:nth-child(n + 3) {
-				border-top: 1px solid var(--divider);
-			}
-		}
-	}
-
-	.codeHead {
-		padding: 8px 12px;
-	}
-
-	.codeTitle {
-		font-size: 12px;
-	}
-
-	.code {
-		display: none;
-		padding: 12px;
-		font-size: 12px;
-		line-height: 1.6;
-	}
-
-	.codeNarrow {
-		display: block;
-	}
-
-	.section {
-		padding: 28px var(--space-4) 4px;
-	}
-
-	.sectionHead {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-
-	.priceGrid {
-		grid-template-columns: 1fr;
-	}
-
-	.experience {
-		padding: 20px var(--space-4);
-		flex-direction: column;
-		align-items: flex-start;
-	}
-
-	.finalCta {
-		margin: 28px var(--space-4) 0;
-		padding: 28px 18px;
-	}
-
-	.footer {
-		padding: 20px var(--space-4) 32px;
-	}
-}
-
-
-/* 三张能力卡：可点、有 hover 反馈、说明只留一行 */
-.featureCard {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 10px;
-	padding: 20px;
-	text-align: left;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	cursor: pointer;
-	transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease),
-		box-shadow var(--dur) var(--ease);
-
-	h3 {
-		margin: 0;
-		font-size: 15.5px;
-		font-weight: 600;
-		color: var(--text-1);
-	}
-
-	p {
-		margin: 0;
-		font-size: 13px;
-		line-height: 1.6;
-		color: var(--text-4);
-	}
-
-	&:hover {
-		border-color: var(--brand-soft);
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-hover);
-
-		.featureMore {
-			color: var(--brand);
-		}
-	}
-}
-
-.featureMore {
-	margin-top: auto;
-	font-size: 12.5px;
-	color: var(--text-5);
-	transition: color var(--dur) var(--ease);
-}
-
-
-/* 深色下把 hero 的蓝色柔光压下去，避免整块看起来像深蓝底 */
-:global([data-theme='dark']) .hero [data-parallax] {
-	opacity: 0.55;
-}
-
-:global([data-theme='dark']) .heroGlow {
-	opacity: 0.35;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -177,7 +177,8 @@ export function isLocalId(id: number | string): boolean {
 export function formatFileSize(size?: number | string): string {
   if (size === undefined || size === null || size === '') return ''
   const bytes = typeof size === 'number' ? size : Number(size)
-  if (!Number.isFinite(bytes) || bytes <= 0) return String(size)
+  // 2026-11-20：0 或负值不再渲染成孤零零一个「0」（列表里会被误读成下载次数）
+  if (!Number.isFinite(bytes) || bytes <= 0) return ''
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -349,7 +350,7 @@ export async function getMarketCategories(): Promise<SoftwareCategoryRecord[] | 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
-        token: userStore.getState().token
+        token: userStore.getState().token || ''
       },
       body: JSON.stringify({ page: 1, page_num: 100 })
     })

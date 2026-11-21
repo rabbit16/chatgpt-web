@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react'
-import { Card, Table, Tag } from 'antd'
+import { Alert, Button, Card, Skeleton, Table } from 'antd'
 import { getAdminOverview } from '@/request/api'
 import styles from '../index.module.less'
 
 function AdminOverview() {
   const [data, setData] = useState<any>({})
 
-  useEffect(() => {
-    getAdminOverview().then((res: any) => {
-      setData(res?.data || {})
-    })
-  }, [])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  async function loadOverview() {
+    setLoading(true)
+    setError(false)
+    try {
+      const res = await getAdminOverview()
+      if (String(res?.code) !== '0' || String(res?.data?.code ?? '0') !== '0') throw new Error('读取失败')
+      setData(res.data || {})
+    } catch {
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void loadOverview() }, [])
 
   const overview = data.overview || {}
   const billing = data.billing || {}
@@ -18,6 +31,8 @@ function AdminOverview() {
 
   return (
     <div>
+      <h1>后台总览</h1>
+      {loading ? <Skeleton active /> : error ? <Alert type="error" showIcon message="暂时无法读取总览" action={<Button onClick={() => void loadOverview()}>重试</Button>} /> : <>
       <div className={styles.cards}>
         <div className={styles.card}>
           <label>用户总数</label>
@@ -73,6 +88,7 @@ function AdminOverview() {
           汇率 {billing.usdToCny} ，倍率 {billing.profitRate}。改价请改后端 `settings/billing.py`。
         </p>
       </Card>
+      </>}
     </div>
   )
 }

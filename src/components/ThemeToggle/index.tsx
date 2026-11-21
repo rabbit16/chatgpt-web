@@ -49,9 +49,11 @@ function ThemeToggle() {
         <Button
           type="text"
           className={styles.btn}
-          icon={MODE_ICON[mode]}
+          icon={MODE_ICON[resolved]}
           aria-label={`切换外观，当前${THEME_LABEL[mode]}`}
-        />
+        >
+          外观
+        </Button>
       </Tooltip>
     </Dropdown>
   )

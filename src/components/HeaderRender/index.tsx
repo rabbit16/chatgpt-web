@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { notification } from 'antd'
 import { HeaderViewProps } from '@ant-design/pro-layout/es/components/Header'
@@ -32,8 +32,21 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   const hide = billingNoticeStore((state) => state.hide)
 
   // 滚动状态：滚过 12px 后顶栏收窄成悬浮胶囊，回到顶部再展开（纯视觉，不影响布局高度）
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(() => (window.scrollY || document.documentElement.scrollTop || 0) > 12)
   const progressRef = useRef<HTMLDivElement | null>(null)
+  const innerRef = useRef<HTMLDivElement | null>(null)
+
+  useLayoutEffect(() => {
+    const inner = innerRef.current
+    if (!inner) return
+
+    let frame = window.requestAnimationFrame(() => {
+      frame = window.requestAnimationFrame(() => {
+        inner.dataset.ready = 'true'
+      })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   useEffect(() => {
     let raf = 0
@@ -62,6 +75,46 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
     return () => window.clearTimeout(timer)
   }, [notice, hide])
 
+  /**
+   * 收缩目标宽度测量（2026-11-20 站长）
+   * ------------------------------------------------------------
+   * 站长：「导航栏滚动后整个从两边向里面缩，缩到正好容下导航栏内的信息，
+   * 左右那个白框也要一起缩。」（之前的「只留当前页胶囊」方案被否了。）
+   *
+   * fit-content 这类关键字不能做过渡动画，所以这里用 JS 量出
+   * 商标 + 菜单 + 右侧按钮的实际总宽度，写进 CSS 变量 --nav-compact；
+   * 滚动后 .header__inner 的 max-width 从满宽过渡到它，白框自然从两边向里缩。
+   * 菜单项数量（登录/访客）和滚动态字号都影响宽度，所以在这些时机重量。
+   */
+  useLayoutEffect(() => {
+    if (props.isMobile) return
+    const inner = innerRef.current
+    if (!inner) return
+
+    const measure = () => {
+      const kids = Array.from(inner.children) as HTMLElement[]
+      if (!kids.length) return
+      const GAP = 4 // .header__inner 的 flex gap
+      const ACTIVES_MARGIN = 16 // 右侧按钮区的 margin-left
+      const PADDING_X = 28 // 收缩态 padding 0 14px
+      /* 用 scrollWidth 而不是 offsetWidth：收缩动画进行中菜单会被挤压，
+         offsetWidth 会越量越窄（2026-11-20 实测把「使用记录」「公告留言」挤没了），
+         scrollWidth 始终是内容真实宽度，量几次都一样 */
+      const content = kids.reduce((sum, el) => sum + Math.max(el.offsetWidth, el.scrollWidth), 0)
+      const total = Math.ceil(content + GAP * (kids.length - 1) + ACTIVES_MARGIN + PADDING_X + 4)
+      inner.style.setProperty('--nav-compact', `${total}px`)
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(inner)
+    window.addEventListener('resize', measure)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [props.isMobile, token, scrolled])
+
   const formatMoney = (value: number) => {
     if (value >= 1) return `¥${value.toFixed(2)}`
     if (value >= 0.01) return `¥${value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}`
@@ -70,7 +123,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
   }
 
   return (
-    <div className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
+    <div className={`${styles.header} ${scrolled ? styles.scrolled : ''} ${scrolled ? 'site-header-scrolled' : ''}`}>
       <div ref={progressRef} className={styles.progress} aria-hidden />
       {notice
         ? createPortal(
@@ -83,7 +136,7 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
             document.body
           )
         : null}
-      <div className={styles.header__inner}>
+      <div ref={innerRef} className={styles.header__inner}>
       {props.isMobile && props.hasSiderMenu && (
         <MenuUnfoldOutlined
           className={styles.header__menuIcon}
@@ -108,17 +161,13 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               justifyContent: 'center'
             }}
           >
-            {isAdmin(user_info) ? (
-              <Button type="link" onClick={() => navigate('/admin')}>
-                后台
-              </Button>
-            ) : null}
             <Dropdown
               arrow
               placement="bottomRight"
               trigger={['click']}
               menu={{
                 items: [
+                  ...(isAdmin(user_info) ? [{ key: 'admin', label: '后台管理', onClick: () => navigate('/admin') }] : []),
                   {
                     key: 'profile',
                     icon: <UserOutlined />,
@@ -168,18 +217,9 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
                 ]
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <div className={styles.header__nameLogo}>
-                  {user_info?.data?.bodyMessage?.userName.slice(0,1)
-}
-                </div>
-              </div>
+              <button type="button" className={styles.header__nameLogo} aria-label="打开用户菜单">
+                {user_info?.data?.bodyMessage?.userName?.slice(0, 1) || '我'}
+              </button>
             </Dropdown>
           </div>
         ) : (
@@ -209,10 +249,10 @@ function HeaderRender(props: HeaderViewProps, defaultDom: React.ReactNode) {
               return <MenuList mode="inline" />
             }}
           >
-            <div className={styles.header__actives_menu} title="打开菜单" aria-label="打开菜单">
+            <Button type="text" className={styles.header__actives_menu} title="打开菜单" aria-label="打开菜单">
               <AppstoreOutlined />
               <span>菜单</span>
-            </div>
+            </Button>
           </Dropdown>
         )}
       </div>

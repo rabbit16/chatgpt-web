@@ -16,9 +16,11 @@
 		align-items: center;
 		gap: 4px;
 		position: relative;
-		transition: max-width 320ms var(--ease), padding 320ms var(--ease),
-			border-radius 320ms var(--ease), box-shadow 320ms var(--ease),
-			background-color 320ms var(--ease), transform 320ms var(--ease);
+		&[data-ready='true'] {
+			transition: max-width 320ms var(--ease), padding 320ms var(--ease),
+				border-radius 320ms var(--ease), box-shadow 320ms var(--ease),
+				background-color 320ms var(--ease), transform 320ms var(--ease);
+		}
 	}
 
 	/* 滚动进度：2px 品牌线，跟手 */
@@ -52,6 +54,13 @@
 		font-weight: 600;
 		color: var(--brand);
 		background-color: var(--brand-soft);
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		user-select: none;
+
+		&:hover { background-color: var(--brand-soft-strong, var(--surface-hover)); }
+		&:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 	}
 	/* 品牌区：解决顶部空白 */
 	&__brand{
@@ -198,25 +207,24 @@
 
 /* 滚动后：收窄、浮起、半透明毛玻璃 */
 .scrolled {
-	background: color-mix(in srgb, var(--canvas) 82%, transparent);
+	background: transparent;
 	border-bottom-color: transparent;
 
 	.header__inner{
 		/**
-		 * 2026-10-24 修「滚动后公告留言压到主题图标」
+		 * 滚动后白框从两边向里缩（2026-11-20 站长）
 		 * ------------------------------------------------------------
-		 * 实测（1440×900，滚到 1400）：收窄到 -160px → 内层 1040px，
-		 * 减左右 padding 14×2 只剩 1012px；而这一行真正需要
-		 * 品牌 93.6 + 导航 838.7 + 右侧操作区 136 + 两处 4px 间距 = 1076.2px，
-		 * 缺口 64.2px。导航内容是 nowrap，不会自己变窄，于是文字直接溢出容器，
-		 * 「公告留言」就压在主题图标上（实测两框重叠 36×34 = 1224 px²）。
-		 * 所以不是半透明导致的，也不是层级问题：是收窄幅度超过了导航的固定宽度。
-		 * 修法只改这一个数：-160px → -60px（内层 1140px，可用 1112px，余量约 36px）。
-		 * 圆角、margin-top、毛玻璃、阴影、高度过渡全部不动，胶囊形态保持不变。
+		 * 站长：「整个从两边向里面缩，缩到正好容下导航栏内的信息，
+		 * 左右那个白框也要一起缩。」
+		 * --nav-compact 由 HeaderRender 用 JS 量出（商标+菜单+按钮的实际宽度），
+		 * max-width 从 --content-max 过渡到它，margin:auto 居中，
+		 * 两边等量内收。变量还没量好时退回原来的 -60px 收窄，不会塌。
+		 * 高度、字号、图标同时收小（上一版「整体应该缩小」的要求保留）。
 		 */
-		max-width: calc(var(--content-max) - 60px);
+		max-width: var(--nav-compact, calc(var(--content-max) - 60px));
 		margin-top: 6px;
-		height: calc(var(--header-h) - 8px);
+		/* 56 → 44：整栏变矮，不只是变成胶囊 */
+		height: calc(var(--header-h) - 12px);
 		padding: 0 14px;
 		border-radius: var(--radius-pill);
 		background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -228,9 +236,36 @@
 		opacity: 1;
 	}
 
+	/* 品牌区：logo 图 28→22、站名 18→15，随栏一起缩小 */
 	.header__brand :global(h1){
-		font-size: 16px;
+		font-size: 15px;
 		letter-spacing: -0.01em;
+	}
+
+	.header__brand :global(img){
+		width: 22px;
+		height: 22px;
+	}
+
+	/* 头像 32→28 */
+	.header__nameLogo{
+		width: 28px;
+		height: 28px;
+		line-height: 28px;
+		font-size: 13px;
+	}
+
+	/* 右侧按钮（登录/注册、主题、菜单）统一收到 30px 高 */
+	.header__actives :global(.ant-btn){
+		height: 30px;
+		padding-inline: 12px;
+		font-size: 13px;
+	}
+
+	.header__actives_menu{
+		min-height: 30px;
+		min-width: 56px;
+		font-size: 14px;
 	}
 }
 

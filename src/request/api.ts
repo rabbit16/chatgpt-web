@@ -10,6 +10,7 @@ import {
   Login
 } from '@/types'
 import request from '.'
+import { demoEnabled } from '@/demo/runtime'
 import userStore from '@/store/user/slice'
 import {
   buildLlmRequestBody,
@@ -21,7 +22,7 @@ import {
 
 const llmBaseUrl = (import.meta.env.VITE_LLM_BASE_URL || '/llm').replace(/\/$/, '')
 
-export function userBillInfo(params:{userId:string}){
+export function userBillInfo(params:{userId:number | string}){
   return request.post('/user/get_user_info',params)
 }
 
@@ -49,7 +50,7 @@ export function getModelList(){
   })
 }
 
-export function getAliPayPage(params:{userId:string,money:number,function_code:string}){
+export function getAliPayPage(params:{userId:number | string,money:number,function_code:string}){
   return request.post('/user/pay_rabbit',params)
 }
 
@@ -190,7 +191,7 @@ export function postStreamChatCompletions(params: {
   })
 }
 
-export function addUserMessages(params:{userId:string}){
+export function addUserMessages(params:{userId:number | string}){
   return request.post('/user/createChat',params)
 }
 
@@ -599,6 +600,7 @@ function isModelRequestPath(path: string) {
 }
 
 function getLlmApiKey(action = '请求 LLM 接口', forModel = false) {
+  if (demoEnabled) return 'sk-local-preview'
   const state = userStore.getState()
   const stored = (state.llm_api_key || '').trim()
   if (stored.startsWith('sk-')) return stored
@@ -1042,6 +1044,10 @@ export type UserModelRate = {
   output: number
   cache_read: number
   cache_write: number
+  original_input?: number | null
+  original_output?: number | null
+  original_cache_read?: number | null
+  original_cache_write?: number | null
   /** 该档公布了长上下文差价时才有；价格已含利润与用户倍率 */
   long_context?: LongContextRate | null
 }

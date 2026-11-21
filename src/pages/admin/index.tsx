@@ -1,11 +1,15 @@
-import { DefaultFooter, ProLayout } from '@ant-design/pro-components'
+import { ProLayout } from '@ant-design/pro-components'
+import SiteFooter from '@/components/SiteFooter'
 import styles from './index.module.less'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Dropdown, Spin } from 'antd'
 import { LogoutOutlined } from '@ant-design/icons'
-import React, { useEffect } from 'react'
+import React from 'react'
 import menuList from '@/routers/menu_list'
 import { chatStore, userStore } from '@/store'
+import Brand from '@/components/Brand'
+import ThemeToggle from '@/components/ThemeToggle'
+import { useNarrow } from '@/hooks/useNarrow'
 import { isAdmin } from '@/utils/isAdmin'
 import AdminOverview from './overview'
 import AdminUsers from './users'
@@ -47,22 +51,47 @@ function AdminPage() {
   const { token, user_info, logout } = userStore()
   const { clearChats } = chatStore()
   const pathname = location.pathname || '/admin'
-
-  useEffect(() => {
-    if (!token || !isAdmin(user_info)) {
-      navigate('/')
-    }
-  }, [token, user_info, navigate])
+  const narrow = useNarrow()
 
   if (!token || !isAdmin(user_info)) {
     return null
   }
 
+  if (narrow)
+    return (
+      <div className={styles.adminMobile}>
+        <header>
+          <Brand />
+          <ThemeToggle />
+          <Link to="/">返回前台</Link>
+        </header>
+        <details key={pathname}>
+          <summary>
+            {menuList.admin.routes.find((item) => item.path === pathname)?.name || '总览'} ·
+            管理模块
+          </summary>
+          <nav>
+            {menuList.admin.routes.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                aria-current={pathname === item.path ? 'page' : undefined}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </details>
+        <main key={pathname}>{renderAdminContent(pathname)}</main>
+        <SiteFooter />
+      </div>
+    )
+
   return (
     <div className={styles.admin}>
       <ProLayout
         title="后台管理"
-        logo={import.meta.env.VITE_APP_LOGO}
+        logo={<Brand />}
         layout="mix"
         splitMenus={false}
         contentWidth="Fluid"
@@ -75,7 +104,7 @@ function AdminPage() {
           minHeight: 'calc(100vh - 56px)',
           overflow: 'auto'
         }}
-        theme="light"
+        actionsRender={() => [<ThemeToggle key="theme" />]}
         siderMenuType="group"
         menu={{
           locale: false,
@@ -96,7 +125,6 @@ function AdminPage() {
           )
         }}
         avatarProps={{
-          src: 'https://u1.dl0.cn/icon/1682426702646avatarf3db669b024fad66-1930929abe2847093.png',
           size: 'small',
           title: '管理员',
           render: (_props: any, dom: React.ReactNode) => {
@@ -116,7 +144,6 @@ function AdminPage() {
                       onClick: () => {
                         logout()
                         clearChats()
-                        window.localStorage.clear()
                         navigate('/login')
                       }
                     }
@@ -141,7 +168,7 @@ function AdminPage() {
           theme: 'light'
         }}
         breadcrumbRender={() => []}
-        footerRender={() => <DefaultFooter copyright="GPT Admin" />}
+        footerRender={() => <SiteFooter />}
       >
         <div key={pathname} className={styles.content}>
           <React.Suspense

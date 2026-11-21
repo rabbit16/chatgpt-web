@@ -10,7 +10,7 @@
 
 .wrap {
   width: 100%;
-  max-width: 1180px;
+  max-width: var(--content-max); /* 与首页同一内容宽（2026-11-20 全站留白统一） */
   margin: 0 auto;
   padding: 24px 16px 48px;
   display: flex;
@@ -140,6 +140,14 @@
     white-space: pre-wrap;
     word-break: break-word;
   }
+}
+
+.ownerMessage {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
 
 .reply {

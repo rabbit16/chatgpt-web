@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CopyOutlined } from '@ant-design/icons'
-import { Alert, Button, Input, Popconfirm, Tag, message } from 'antd'
+import { Alert, Button, Input, Popconfirm, message } from 'antd'
 import { userStore } from '@/store'
 import { copyToClipboard } from '@/utils'
 import {
@@ -79,6 +79,8 @@ export default function ApiKeyPanel({
   const [allowPhone, setAllowPhone] = useState<boolean>(allow_phone_key !== false)
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [creating, setCreating] = useState(false)
 
   const applyList = useCallback(
     (payload: any) => {
@@ -95,11 +97,14 @@ export default function ApiKeyPanel({
   const load = useCallback(async () => {
     if (!token) return
     setLoading(true)
+    setLoadError('')
     try {
       const res: any = await listUserApiKeys()
       const payload = res?.data || {}
-      if (String(payload.code) !== '0') return
+      if (String(payload.code) !== '0') throw new Error('暂时无法读取密钥列表')
       applyList(payload)
+    } catch {
+      setLoadError('暂时无法读取密钥列表')
     } finally {
       setLoading(false)
     }
@@ -110,12 +115,17 @@ export default function ApiKeyPanel({
   }, [load])
 
   async function onCreate() {
-    setLoading(true)
+    if (creating) return
+    setCreating(true)
     try {
       const res: any = await createUserApiKey(name.trim())
       const payload = res?.data || {}
       const created = payload.key as UserApiKeyItem | undefined
-      if (String(payload.code) !== '0' || !created?.api_key) return
+      if (String(payload.code) !== '0' || !created?.api_key) {
+        message.warning('暂未确认密钥是否创建，请先核对列表')
+        await load()
+        return
+      }
       rememberCreatedKey(userId, created.id, created.api_key)
       setName('')
       setAllowPhone(false)
@@ -123,8 +133,11 @@ export default function ApiKeyPanel({
       onKeyChange(created.api_key)
       message.success('密钥已创建。点密钥旁边的「复制」即可，下次打开本页还能再复制')
       await load()
+    } catch {
+      message.warning('暂未确认密钥是否创建，请先核对列表')
+      await load()
     } finally {
-      setLoading(false)
+      setCreating(false)
     }
   }
 
@@ -219,6 +232,7 @@ export default function ApiKeyPanel({
               description="请创建一把 sk- 密钥再调用模型。价目、用量、模型列表和账户功能仍可正常使用。已经生成过密钥的账号，删掉全部密钥后，手机号也不会重新用来请求模型。"
             />
           )}
+          {loadError && <Alert showIcon type="error" message={loadError} action={<Button onClick={() => void load()}>重试</Button>} />}
           <div className={styles.phoneBox}>
             <Input
               size="large"
@@ -227,74 +241,94 @@ export default function ApiKeyPanel({
               placeholder="备注，例如：家里的电脑"
               onChange={(event) => setName(event.target.value)}
             />
-            <Button type="primary" size="large" loading={loading} onClick={() => void onCreate()}>
+            <Button type="primary" size="large" loading={creating} disabled={loading} onClick={() => void onCreate()}>
               生成密钥
             </Button>
           </div>
           {phoneUsable && phone ? (
             <div className={llm_api_key === phone ? styles.keyRowActive : styles.keyRow}>
-              <div>
-                <Tag color="gold">旧密钥</Tag>
-                <strong>手机号</strong>
+              <div className={styles.keyInfo}>
+                <div className={styles.keyTitle}>
+                  <span className={styles.keyTagWarn}>旧密钥</span>
+                  <strong>手机号</strong>
+                </div>
                 {/* 页面只显示打码值；完整手机号只在「复制」按钮里，点了才进剪贴板 */}
                 <div className={styles.keyLine}>
                   <code>{maskSecret(phone)}</code>
                   <CopyButton text={phone} />
                 </div>
               </div>
-              <Button onClick={usePhone}>用这一个</Button>
+              <div className={styles.keyActions}>
+                <Button size="small" onClick={usePhone}>用这一个</Button>
+              </div>
             </div>
           ) : null}
-          <div className={styles.keyList}>
-            {keys.length === 0 ? <p className={styles.hint}>还没有 sk- 密钥。</p> : null}
-            {keys.map((item) => {
-              const secret = keySecret(item)
-              const active = Boolean(item.is_active)
-              const current = Boolean(secret && llm_api_key === secret)
-              return (
-                <div key={item.id} className={current ? styles.keyRowActive : styles.keyRow}>
-                  <div>
-                    <Tag color={active ? 'green' : 'default'}>{active ? '启用' : '已禁用'}</Tag>
-                    <strong>{item.name || '未命名'}</strong>
-                    <em>{item.created_at}</em>
-                    <div className={styles.keyLine}>
-                      {/* 安全修复（2026-10-24）：原来这里渲染完整密钥 secret，
-                          截图/录屏就能拿到全串。现在页面上只出现打码值：
-                          优先用后端给的 key_mask，没有就前端打码。
-                          完整密钥仍在右边「复制」按钮的闭包里，点了才复制。 */}
-                      <code>{item.key_mask || maskSecret(secret)}</code>
-                      <CopyButton text={secret} />
-                    </div>
-                  </div>
-                  <div className={styles.keyActions}>
-                    {active ? (
-                      <Button disabled={!secret} onClick={() => selectApiKey(item)}>
-                        用这一个
-                      </Button>
-                    ) : (
-                      <Button type="primary" onClick={() => void onToggle(item)}>
-                        启用
-                      </Button>
-                    )}
-                    {active ? (
-                      <Button danger onClick={() => void onToggle(item)}>
-                        禁用
-                      </Button>
-                    ) : null}
-                    <Popconfirm
-                      title={`删除 ${item.name || '这把密钥'}？`}
-                      description="删除后无法恢复，正在使用它的软件会立刻无法调用。"
-                      okText="删除"
-                      cancelText="取消"
-                      onConfirm={() => void onDelete(item)}
-                    >
-                      <Button danger>删除</Button>
-                    </Popconfirm>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {keys.length === 0 ? <p className={styles.hint}>还没有 sk- 密钥。</p> : (
+            <div className={styles.keyTableScroll} tabIndex={0} role="region" aria-label="密钥管理表格，可横向滚动">
+              <table className={styles.keyTable}>
+                <thead>
+                  <tr>
+                    <th scope="col">名称</th>
+                    <th scope="col">状态</th>
+                    <th scope="col">密钥</th>
+                    <th scope="col">创建时间</th>
+                    <th scope="col">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {keys.map((item) => {
+                    const secret = keySecret(item)
+                    const active = Boolean(item.is_active)
+                    const current = Boolean(secret && llm_api_key === secret)
+                    return (
+                      <tr key={item.id} className={current ? styles.keyTableCurrent : undefined}>
+                        <td><strong>{item.name || '未命名'}</strong></td>
+                        <td>
+                          <span className={active ? styles.keyStatusOn : styles.keyStatusOff}>
+                            <i aria-hidden="true" />{active ? '启用中' : '已禁用'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className={styles.keyTableSecret}>
+                            <code>{item.key_mask || maskSecret(secret)}</code>
+                            <CopyButton text={secret} />
+                          </div>
+                        </td>
+                        <td className={styles.keyTableDate}>{item.created_at}</td>
+                        <td>
+                          <div className={styles.keyTableActions}>
+                            {active ? (
+                              <Button size="small" disabled={!secret || current} onClick={() => selectApiKey(item)}>
+                                {current ? '使用中' : '用这一个'}
+                              </Button>
+                            ) : (
+                              <Button size="small" type="primary" onClick={() => void onToggle(item)}>
+                                启用
+                              </Button>
+                            )}
+                            {active ? (
+                              <Button size="small" onClick={() => void onToggle(item)}>
+                                禁用
+                              </Button>
+                            ) : <span aria-hidden="true" />}
+                            <Popconfirm
+                              title={`删除 ${item.name || '这把密钥'}？`}
+                              description="删除后无法恢复，正在使用它的软件会立刻无法调用。"
+                              okText="删除"
+                              cancelText="取消"
+                              onConfirm={() => void onDelete(item)}
+                            >
+                              <Button size="small" danger>删除</Button>
+                            </Popconfirm>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </section>

@@ -1,13 +1,11 @@
 .goodsPay {
-	.describe{
-		white-space: break-spaces;
-	}
 	&_container {
 		width: 100%;
-		max-width: 1000px;
+		/* 与首页同一内容宽（2026-11-20 站长反馈钱包左右留白过多） */
+		max-width: var(--content-max);
 		margin: 0 auto;
 		overflow: auto;
-		padding: 20px 0;
+		padding: 0;
 
 		&::-webkit-scrollbar {
 			display: none;
@@ -24,8 +22,8 @@
 	}
 
 	&_card {
-		background-color: var(--surface-sunken);
-		padding: 12px 20px;
+		background: var(--surface);
+		padding: 18px 20px;
 		border-radius: var(--radius-md);
 
 		h4 {
@@ -457,4 +455,31 @@
   text-align: center;
   color: var(--text-5);
   font-size: 13px;
+}
+
+.goodsPay_card {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  transition: border-color var(--dur) var(--ease);
+
+  &:hover { border-color: var(--brand-soft); }
+}
+
+.pricePreviewItem {
+  border-color: var(--border-soft) !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface-muted) !important;
+}
+
+.billCards {
+  border-color: var(--border-soft);
+  border-radius: var(--radius-lg);
+}
+
+.billCard {
+  min-height: 76px;
+  transition: background-color var(--dur) var(--ease);
+
+  &:hover { background: var(--surface-muted); }
 }

@@ -1,3 +1,4 @@
+import { demoEnabled } from '@/demo/runtime'
 import { notification } from 'antd'
 import { userStore } from '@/store'
 export type ResponseData<T> = {
@@ -16,8 +17,7 @@ function isResponseData<T>(obj: any): obj is ResponseData<T> {
 const getBaseUrl = (url: string) => {
   const baseURL = import.meta.env.VITE_APP_REQUEST_HOST
   if (/^http(s?):\/\//i.test(url)) return url
-  return baseURL + url
-  return url
+  return (baseURL || '') + url
 }
 
 // 对Headers 进行一个变形
@@ -79,7 +79,7 @@ const interceptorsResponse = async <T>(options: any, response: any): Promise<Res
   if (response.status === 401 || data.code || (bodyCode != null && String(bodyCode) !== '0')) {
 
     if (bodyCode != null && String(bodyCode) !== '0') {
-      if(userStore.getState().token||String(bodyCode)!=='3004'){
+      if ((!demoEnabled || response.status !== 501) && (userStore.getState().token || String(bodyCode) !== '3004')) {
         notification.error({
           message: '错误',
           description: (body as any)?.codeMsg ? (body as any).codeMsg : '网络请求错误',
@@ -167,7 +167,7 @@ const request = <T>(
           },
           res
         )
-        if (url.includes('verify')) {
+        if (/\/user\/verify(?:\?|$)/.test(url) && response.data && typeof response.data === 'object') {
           response.data.token = token.replace('token=', '')
         }
 

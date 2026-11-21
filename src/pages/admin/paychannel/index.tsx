@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Spin, Tag, message } from 'antd'
+import { Alert, Button, Modal, Spin, Tag, message } from 'antd'
 import {
   CheckCircleFilled,
   ExclamationCircleFilled,
@@ -216,7 +216,13 @@ function AdminPayChannel() {
           type="primary"
           loading={saving}
           disabled={loading || draft === channel}
-          onClick={() => void save()}
+          onClick={() => Modal.confirm({
+            title: '确认切换支付通道？',
+            content: `从「${nameOf(channel)}」切换到「${nameOf(draft)}」。新下单会使用这个通道。`,
+            okText: '确认切换',
+            cancelText: '取消',
+            onOk: save
+          })}
         >
           保存并全站生效
         </Button>

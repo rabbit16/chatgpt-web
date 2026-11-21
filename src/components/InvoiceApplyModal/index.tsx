@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Form, Input, Modal, Radio, message } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
 import IconBadge from '@/components/IconBadge'
@@ -63,6 +63,7 @@ function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitt
   const [form] = Form.useForm()
   const [titleType, setTitleType] = useState<InvoiceTitleType>('company')
   const [submitting, setSubmitting] = useState(false)
+  const submittingRef = useRef(false)
 
   /**
    * 实际要开票的订单列表（单笔和合并统一成数组处理，下面的逻辑只写一遍）
@@ -91,7 +92,7 @@ function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitt
   }, [open, defaultEmail, form])
 
   const submit = async () => {
-    if (!targets.length) return
+    if (!targets.length || submittingRef.current) return
     // 没登录就别提交：后端中间件对「无 token 且无 referer」的请求会回一个
     // {"code":0} 的空壳，前端会误报「提交成功」，实际什么都没写进库。
     if (!token) {
@@ -100,6 +101,7 @@ function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitt
       return
     }
     const billIds = targets.map((item) => String(item.bill_id))
+    submittingRef.current = true
     try {
       const values = await form.validateFields()
       setSubmitting(true)
@@ -162,6 +164,7 @@ function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitt
       if (error?.errorFields) return
       message.error('提交失败：开票服务暂时不可用，请稍后再试')
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }
@@ -269,7 +272,7 @@ function InvoiceApplyModal({ open, bill, bills, defaultEmail, onClose, onSubmitt
       </Form>
 
       <p className={styles.footHint}>
-        审核通过后 1–3 个工作日开出；已开票的订单在「开票中心」里能看到发票号。
+        请核对订单、抬头和接收邮箱。提交后可在开票中心查看处理进度。
       </p>
     </Modal>
   )

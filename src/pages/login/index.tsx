@@ -1,3 +1,4 @@
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
 import React, { ReactNode } from 'react'
 import { Form } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
@@ -6,6 +7,8 @@ import styles from './index.module.less'
 import { LoginCard } from '@/components/LoginModal'
 import Brand from '@/components/Brand'
 import IconBadge from '@/components/IconBadge'
+import SiteFooter from '@/components/SiteFooter'
+import { demoEnabled } from '@/demo/runtime'
 
 type Props = {
   /** 左侧品牌面板标题 */
@@ -18,7 +21,12 @@ type Props = {
  * 借用模板站的"三条事实"写法：每条 = 图标方块 + 一句主张 + 一句可核对说明。
  * 不写形容词，只写用户能验证的东西。
  */
-const points: { icon: ReactNode; tone: 'brand' | 'mint' | 'violet'; title: string; desc: string }[] = [
+const points: {
+  icon: ReactNode
+  tone: 'brand' | 'mint' | 'violet'
+  title: string
+  desc: string
+}[] = [
   {
     icon: <ApiOutlined />,
     tone: 'brand',
@@ -52,59 +60,72 @@ function LoginPage({
 }: Props) {
   const [loginForm] = Form.useForm()
   const navigate = useNavigate()
+  const hasReturnTarget = new URLSearchParams(window.location.search).has('returnTo')
 
   return (
-    <div className={styles.login}>
-      <aside className={styles.login__brand}>
-        <div className={styles.login__brandInner}>
-          <span className={styles.login__glow} aria-hidden="true" />
-          {/* 水印必须是自家标志：原来引的 /logo.svg 是 OpenAI 官方花朵图案，
-              摆在登录页等于自证「套壳中转」，与本站「正规中转、密钥自持」的卖点相反。 */}
-          <img className={styles.login__watermark} src="/logo-rabbit.svg" alt="" aria-hidden="true" />
-          <div className={styles.login__logo}>
-            <Brand />
-            <Link to="/" className={styles.login__back}>
-              返回首页
-            </Link>
+    <div className={styles.page}>
+      <div className={styles.login}>
+        <aside className={styles.login__brand}>
+          <div className={styles.login__brandInner}>
+            <span className={styles.login__glow} aria-hidden="true" />
+            <img
+              className={styles.login__watermark}
+              src={rabbitLogo}
+              alt=""
+              aria-hidden="true"
+            />
+            <div className={styles.login__logo}>
+              <Brand />
+              <Link to="/" className={styles.login__back}>
+                返回首页
+              </Link>
+            </div>
+
+            <div className={styles.login__pitch}>
+              <span className={styles.login__eyebrow}>统一 AI 接入，随时投入使用</span>
+              <h2 className={styles.login__title}>{title}</h2>
+              <p className={styles.login__desc}>{description}</p>
+              <ul className={styles.login__points}>
+                {points.map((item) => (
+                  <li key={item.title}>
+                    <IconBadge icon={item.icon} tone={item.tone} size="md" />
+                    <span className={styles.login__pointText}>
+                      <strong>{item.title}</strong>
+                      <em>{item.desc}</em>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className={styles.login__foot}>
+              © {new Date().getFullYear()} rabbitJ · 大模型 API 中转服务
+            </div>
           </div>
+        </aside>
 
-          <div className={styles.login__pitch}>
-            <span className={styles.login__eyebrow}>统一 AI 接入，随时投入使用</span>
-            <h2 className={styles.login__title}>{title}</h2>
-            <p className={styles.login__desc}>{description}</p>
-            <ul className={styles.login__points}>
-              {points.map((item) => (
-                <li key={item.title}>
-                  <IconBadge icon={item.icon} tone={item.tone} size="md" />
-                  <span className={styles.login__pointText}>
-                    <strong>{item.title}</strong>
-                    <em>{item.desc}</em>
-                  </span>
-                </li>
-              ))}
-            </ul>
+        <main className={styles.login__panel}>
+          <div className={styles.login__card}>
+            <LoginCard
+              form={loginForm}
+              title="欢迎回来"
+              subTitle={
+                demoEnabled
+                  ? '演示用户名 rabbitj-demo，密码可填写任意符合格式的样例。'
+                  : '登录后继续对话、查看用量与余额'
+              }
+              onSuccess={() => {
+                loginForm.resetFields()
+                // 站长 2026-10-24：登录后直接去充值页，而且要落在「我的钱包」页签。
+                // 只跳 /price 会停在「模型价格」，用户还得再点一下页签才到充钱那一屏，
+                // 一步变两步（2026-10-24 流程检验第 5 条）。
+                if (!hasReturnTarget) navigate('/price?tab=wallet')
+              }}
+            />
           </div>
-
-          <div className={styles.login__foot}>© {new Date().getFullYear()} rabbitJ · 大模型 API 中转服务</div>
-        </div>
-      </aside>
-
-      <main className={styles.login__panel}>
-        <div className={styles.login__card}>
-          <LoginCard
-            form={loginForm}
-            title="欢迎回来"
-            subTitle="登录后继续对话、查看用量与余额"
-            onSuccess={() => {
-              loginForm.resetFields()
-              // 站长 2026-10-24：登录后直接去充值页，而且要落在「我的钱包」页签。
-              // 只跳 /price 会停在「模型价格」，用户还得再点一下页签才到充钱那一屏，
-              // 一步变两步（2026-10-24 流程检验第 5 条）。
-              navigate('/price?tab=wallet')
-            }}
-          />
-        </div>
-      </main>
+        </main>
+      </div>
+      <SiteFooter />
     </div>
   )
 }

@@ -25,6 +25,9 @@ export interface UserInfo {
   userCode:string,
   userId:number,
   userName:string
+  role?: string
+  data?: { bodyMessage?: UserInfo }
+  current_amount?: number
 }
 
 export interface ResponseLoginData {

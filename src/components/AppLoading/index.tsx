@@ -1,5 +1,6 @@
 import React from 'react'
-import OpenAiLogo from '../OpenAiLogo'
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
+import rabbitLoading from '@/assets/brand/rabbitj-a2-loading.svg'
 import styles from './index.module.less'
 
 /**
@@ -14,7 +15,7 @@ function AppLoading() {
   return (
     <div className={styles.loading} role="status" aria-live="polite" aria-label="页面加载中">
       <div className={styles.loadingBrand}>
-        <OpenAiLogo rotate width="2em" height="2em" />
+        <picture><source media="(prefers-reduced-motion: reduce)" srcSet={rabbitLogo} /><img src={rabbitLoading} width={36} height={36} alt="" /></picture>
         <span className={styles.loadingText}>正在加载…</span>
       </div>
 
@@ -28,7 +29,7 @@ function AppLoading() {
         ))}
       </div>
 
-      <p className={styles.loadingHint}>首次打开会稍慢一点，之后是秒开</p>
+
     </div>
   )
 }

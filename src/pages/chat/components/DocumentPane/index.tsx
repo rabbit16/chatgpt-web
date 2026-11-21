@@ -9,8 +9,8 @@ import {
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import 'katex/dist/katex.min.css'
-import { Button, Dropdown, Empty, Input, Modal, Space, message } from 'antd'
-import { DownloadOutlined, EditOutlined, HighlightOutlined } from '@ant-design/icons'
+import { Button, Dropdown, Empty, Input, Modal, Space, Tooltip, message } from 'antd'
+import { DoubleRightOutlined, DownloadOutlined, EditOutlined, HighlightOutlined } from '@ant-design/icons'
 import {
   editorToMarkdown,
   htmlWithRenderedKatex,
@@ -43,6 +43,8 @@ type Props = {
   initialText?: string
   disabled?: boolean
   onContinue: (prompt: string) => void
+  /** 提供时在面板头部显示「收起文稿」按钮（2026-11-20：收起入口收进面板自己） */
+  onCollapse?: () => void
 }
 
 type StreamState = {
@@ -177,7 +179,7 @@ function indexFromPoint(instance: any, clientX: number, clientY: number) {
 }
 
 const DocumentPane = forwardRef<DocumentPaneHandle, Props>(function DocumentPane(
-  { chatId, initialText, disabled, onContinue },
+  { chatId, initialText, disabled, onContinue, onCollapse },
   ref
 ) {
   const quillRef = useRef<ReactQuill | null>(null)
@@ -222,7 +224,8 @@ const DocumentPane = forwardRef<DocumentPaneHandle, Props>(function DocumentPane
     }
     try {
       const bounds = instance.getBounds(Math.max(index, 0))
-      const container = instance.container as HTMLElement
+      const container = instance.root.parentElement
+      if (!container) return
       const paperRect = paper.getBoundingClientRect()
       const containerRect = container.getBoundingClientRect()
       setCaretPos({
@@ -545,6 +548,17 @@ const DocumentPane = forwardRef<DocumentPaneHandle, Props>(function DocumentPane
           >
             续写
           </Button>
+          {onCollapse ? (
+            <Tooltip title="收起文稿">
+              <Button
+                size="small"
+                type="text"
+                icon={<DoubleRightOutlined />}
+                onClick={onCollapse}
+                aria-label="收起文稿"
+              />
+            </Tooltip>
+          ) : null}
         </Space>
       </div>
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { configStore } from '@/store'
 import styles from './index.module.less'
+import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
 
 type Props = {
   /** ProLayout 传下来的值，优先用 store，空则回退这里 */
@@ -12,7 +13,7 @@ type Props = {
 }
 
 const DEFAULT_TITLE = 'rabbitJ'
-const DEFAULT_LOGO = '/logo-rabbit.svg'
+const DEFAULT_LOGO = rabbitLogo
 
 /**
  * 品牌区（T2）
@@ -26,7 +27,7 @@ function Brand({ title, logo, compact = false }: Props) {
 
   // 后台配置里如果还是旧的 ChatGPT 标识，就换成本站自己的兔子标
   const isLegacyBrand = (value?: string) => !value || /anygpt|chatgpt|logo\.svg/i.test(value)
-  const finalLogo = isLegacyBrand(storeLogo) ? DEFAULT_LOGO : storeLogo
+  const finalLogo = DEFAULT_LOGO
   const finalTitle = isLegacyBrand(storeTitle) ? DEFAULT_TITLE : (storeTitle as string)
 
   return (

@@ -95,6 +95,8 @@ function ProjectsPage() {
   const [localMode, setLocalMode] = useState(false)
   /** 「我的提交」单独降级：接口挂了只在该页签内提示，不影响整页 */
   const [mineLocal, setMineLocal] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const searchTerm = keyword.trim().toLowerCase()
   const [tab, setTab] = useState<TabKey>('all')
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -221,12 +223,13 @@ function ProjectsPage() {
    */
   const matchCategory = useCallback(
     (item: SoftwareRecord) => {
+      if (searchTerm && !`${item.name} ${item.summary || ''}`.toLowerCase().includes(searchTerm)) return false
       if (selectedCategory === 'all') return true
       const cid = Number(item.category_id)
       if (!Number.isFinite(cid)) return false
       return cid === Number(selectedCategory)
     },
-    [selectedCategory]
+    [selectedCategory, searchTerm]
   )
 
   /** 当前页签的原始集合 → 再叠加分类过滤（两层叠加就在这里） */
@@ -333,7 +336,7 @@ function ProjectsPage() {
       })
       if (res.ok) {
         message.success(
-          res.local ? '已提交，等待审核（本地暂存，后端接口接入后自动同步）' : '已提交，等待站长审核'
+          res.local ? '已暂存在此浏览器，服务端尚未确认受理' : '已提交，等待站长审核'
         )
         setOpen(false)
         setTab('mine')
@@ -542,6 +545,23 @@ function ProjectsPage() {
            * projects/index.module.less 的局部类里，由 CSS Modules 哈希隔离。
            * 两排之间用 .filterStack 的 gap 拉开 12px，让人一眼看出是「两层」而不是一排。
            */}
+          <header className={styles.head}>
+            <h1>软件商城</h1>
+            <p className={styles.lead}>
+              官方软件由站长直接上传、即传即上架；用户也能投稿自己的作品，
+              <strong>提交后进入后台审核，通过后才会出现在这里</strong>。
+              所有软件都标注来源与版本，下载前可以点进详情看更新说明。
+            </p>
+            <div className={styles.headActions}>
+              {tab !== 'mine' && <Input allowClear aria-label="搜索软件" placeholder="搜索软件名称或简介" value={keyword} onChange={(event) => setKeyword(event.target.value)} />}
+              <Button type="primary" icon={<CloudUploadOutlined />} onClick={openUpload}>
+                上传项目 / 发新版
+              </Button>
+              <Button icon={<ReloadOutlined />} onClick={() => void load()} loading={loading}>
+                刷新
+              </Button>
+            </div>
+          </header>
           <div className={styles.filterStack}>
             <div className={styles.sourceRail}>
               <PillTabs
@@ -612,25 +632,7 @@ function ProjectsPage() {
             </div>
           ) : null}
           </div>
-          <header className={styles.head}>
-            <p className={styles.kicker}>
-              <GithubOutlined /> 官方客户端与社区工具
-            </p>
-            <h1>软件商城</h1>
-            <p className={styles.lead}>
-              官方软件由站长直接上传、即传即上架；用户也能投稿自己的作品，
-              <strong>提交后进入后台审核，通过后才会出现在这里</strong>。
-              所有软件都标注来源与版本，下载前可以点进详情看更新说明。
-            </p>
-            <div className={styles.headActions}>
-              <Button type="primary" icon={<CloudUploadOutlined />} onClick={openUpload}>
-                上传项目 / 发新版
-              </Button>
-              <Button icon={<ReloadOutlined />} onClick={() => void load()} loading={loading}>
-                刷新
-              </Button>
-            </div>
-          </header>
+
 
           {hasInferredSource ? (
             <Alert
@@ -647,8 +649,8 @@ function ProjectsPage() {
               type="warning"
               showIcon
               className={styles.localHint}
-              message="本地模式：后端接口未接入"
-              description="当前展示的是这台浏览器暂存的数据，提交与审核只在本机生效。后端 /user/software/* 与 /user/admin/software/review/* 上线后会自动切换到真实数据。"
+              message="商城服务暂不可用"
+              description="商城服务暂不可用。这里展示本机暂存的记录，暂存内容需要在服务恢复后重新确认提交。"
             />
           ) : null}
 

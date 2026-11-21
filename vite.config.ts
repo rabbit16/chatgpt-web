@@ -51,9 +51,9 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      host: '0.0.0.0',
+      host: mode === 'rabbitj-demo' ? '127.0.0.1' : '0.0.0.0',
       hmr: true,
-      proxy: {
+      proxy: mode === 'rabbitj-demo' ? undefined : {
         '/llm': {
           target: env.VITE_LLM_PROXY_TARGET || 'https://your-llm-domain.example.com',
           changeOrigin: true,

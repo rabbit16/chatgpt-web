@@ -87,12 +87,15 @@ function AdminInvoices() {
     }
     setSaving(true)
     try {
-      await reviewAdminInvoice({
+      const response = await reviewAdminInvoice({
         id: reviewing.id,
         status: nextStatus,
         invoice_no: invoiceNo.trim() || undefined,
         reject_reason: rejectReason.trim() || undefined
       })
+      if (String(response?.data?.code ?? response?.code) !== '0') {
+        throw new Error(response?.data?.codeMsg || response?.message || '服务未确认审核结果')
+      }
       message.success(nextStatus === 'issued' ? '已标记为已开票' : '已驳回')
       setReviewing(null)
       void loadList(page)

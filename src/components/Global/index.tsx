@@ -1,3 +1,4 @@
+import { demoEnabled } from '@/demo/runtime'
 import { chatStore, configStore, paymentStore } from '@/store'
 import { configAsync } from '@/store/async'
 import { useEffect, useLayoutEffect } from 'react'
@@ -10,7 +11,6 @@ import React from 'react'
 import { getGPTListMessage, getSession } from '../../request/api'
 import { syncCredential } from '@/utils/llmCredential'
 import { normalizeChatList, sanitizeHtml } from '@/utils'
-import { useLocation, useNavigate } from 'react-router-dom'
 
 type Props = {
   children: React.ReactElement
@@ -27,8 +27,6 @@ function readUserId() {
 }
 
 function Global(props: Props) {
-  const navigate = useNavigate()
-  const location = useLocation()
   const models = configStore((state) => state.models)
   const config = configStore((state) => state.config)
   const configModal = configStore((state) => state.configModal)
@@ -245,17 +243,7 @@ function Global(props: Props) {
    */
   const handleLoggedIn = () => {
     message.success('登录成功，欢迎回来')
-    const onMoneyPage = /^\/(price|shop|invoice)/.test(location.pathname)
-    if (onMoneyPage) {
-      // 已经在充值动线上，不跳走；轻推一下余额入口
-      if (!location.search.includes('tab=wallet')) message.info('余额与充值在「我的钱包」页签')
-      return
-    }
-    // 站长 2026-10-24：登录后直接进充值页（/price），这是转化主路径。
-    // 唯一例外是对话页 /chat：用户正在聊天时弹窗登录，不该把人拽走。
-    if (location.pathname === '/chat') return
-    // 直接落到「我的钱包」页签，而不是停在模型价格页（省掉一次点击）
-    navigate('/price?tab=wallet')
+
   }
 
   useLayoutEffect(() => {
@@ -272,7 +260,7 @@ function Global(props: Props) {
         }}
         onSuccess={handleLoggedIn}
       />
-      <AnnouncementPopup />
+      {!demoEnabled && <AnnouncementPopup />}
       <ConfigModal
         open={configModal}
         onCancel={() => {

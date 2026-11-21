@@ -16,7 +16,7 @@
 
 .wrap {
   width: 100%;
-  max-width: 1440px;
+  max-width: var(--content-max); /* 与首页同一内容宽（2026-11-20 全站留白统一） */
   margin: 0 auto;
   padding: 24px 16px 48px;
   display: flex;
@@ -55,52 +55,41 @@
   border: 1px solid var(--border);
 }
 
+/* 2026-11-20 站长：四块大统计卡收成一条横幅，进来一眼看到下面的明细表 */
 .stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.stat {
-  padding: 16px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 28px;
+  padding: 10px 16px;
   border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
 
   label {
-    display: block;
-    margin-bottom: 8px;
     color: var(--text-4);
-    font-size: 13px;
+    font-size: 12px;
   }
 
   b {
-    font-size: 24px;
+    font-size: 15px;
     color: var(--text-1);
-    /* 四个数字纵向并排，位数对齐才好扫读 */
+    /* 数字位数对齐才好扫读 */
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
 }
 
-/* 「总消费」卡的强调方式（2026-10-24 视觉验收 P7 + CPO 取舍 1）
-   两层修正：
-   1) 原来是绿色（--success），绿色在 token 里是「成功/辅助」语义，用在全页最
-      强调的位置会被误读成状态，已去掉；
-   2) CPO 决定「品牌蓝只给余额/可开票额度，消费类用黑」，所以这里也不用蓝，
-      改用「浅蓝底 + 深色数字 + 品牌色标签」把这块与普通卡区分开。 */
+/* 「总消费」仍用品牌色标签做弱强调，不再整卡渐变 */
 .statPrimary {
-  border-color: var(--brand-soft);
-  background: linear-gradient(180deg, var(--brand-soft) 0%, var(--surface) 100%);
-
   label {
     color: var(--brand);
-  }
-
-  b {
-    color: var(--text-1);
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: 'tnum';
   }
 }
 
@@ -147,20 +136,88 @@
   font-weight: 600;
 }
 
-@media (max-width: 900px) {
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.recordActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-@media (max-width: 700px) {
-  .pageHead {
-    flex-direction: column;
+.recordsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  h2 { margin: 0; font-size: 15px; }
+}
+
+.fieldPicker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  width: min(280px, calc(100vw - 64px));
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  p {
+    grid-column: 1 / -1;
+    color: var(--text-4);
+    font-size: 12px;
   }
 
-  .stats {
-    grid-template-columns: 1fr;
+  :global(.ant-checkbox-wrapper) {
+    min-height: 32px;
+    margin-inline-start: 0;
+    align-items: center;
   }
+
+  > :global(.ant-btn) { grid-column: 1 / -1; }
+}
+
+.mobileRecords { min-height: 100px; }
+
+.record {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+
+  dl { display: flex; flex-wrap: wrap; gap: 10px 8px; }
+  dt { color: var(--text-4); font-size: 12px; }
+  dd { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: 13px; font-variant-numeric: tabular-nums; }
+  :global(.ant-tag) { margin: 0; }
+  :global(.ant-btn) { max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; padding-inline: 0; }
+}
+
+.fullField {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+}
+
+.compactField {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobilePagination { display: flex; justify-content: center; margin-top: 16px; }
+
+@media (max-width: 700px) {
+  .pageHead { align-items: center; }
+  .filters { padding: 12px; }
+  .filters > :global(.ant-input-affix-wrapper),
+  .filters > :global(.ant-select) { width: auto !important; flex: 1 1 120px; min-width: 0; }
+  .filters > :global(.ant-picker) { width: 100%; }
+  .stats { gap: 8px 12px; padding: 12px; }
+  .stat { flex: 1 1 44%; flex-direction: column; gap: 2px; }
+  .card { padding: 12px; }
 }
 
 .pageHeadNote {
@@ -170,123 +227,19 @@
 	color: var(--text-4);
 }
 
-/* ---------- 近 14 天 Token 趋势 ---------- */
-.trend {
-	padding: 14px 18px 10px;
-	background: var(--surface);
-	border: 1px solid var(--border-soft);
-	border-radius: var(--radius-lg);
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.trendHead {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 12px;
-}
-
-.trendLabel {
-	margin-right: 8px;
-	font-size: 12.5px;
-	color: var(--text-4);
-}
-
-.trendValue {
-	font-family: var(--font-mono);
-	font-size: 20px;
-	font-variant-numeric: tabular-nums;
-	color: var(--text-1);
-}
-
-.trendPeak {
-	font-size: 12px;
-	color: var(--text-5);
-}
-
-.trendChart {
-	width: 100%;
-	height: 56px;
-	display: block;
-}
-
-.trendLine {
-	fill: none;
-	stroke: var(--brand);
-	stroke-width: 1.4;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	vector-effect: non-scaling-stroke;
-}
-
-.trendArea {
-	fill: var(--tint-brand);
-	stroke: none;
-}
-
-.trendAxis {
-	display: flex;
-	justify-content: space-between;
-	font-size: 12px;
-	color: var(--text-5);
-	font-family: var(--font-mono);
-}
-
-/* 空态：14 天一条记录都没有，别画贴底折线 */
-.trendEmpty {
-	padding: 14px 12px;
-	border-radius: var(--radius-sm);
-	background: var(--surface-muted);
-	font-size: 12.5px;
-	line-height: 1.6;
-	color: var(--text-4);
-}
-
-/* 稀疏态：只有 1 天有数据，折线没意义，改一行摘要 */
-.trendSparse {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px 16px;
-	padding: 14px 12px;
-	border-radius: var(--radius-sm);
-	background: var(--surface-muted);
-	font-size: 12.5px;
-	color: var(--text-4);
-
-	b {
-		font-family: var(--font-mono);
-		font-variant-numeric: tabular-nums;
-		color: var(--text-1);
-	}
-}
-
-/* 降级提示：数据被截断时如实说明 */
-.trendDegraded {
-	margin: 0;
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--warning-text, #b54708);
-}
-
-@media (max-width: 640px) {
-	.trend {
-		padding: 12px 12px 10px;
-	}
-
-	.trendHead {
-		flex-wrap: wrap;
-		gap: 4px 10px;
-	}
-
-	.trendValue {
-		font-size: 18px;
-	}
-
-	/* 窄屏「峰值 4,365,019 / 天」会被挤成 3 行，改短一点 */
-	.trendPeak {
+/* 2026-11-20 站长：明细表整体紧凑，尽量少横向拖动就能看全 */
+.card {
+	:global(.ant-table) {
 		font-size: 12px;
-		white-space: nowrap;
+	}
+
+	:global(.ant-table-thead > tr > th),
+	:global(.ant-table-tbody > tr > td) {
+		padding: 7px 10px;
+	}
+
+	:global(.ant-tag) {
+		margin-inline-end: 0;
+		font-size: 11px;
 	}
 }

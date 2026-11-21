@@ -6,166 +6,238 @@
  *       用户消息保留右侧紧凑色块，用于区分"我说的"和"它说的"。
  */
 .chatMessage {
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-	margin-top: 26px;
-	scroll-margin-top: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 26px;
+  scroll-margin-top: 24px;
 
-	&[id='chat-search-target'] {
-		animation: searchTarget 1.8s ease-out;
-		outline: 2px solid var(--brand);
-		outline-offset: 8px;
-		border-radius: var(--radius-sm);
-	}
+  &[id='chat-search-target'] {
+    animation: searchTarget 1.8s ease-out;
+    outline: 2px solid var(--brand);
+    outline-offset: 8px;
+    border-radius: var(--radius-sm);
+  }
 
-	&_avatarCard {
-		flex: 0 0 auto;
-		padding-top: 2px;
+  &_avatarCard {
+    flex: 0 0 auto;
+    padding-top: 2px;
 
-		img {
-			width: 24px;
-			height: 24px;
-			border-radius: var(--radius-xs);
-			display: block;
-		}
-	}
+    img {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-xs);
+      display: block;
+    }
+  }
 
-	&_content {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		min-width: 0;
+  &_content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
 
-		&_time {
-			margin: 0 0 6px;
-			font-size: 10.5px;
-			letter-spacing: 0.02em;
-			line-height: 1.4;
-			color: var(--text-5);
-			font-family: var(--font-mono);
-			font-variant-numeric: tabular-nums;
-			opacity: 0.9;
-		}
+    &_time {
+      margin: 0 0 6px;
+      font-size: 10.5px;
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+      color: var(--text-5);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      opacity: 0.9;
+    }
 
-		&_text {
-			position: relative;
-			max-width: min(100%, 48em);
-			line-height: 1.8;
-			word-break: break-word;
-			overflow-x: auto;
-			overflow-y: hidden;
+    &_text {
+      position: relative;
+      max-width: min(100%, 48em);
+      line-height: 1.8;
+      word-break: break-word;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in srgb, var(--text-5) 45%, transparent) transparent;
 
-			:global {
-				.markdown-body {
-					background: transparent;
-					font-size: 15px;
-					line-height: 1.8;
-					letter-spacing: 0.002em;
-					color: var(--text-2);
-					white-space: normal;
+      &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
 
-					p {
-						margin: 0 0 10px;
-					}
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
 
-					> :first-child {
-						margin-top: 0;
-					}
+      &::-webkit-scrollbar-thumb {
+        border: 0;
+        border-radius: var(--radius-pill);
+        background: color-mix(in srgb, var(--text-5) 45%, transparent);
+        background-clip: padding-box;
+      }
 
-					> :last-child {
-						margin-bottom: 0;
-					}
+      &::-webkit-scrollbar-thumb:hover {
+        background: var(--text-5);
+      }
 
-					pre {
-						border-radius: var(--radius-md);
-					}
-				}
+      :global {
+        .markdown-body {
+          background: transparent;
+          font-size: 15px;
+          line-height: 1.8;
+          letter-spacing: 0.002em;
+          color: var(--text-2);
+          white-space: normal;
 
-				.katex,
-				.katex-html,
-				.katex-mathml {
-					white-space: nowrap;
-					word-break: normal;
-					word-wrap: normal;
-				}
+          p {
+            margin: 0 0 10px;
+          }
 
-				.katex-display,
-				.katex-block {
-					display: block;
-					max-width: 100%;
-					overflow-x: auto;
-					overflow-y: hidden;
-					padding: 4px 0;
-				}
-			}
-		}
+          > :first-child {
+            margin-top: 0;
+          }
 
-		&_operate {
-			position: absolute;
-			bottom: 2px;
-			cursor: pointer;
-			opacity: 0;
-			transition: opacity var(--dur) var(--ease);
+          > :last-child {
+            margin-bottom: 0;
+          }
 
-			&_icon {
-				width: 24px;
-				height: 24px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				font-size: 14px;
-				color: var(--text-5);
-				border-radius: var(--radius-xs);
-				transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+          pre {
+            border-radius: var(--radius-md);
+          }
+        }
 
-				&:hover {
-					color: var(--brand);
-					background: var(--surface-muted);
-				}
-			}
-		}
+        .katex,
+        .katex-html,
+        .katex-mathml {
+          white-space: nowrap;
+          word-break: normal;
+          word-wrap: normal;
+        }
 
-		/* 助手：无气泡，读起来像一篇文章 */
-		.left {
-			white-space: normal;
-			color: var(--text-2);
-		}
+        .katex-display,
+        .katex-block {
+          display: block;
+          max-width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 4px 0;
+        }
+      }
+    }
 
-		/* 用户：紧凑色块，右对齐 */
-		.right {
-			margin-left: auto;
-			max-width: min(80%, 40em);
-			padding: 10px 14px;
-			background: var(--surface-muted);
-			border: 1px solid var(--border-soft);
-			border-radius: var(--radius-md) 14px 4px 14px;
-			font-size: 14.5px;
-			color: var(--text-1);
-			white-space: pre-wrap;
+    &_operate {
+      align-self: flex-start;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--dur) var(--ease);
 
-			:global {
-				.markdown-body {
-					white-space: pre-wrap;
-				}
-			}
-		}
-	}
+      &_icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: var(--text-5);
+        border-radius: var(--radius-xs);
+        transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 
-	/* 鼠标移到这条消息上才显示复制/重试/删除 */
-	&:hover {
-		.chatMessage_content_operate {
-			opacity: 1;
-		}
-	}
+        &:hover {
+          color: var(--brand);
+          background: var(--surface-muted);
+        }
+      }
+    }
+
+    /* 助手：无气泡，读起来像一篇文章 */
+    .left {
+      white-space: normal;
+      color: var(--text-2);
+    }
+
+    /* 用户：紧凑色块，右对齐 */
+    .right {
+      margin-left: auto;
+      max-width: min(80%, 40em);
+      padding: 10px 14px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md) 14px 4px 14px;
+      font-size: 14.5px;
+      color: var(--text-1);
+      white-space: pre-wrap;
+
+      :global {
+        .markdown-body {
+          white-space: pre-wrap;
+        }
+      }
+    }
+  }
+
+  /* 鼠标移到这条消息上才显示复制/重试/删除 */
+  &:hover {
+    .chatMessage_content_operate {
+      opacity: 1;
+    }
+  }
+}
+
+.operateRight {
+  align-self: flex-end;
+}
+
+@media (hover: none) {
+  .chatMessage_content_operate { opacity: 1; }
+}
+
+.thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.thinkingDots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+
+  i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--brand);
+    animation: thinkingPulse 1.2s ease-in-out infinite;
+  }
+
+  i:nth-child(2) { animation-delay: 0.15s; }
+  i:nth-child(3) { animation-delay: 0.3s; }
+}
+
+@keyframes thinkingPulse {
+  0%, 80%, 100% { opacity: 0.35; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinkingDots i { animation: none; }
 }
 
 @keyframes searchTarget {
-	0%,
-	100% {
-		background: transparent;
-	}
-	35% {
-		background: var(--tint-brand);
-	}
+  0%,
+  100% {
+    background: transparent;
+  }
+  35% {
+    background: var(--tint-brand);
+  }
 }

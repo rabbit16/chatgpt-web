@@ -354,7 +354,7 @@ function PaymentPage() {
                 {
                   required: true,
                   message: '仅需填写域名即可如：https://pay.wx.com',
-                  pattern: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*[^\/]$/i
+                  pattern: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*[^/]$/i
                 }
               ]
             }

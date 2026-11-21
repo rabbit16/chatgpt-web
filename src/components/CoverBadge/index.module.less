@@ -45,9 +45,13 @@
 .img {
 	width: 100%;
 	height: 100%;
-	/* 裁切而不是拉伸：不同比例的封面都不变形 */
-	object-fit: cover;
+	box-sizing: border-box;
+	/* 2026-11-20 站长：封面自动适配成合适大小。
+	   原来是 cover（等比裁切），logo/带字截图会被放大裁掉一角、看起来像乱码；
+	   改 contain：整张图等比缩进盒内，任何比例都完整不变形，留 2px 内边距不贴边。 */
+	object-fit: contain;
 	object-position: center;
+	padding: 2px;
 	display: block;
 	/* 用户上传的图片带自己的颜色，别让容器的 hover/过渡影响它 */
 	user-select: none;

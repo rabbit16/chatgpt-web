@@ -8,9 +8,7 @@ type ConfigureType = {
   role: Array<'user' | 'administrator' | string>
 }
 
-export interface RouteOptions extends Omit<Omit<RouteObject, 'children'>, 'index'> {
-  index?: boolean
-  children?: RouteOptions[]
+export type RouteOptions = RouteObject & {
   configure?: ConfigureType
 }
 

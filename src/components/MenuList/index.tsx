@@ -15,7 +15,7 @@ type MenuItemData = (typeof menuList.guestNav)[number]
 /**
  * 导航菜单（扁平化 + 靠右）
  * ------------------------------------------------------------
- * 没有「更多」下拉了：访客 7 项、登录后 8 项全部平铺，右对齐到登录按钮旁。
+ * 没有「更多」下拉了：访客 6 项、登录后 8 项全部平铺，右对齐到登录按钮旁。
  * 当前页高亮为药丸底（浅蓝底 + 品牌字色），移动端沿用竖向列表。
  */
 function MenuList(props: Props) {
@@ -63,6 +63,8 @@ function MenuList(props: Props) {
     const meta = item as { matchTab?: string; matchAlso?: string[] }
     // 额外路径：教程等从属页面，也算这一项被选中
     if (meta.matchAlso?.includes(pathname)) return true
+    if (item.path === '/chat' && pathname === '/draw') return true
+    if (item.path === '/projects' && pathname.startsWith('/projects/')) return true
     if (!meta.matchTab) return pathname === item.path
     return pathname === item.path.split('?')[0] && currentTab === meta.matchTab
   }
@@ -72,7 +74,7 @@ function MenuList(props: Props) {
     const active = isActive(item)
 
     return (
-      <Link key={item.path} to={item.path} target={isExternal ? '_blank' : '_self'}>
+      <Link key={item.path} to={item.path} target={isExternal ? '_blank' : '_self'} aria-current={active ? 'page' : undefined}>
         <div className={joinTrim([styles.item, active ? styles.select_item : ''])}>
           <span className={styles.item_icon}>
             {item.icon}

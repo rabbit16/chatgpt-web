@@ -6,6 +6,10 @@
  */
 
 :root {
+  --site-background: radial-gradient(ellipse at 14% 8%, #dce8ff 0, transparent 43%),
+    radial-gradient(ellipse at 84% 18%, #ffe7df 0, transparent 40%),
+    radial-gradient(ellipse at 55% 32%, #e9e2ff 0, transparent 48%),
+    linear-gradient(180deg, #f8faff, #f5f6fd 58%, #f0eef9);
   font-family: var(--font-sans);
   font-size: var(--fs-14);
   color: var(--text-1);
@@ -22,8 +26,16 @@ html {
   box-sizing: border-box;
 }
 
+[data-theme='dark'] {
+  --site-background: radial-gradient(ellipse at 14% 8%, #263b6259 0, transparent 43%),
+    radial-gradient(ellipse at 84% 18%, #63443c40 0, transparent 40%),
+    radial-gradient(ellipse at 55% 32%, #42356859 0, transparent 48%),
+    linear-gradient(180deg, #1b1c24, #18181b 72%, #201d2b);
+}
+
 body {
-  background: var(--surface);
+  background: var(--site-background);
+  background-attachment: fixed;
   color: var(--text-1);
   font-family: var(--font-sans);
   font-size: var(--fs-14);
@@ -159,7 +171,65 @@ samp {
   }
 }
 
-/* 输入类控件统一 12 圆角与发丝描边 */
+button,
+[role='button'],
+.ant-btn,
+.ant-pagination-item,
+.ant-pagination-prev,
+.ant-pagination-next,
+.ant-pagination-simple-pager input,
+.ant-radio-button-wrapper,
+.ant-segmented,
+.ant-segmented-item,
+.ant-tag {
+  border-radius: var(--radius-pill) !important;
+}
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  border-radius: var(--radius-sm);
+}
+
+.ant-input-affix-wrapper > input.ant-input {
+  border-radius: 0;
+}
+
+.ant-input-textarea-affix-wrapper > textarea.ant-input {
+  border-radius: inherit;
+}
+
+.ant-btn-default:not(.ant-btn-dangerous):not(:disabled) {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+.ant-btn-default:not(.ant-btn-dangerous):not(:disabled):hover {
+  border-color: var(--brand);
+  background: var(--brand-softer);
+  color: var(--brand);
+}
+
+.ant-btn-primary:not(.ant-btn-dangerous):not(:disabled) {
+  background: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: var(--text-inverse) !important;
+  box-shadow: none;
+}
+
+.ant-btn-primary:not(.ant-btn-dangerous):not(:disabled):hover {
+  background: var(--brand-hover) !important;
+  border-color: var(--brand-hover) !important;
+}
+
+[data-theme='dark'] img[src*='rabbitj-a2'] {
+  filter: invert(1);
+}
+
+/* 输入类控件统一发丝描边 */
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-input-number,
@@ -168,10 +238,7 @@ samp {
   border-color: var(--border) !important;
 }
 
-.ant-input-affix-wrapper,
-.ant-select-selector {
-  border-radius: var(--radius-md) !important;
-}
+
 
 .ant-input:focus,
 .ant-input-focused,
@@ -221,6 +288,12 @@ samp {
   z-index: 100;
   height: var(--header-h);
   line-height: normal;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ant-pro-layout .ant-pro-layout-footer {
+  padding: 0;
 }
 
 
@@ -268,11 +341,8 @@ samp {
  * 窄屏可用性兜底（2026-10-24）
  * ------------------------------------------------------------
  * 站长反馈手机端「很多东西看不清、按钮点不准」。
- * 下面两条是 WCAG 的最低要求，放在全局一次兜住，不必逐页改：
- *   1) 可点元素至少 44×44（手指热区），否则小药丸页签很难点中；
- *   2) 正文不小于 12px，10/10.5/11px 的辅助字在手机上会糊成一片。
- * 只作用于 ≤768px，桌面端视觉完全不变。
- * 弹层里的小图标按钮（关闭 X、下拉箭头）豁免，避免撑坏布局。
+ * 手机普通按钮最低高度 40px，辅助正文最低 12px。
+ * 只作用于 ≤768px。开关、富文本工具栏和弹层小图标沿用组件尺寸。
  * ------------------------------------------------------------------ */
 /* 深色主按钮文字色（验收阻塞项 4）
    antd 会把 colorPrimary #5b8af0 推导成更暗的 #5078cf，配白字只有 4.26:1，
@@ -281,15 +351,15 @@ samp {
 [data-theme='dark'] {
   /* antd 推导出的 #5078cf 偏暗，配近黑字仅 4.32:1，差一点到 AA。
      直接指定底色 #6f9dff（token 里的深色品牌色）：配近黑字约 6.6:1。 */
-  .ant-btn-primary:not(:disabled) {
-    background: #6f9dff !important;
-    border-color: #6f9dff !important;
+  .ant-btn-primary:not(.ant-btn-dangerous):not(:disabled) {
+    background: var(--brand) !important;
+    border-color: var(--brand) !important;
     color: var(--text-inverse) !important;
   }
 
-  .ant-btn-primary:not(:disabled):hover {
-    background: #8ab0ff !important;
-    border-color: #8ab0ff !important;
+  .ant-btn-primary:not(.ant-btn-dangerous):not(:disabled):hover {
+    background: var(--brand-hover) !important;
+    border-color: var(--brand-hover) !important;
   }
 }
 
@@ -311,8 +381,8 @@ samp {
 @media (max-width: 768px) {
   /* 触控热区 */
   .ant-btn,
-  button,
-  [role='button'] {
+  button:not(.ant-switch):not(.ql-toolbar button),
+  [role='button']:not(.ql-toolbar [role='button']) {
     min-height: 40px;
   }
 
@@ -342,3 +412,29 @@ samp {
     padding-block: 8px;
   }
 }
+
+.ant-btn-dangerous.ant-btn-primary:not(:disabled) {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+.ant-input-number-group-addon,
+.ant-input-group-addon {
+  border-radius: var(--radius-sm);
+}
+
+.ant-radio-button-wrapper::before { display: none !important; }
+
+.ant-radio-button-wrapper {
+  border-inline-start-width: 1px;
+}
+
+.ant-btn-group,
+.ant-radio-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ant-btn-group > .ant-btn { margin-inline-start: 0 !important; }
