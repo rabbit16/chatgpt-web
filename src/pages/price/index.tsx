@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Button, Input, InputNumber, Select, Table, Tag } from 'antd'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { DownOutlined, ReloadOutlined, SearchOutlined, WalletOutlined } from '@ant-design/icons'
@@ -8,7 +8,14 @@ import Layout from '@/components/Layout'
 import { useNarrow } from '@/hooks/useNarrow'
 import { formatCny } from '@/utils/money'
 import ShopPanel from '@/pages/shop'
-import { getUserPricing, userBillInfo, type UserModelRate, type UserPricing } from '@/request/api'
+import {
+  getPricingCredential,
+  getUserPricing,
+  userBillInfo,
+  type PricingMetric,
+  type UserModelRate,
+  type UserPricing
+} from '@/request/api'
 import { userStore } from '@/store'
 import {
   PUBLIC_IMAGE_MODELS,
@@ -17,18 +24,17 @@ import {
   PUBLIC_PRICING_NOTE,
   PUBLIC_PRICING_UPDATED_AT
 } from '@/data/publicPricing'
-import type { UserPricing as PublicPricingShape } from '@/request/api'
 import {
   PROVIDER_META,
   compareModelNewestFirst,
   enrichVendorModel,
-  formatUsd,
   getImageModelIntro,
   isPerImageBilling,
   pickFeaturedModelIds,
   type ModelProvider
 } from '@/data/modelPricing'
-import { demoEnabled, demoScenario } from '@/demo/runtime'
+import { formatTokenPrice, getOfficialComparison, isPrice, pricingMetrics } from '@/data/displayPricing'
+import { demoEnabled } from '@/demo/runtime'
 import styles from './index.module.less'
 
 type TabKey = 'all' | ModelProvider
@@ -49,7 +55,7 @@ const tabs: { key: TabKey; label: string }[] = [
  * 接口 /v1/pricing/models 需要密钥（匿名 401），所以用离线抓取的标准价快照，
  * 保证访客在没注册时也能看到"有哪些模型、大概多少钱"。
  */
-const PUBLIC_PRICING: PublicPricingShape = {
+const PUBLIC_PRICING: UserPricing = {
   currency: 'USD',
   price_unit: 'per 1M tokens',
   usd_cny_rate: 0,
@@ -58,28 +64,25 @@ const PUBLIC_PRICING: PublicPricingShape = {
   discount: 1,
   vendor: undefined,
   model_ids: PUBLIC_MODEL_IDS,
-  models: PUBLIC_MODELS,
+  models: PUBLIC_MODELS.filter((rate) => rate.billing_basis !== 'original' || rate.standard_prices != null),
   image_models: PUBLIC_IMAGE_MODELS
 }
 
-function formatPrice(amount: number) {
-  if (amount === 0) return '$0'
-  return formatUsd(amount) === '$0.00' ? `$${amount.toExponential(2)}` : formatUsd(amount)
-}
+function PriceComparison({ rate, metric, currency, longContext = false }: {
+  rate: UserModelRate
+  metric: PricingMetric
+  currency: string
+  longContext?: boolean
+}) {
+  const comparison = getOfficialComparison(rate, metric, currency, longContext)
+  if (!comparison) return null
 
-function PriceComparison({ current, official }: { current: number; official?: number | null }) {
-  if (typeof official !== 'number' || !Number.isFinite(official) || official <= 0) {
-    return <small className={styles.officialPending}>官方价待核实</small>
-  }
-
-  const discounted = current <= official
-  const ratio = (current / official) * 10
   return (
     <span className={styles.priceComparison}>
-      <del>{formatPrice(official)}</del>
-      <Tag color={discounted ? 'orange' : 'default'}>
-        {discounted ? `${ratio.toFixed(1)} 折` : '高于官方价'}
-      </Tag>
+      <a href={comparison.source} target="_blank" rel="noreferrer" title={`核实于 ${comparison.checkedAt.slice(0, 10)}`}>
+        官方价 {formatTokenPrice(comparison.baseline)}
+      </a>
+      <Tag color={comparison.discounted ? 'orange' : 'default'}>{comparison.label}</Tag>
     </span>
   )
 }
@@ -189,20 +192,21 @@ function PricePage() {
     }
   }
   const { token, user_info, setLoginModal, llm_api_key } = userStore()
-  const info = user_info as
-    | { data?: { bodyMessage?: { telephone?: string } }; telephone?: string }
-    | undefined
-  const phone = info?.data?.bodyMessage?.telephone || info?.telephone
-  const credential =
-    (llm_api_key || '').startsWith('sk-') || /^1[3-9]\d{9}$/.test(llm_api_key || '')
-      ? llm_api_key
-      : phone || ''
+  const credential = getPricingCredential(llm_api_key, user_info)
   // 页头充值条用：余额取一次，点「去充值」直接切到钱包页签
   const [balance, setBalance] = useState<number | null>(null)
   // 费用估算默认收起，先让价格卡片露出来
   const [calcOpen, setCalcOpen] = useState(false)
   const requestRef = useRef(0)
-  const [pricing, setPricing] = useState<UserPricing | null>(null)
+  const [accountPricing, setAccountPricing] = useState<{
+    token: string
+    credential: string
+    data: UserPricing
+  } | null>(null)
+  const livePricing = token && accountPricing?.token === token && accountPricing.credential === credential
+    ? accountPricing.data
+    : null
+  const pricing = livePricing || PUBLIC_PRICING
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [tab, setTab] = useState<TabKey>('all')
@@ -213,23 +217,24 @@ function PricePage() {
   const [cacheWriteTokens, setCacheWriteTokens] = useState(0)
   const [outputTokens, setOutputTokens] = useState(2000)
 
-  const loadPricing = async (signal?: AbortSignal) => {
+  const loadPricing = useCallback(async (signal?: AbortSignal) => {
+    if (!token || (!credential && !demoEnabled)) return
     const request = ++requestRef.current
     setLoading(true)
     setError('')
     try {
       const data = await getUserPricing({ signal })
-      if (!Array.isArray(data.models)) throw new Error('价目数据不完整，请稍后重试')
-      if (request === requestRef.current && !signal?.aborted) setPricing(data)
+      if (!Array.isArray(data.models) || (!data.models.length && !data.image_models?.length)) throw new Error('价目数据不完整，请稍后重试')
+      if (request === requestRef.current && !signal?.aborted) setAccountPricing({ token, credential, data })
     } catch (err) {
       if (request === requestRef.current && !signal?.aborted) {
-        setPricing(null)
+        setAccountPricing(null)
         setError(err instanceof Error ? err.message : '获取模型价目失败')
       }
     } finally {
       if (request === requestRef.current && !signal?.aborted) setLoading(false)
     }
-  }
+  }, [token, credential])
 
   // 页头充值条要显示余额，所以单独取一次用户信息（失败就不显示余额，不影响页面）
   useEffect(() => {
@@ -259,20 +264,12 @@ function PricePage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    setPricing(null)
+    setAccountPricing(null)
     setError('')
-    if (token && (credential || demoEnabled)) {
-      void loadPricing(controller.signal)
-    } else if (!token) {
-      // 未登录：用公开参考价，页面不再是空白 + 一句"登录后可见"
-      if (demoEnabled && demoScenario() === 'normal') setPricing(PUBLIC_PRICING)
-      else if (demoEnabled) void loadPricing(controller.signal)
-    }
-    return () => {
-      controller.abort()
-      requestRef.current++
-    }
-  }, [token, credential])
+    setLoading(false)
+    void loadPricing(controller.signal)
+    return () => controller.abort()
+  }, [loadPricing])
 
   // 完全按供应商返回的模型展示；元数据只补简介/推荐标记，绝不过滤
   const models = useMemo(() => {
@@ -401,10 +398,10 @@ function PricePage() {
   const imageRate = imageModel?.per_image_tiers?.[imageTier]
   const currency = pricing?.currency || 'USD'
   const unit = (value?: number) =>
-    typeof value !== 'number' || !Number.isFinite(value)
+    !isPrice(value)
       ? '暂无报价'
       : currency === 'USD'
-      ? formatPrice(value)
+      ? formatTokenPrice(value)
       : `${value.toPrecision(5)} ${currency}`
   const estimate = (value: number | null | undefined, tokens: number) => {
     if (tokens === 0) return 0
@@ -458,76 +455,38 @@ function PricePage() {
       width: 120,
       render: (rates: UserModelRate[]) => rates.map((item) => item.service_tier).join(' / ')
     },
-    {
-      title: '输入',
-      dataIndex: 'rates',
-      width: 120,
-      render: (rates: UserModelRate[]) => {
-        const rate = standardRate(rates)
-        return (
-          <div className={styles.rateCell}>
-            <span className={styles.usdOnly}>{unit(rate.input)}</span>
-            <PriceComparison current={rate.input} official={rate.original_input} />
-          </div>
-        )
-      }
-    },
-    {
-      title: '缓存读取',
+    ...pricingMetrics.map(({ key, label }) => ({
+      title: label,
+      key,
       dataIndex: 'rates',
       width: 130,
       render: (rates: UserModelRate[]) => {
         const rate = standardRate(rates)
         return (
           <div className={styles.rateCell}>
-            <span className={styles.usdOnly}>{unit(rate.cache_read)}</span>
-            <PriceComparison current={rate.cache_read} official={rate.original_cache_read} />
+            <span className={styles.usdOnly}>{unit(rate[key])}</span>
+            <PriceComparison rate={rate} metric={key} currency={currency} />
           </div>
         )
       }
-    },
-    {
-      title: '缓存写入',
-      dataIndex: 'rates',
-      width: 130,
-      render: (rates: UserModelRate[]) => {
-        const rate = standardRate(rates)
-        return (
-          <div className={styles.rateCell}>
-            <span className={styles.usdOnly}>{unit(rate.cache_write)}</span>
-            <PriceComparison current={rate.cache_write} official={rate.original_cache_write} />
-          </div>
-        )
-      }
-    },
-    {
-      title: '输出',
-      dataIndex: 'rates',
-      width: 120,
-      render: (rates: UserModelRate[]) => {
-        const rate = standardRate(rates)
-        return (
-          <div className={styles.rateCell}>
-            <span className={styles.usdOnly}>{unit(rate.output)}</span>
-            <PriceComparison current={rate.output} official={rate.original_output} />
-          </div>
-        )
-      }
-    },
+    })),
     {
       title: '长上下文',
       dataIndex: 'rates',
       width: 180,
       render: (rates: UserModelRate[]) => {
-        const long = standardRate(rates).long_context
+        const rate = standardRate(rates)
+        const long = rate.long_context
         if (!long) return <span className={styles.usdOnly}>—</span>
         return (
           <div className={styles.longCell}>
             <span>{longContextGate(long)}</span>
-            <span>输入 {unit(long.input)}</span>
-            <span>缓存读取 {unit(long.cache_read)}</span>
-            <span>缓存写入 {unit(long.cache_write)}</span>
-            <span>输出 {unit(long.output)}</span>
+            {pricingMetrics.map(({ key, label }) => (
+              <div key={key} className={styles.rateCell}>
+                <span>{label} {unit(long[key])}</span>
+                <PriceComparison rate={rate} metric={key} currency={currency} longContext />
+              </div>
+            ))}
           </div>
         )
       }
@@ -612,9 +571,7 @@ function PricePage() {
               {!token ? (
                 <div className={styles.publicNote}>
                   <span className={styles.publicNoteText}>
-                    {demoEnabled
-                      ? `访客参考价 · 本地快照演示 · ${PUBLIC_PRICING_NOTE} · ${PUBLIC_PRICING_UPDATED_AT}`
-                      : '访客参考价暂不可用：当前价目接口需要账号凭证。登录后可查看个人价。'}
+                    {`访客参考价 · ${PUBLIC_PRICING_NOTE} · ${PUBLIC_PRICING_UPDATED_AT}`}
                   </span>
                   <Button type="primary" onClick={() => setLoginModal(true)}>
                     登录 / 注册
@@ -637,13 +594,13 @@ function PricePage() {
                     </Button>
                   }
                 />
-              ) : loading && !pricing ? (
-                <Alert showIcon type="info" message="正在获取当前账号价格…" />
+              ) : loading && !livePricing ? (
+                <Alert showIcon type="info" message="正在获取当前账号价格，暂显示访客参考价" />
               ) : error ? (
                 <Alert
                   showIcon
                   type="error"
-                  message={error}
+                  message="账号价格暂不可用，已显示访客参考价"
                   action={<Button onClick={() => void loadPricing()}>重试</Button>}
                 />
               ) : null}
@@ -820,6 +777,9 @@ function PricePage() {
                         }}
                       />
                     </div>
+                    <p className={styles.comparisonNote}>
+                      {livePricing ? '当前账号价' : `站内参考标准价 · ${PUBLIC_PRICING_UPDATED_AT}`}。仅在厂商官方价已核实且计费档位一致时显示折扣。
+                    </p>
                     {/* 页签行：厂商页签（语义=列表筛选）+ 搜索命中数（语义=全局检索结果注解）。
                     为什么合并成一行（2026-10-24 修复「找到 X 个模型」重合）：
                     命中数原来单独占一行、还用 -6px 负边距向上贴页签，实测压进页签 6px，
@@ -890,22 +850,13 @@ function PricePage() {
                                 {model.id} · {rate.service_tier}
                               </p>
                               <div className={styles.modelCardRates}>
-                                <div>
-                                  <span>输入 / 百万 tokens</span>
-                                  <strong>{unit(rate.input)}</strong>
-                                  <PriceComparison
-                                    current={rate.input}
-                                    official={rate.original_input}
-                                  />
-                                </div>
-                                <div>
-                                  <span>输出 / 百万 tokens</span>
-                                  <strong>{unit(rate.output)}</strong>
-                                  <PriceComparison
-                                    current={rate.output}
-                                    official={rate.original_output}
-                                  />
-                                </div>
+                                {pricingMetrics.filter(({ key }) => key === 'input' || key === 'output').map(({ key, label }) => (
+                                  <div key={key}>
+                                    <span>{label} / 百万 tokens</span>
+                                    <strong>{unit(rate[key])}</strong>
+                                    <PriceComparison rate={rate} metric={key} currency={currency} />
+                                  </div>
+                                ))}
                               </div>
                               <Button onClick={() => goToEstimate(model.id)}>估算此型号</Button>
                             </article>
@@ -913,35 +864,41 @@ function PricePage() {
                         })}
                       </div>
                     ) : (
-                      <HorizontalDrag watch={list.length + tab}>
-                        {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
-                    并加 scroll.y 让表头固定：否则 390 下要滚 960px 才摸到数字、
-                    而且表头早就滚出屏幕，用户不知道每一列是什么。 */}
-                        <Table
-                          rowKey="id"
-                          loading={loading}
-                          pagination={false}
-                          columns={columns}
-                          dataSource={visibleModels}
-                          scroll={{ x: narrow ? 800 : 1180, y: narrow ? 420 : undefined }}
-                          expandable={{
-                            rowExpandable: (record) => record.rates.length > 1,
-                            expandedRowRender: (record) => (
-                              <div className={styles.expand}>
-                                {record.rates
-                                  .filter((item) => item.service_tier !== 'standard')
-                                  .map((item) => (
-                                    <p key={item.service_tier}>
-                                      {item.service_tier}：输入 {unit(item.input)} · 缓存读取{' '}
-                                      {unit(item.cache_read)} · 缓存写入 {unit(item.cache_write)} ·
-                                      输出 {unit(item.output)} / 百万 tokens
-                                    </p>
-                                  ))}
-                              </div>
-                            )
-                          }}
-                        />
-                      </HorizontalDrag>
+                      <div role="region" aria-label="模型价目列表" className={styles.priceListRegion} tabIndex={0}>
+                        <HorizontalDrag watch={list.length + tab}>
+                          {/* 窄屏把 scroll.x 收窄（200 模型列 + 5 个 120 价格列），
+                      并加 scroll.y 让表头固定：否则 390 下要滚 960px 才摸到数字、
+                      而且表头早就滚出屏幕，用户不知道每一列是什么。 */}
+                          <Table
+                            rowKey="id"
+                            loading={loading}
+                            pagination={false}
+                            columns={columns}
+                            dataSource={visibleModels}
+                            scroll={{ x: narrow ? 800 : 1180, y: narrow ? 420 : undefined }}
+                            expandable={{
+                              rowExpandable: (record) => record.rates.length > 1,
+                              expandedRowRender: (record) => (
+                                <div className={styles.expand}>
+                                  {record.rates
+                                    .filter((item) => item !== standardRate(record.rates))
+                                    .map((item) => (
+                                      <div key={item.service_tier} className={styles.expandedRates}>
+                                        <strong>{item.service_tier} / 百万 tokens</strong>
+                                        {pricingMetrics.map(({ key, label }) => (
+                                          <div className={styles.rateCell} key={key}>
+                                            <span>{label} {unit(item[key])}</span>
+                                            <PriceComparison rate={item} metric={key} currency={currency} />
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ))}
+                                </div>
+                              )
+                            }}
+                          />
+                        </HorizontalDrag>
+                      </div>
                     )}
                     {list.length > previewCount ? (
                       <div className={styles.priceDisclosure}>

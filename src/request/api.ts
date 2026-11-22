@@ -1050,10 +1050,26 @@ export type LongContextRate = {
   output_multiplier?: number
 }
 
+export type PricingMetric = 'input' | 'output' | 'cache_read' | 'cache_write'
+
+type DisplayPrices = Partial<Record<PricingMetric, number | null>>
+
+export type OfficialModelPricing = DisplayPrices & {
+  currency: string
+  unit: string
+  source: string
+  checked_at: string
+  long_context?: (DisplayPrices & Pick<LongContextRate, 'threshold' | 'op'>) | null
+}
+
 export type UserModelRate = {
   model: string
   display_name?: string
   owned_by?: string
+  released_at?: string | null
+  billing_basis?: string
+  standard_prices?: DisplayPrices | null
+  official_pricing?: OfficialModelPricing | null
   service_tier: string
   unit: string
   input: number
@@ -1550,6 +1566,13 @@ export async function upsertAdminPromptInjection(payload: {
 
 export async function deleteAdminPromptInjection(id: number): Promise<void> {
   await llmFetch(`/admin/prompt-injections/${id}`, { method: 'DELETE' }, '删除 Prompt 注入')
+}
+
+export function getPricingCredential(key: string | undefined, userInfo: unknown) {
+  const stored = (key || '').trim()
+  if (stored.startsWith('sk-') || /^1[3-9]\d{9}$/.test(stored)) return stored
+  const info = userInfo as { data?: { bodyMessage?: { telephone?: string } }; telephone?: string } | undefined
+  return info?.data?.bodyMessage?.telephone || info?.telephone || ''
 }
 
 export async function getUserPricing(params?: {

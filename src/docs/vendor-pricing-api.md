@@ -222,6 +222,39 @@ const pricing = await res.json();
 
 `404`：`{"error":"vendor not found"}`。
 
+#### 首页与模型价格页的对照价
+
+同一个 `/v1/pricing/models` 请求继续使用当前账号凭证。站长可以按下面的格式增加可选字段。现有响应仍可显示本站价格。
+
+```json
+{
+  "model": "example-model",
+  "service_tier": "standard",
+  "unit": "USD per 1M tokens",
+  "input": 1.2,
+  "output": 4.8,
+  "billing_basis": "cost",
+  "released_at": "2026-11-01",
+  "standard_prices": { "input": 1.5, "output": 6 },
+  "official_pricing": {
+    "currency": "USD",
+    "unit": "USD per 1M tokens",
+    "input": 2,
+    "output": 8,
+    "cache_read": null,
+    "cache_write": null,
+    "source": "https://provider.example/pricing",
+    "checked_at": "2026-11-22"
+  }
+}
+```
+
+- `input`、`output`、`cache_read` 和 `cache_write` 为当前账号有效价。`standard_prices` 为该账号应用折扣前的站内价格，支持单项提供。只有 `billing_basis: "cost"`、该项没有 `original_*` 直算价，且响应的 `discount` 为有限正数时，前端才会用账号有效价除以 `discount` 还原。专属价、原价直算等有例外的项目，由服务端提供 `standard_prices` 才能在首页对照。`released_at` 使用可核实的上线日期（ISO 8601）。
+- `official_pricing` 为展示用的厂商公开价。同一行应对应准确的上游型号与档位，路由别名需由后端核对映射。`currency`、`unit` 需与本站价格对齐。`source` 使用公开 HTTPS 链接，`checked_at` 使用 ISO 8601。长上下文可在 `official_pricing.long_context` 增加同结构的四项价格，并附 `threshold` 和 `op`。两边条件一致才比较。官方价不参与计费，不影响 `original_*`。
+- 已核实的首批标准档报价在 `src/data/officialPricing.ts` 中维护，按厂商、准确型号与标准档匹配。后端提供 `official_pricing` 后以该字段为准，整项 `null` 可明确撤下对照价。每项缺值用 `null` 或省略。`0` 只用来表示已确认免费的计费项。商城用本站价除以官方价计算折扣。同价和高于官方价分别标明。访客用带日期的公开参考价，账号价格失败时首页与商城也可回退到这份参考价。
+- 首批可按官方公开价目录入。建议后端每周核实，调价时可手动更新。抓取失败时保留最近一次可信价格、来源及核实日期。发布访客快照时，由站长批准所用账号和公开字段。官方价原样保留，无需乘除账号折扣。
+- 联调可用上面的输入价验证。账号折扣为 `0.8` 时，首页显示站内标准价 `$1.5` 和账号价 `$1.2`，商城卡片和列表显示相对官方价 `6 折`。再检查缺价、同价、高于官方价和非标准档。示例金额和域名仅用于联调。
+
 ---
 
 ## 管理接口（`is_staff = true`）

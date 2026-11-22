@@ -14,10 +14,8 @@
  *   或者把 key 写进环境变量文件后：
  *   node scripts/sync-public-pricing.mjs            # 读 $RELAY_API_KEY
  *
- * 换算规则（关键，别改错）：
- *   接口返回的是「当前账号折扣后的价」，快照里要存**标准价**，
- *   所以每个价格字段都除以本次返回的 discount，
- *   保证「访客看到的价 >= 登录后实际价」，不会出现标低了却收更多。
+ * 使用站长批准的账号，只导出访客可见的价目。站内公开标准价优先读 standard_prices，
+ * 普通成本计费项才按账号折扣还原。厂商官方价单独保留原值和来源。
  */
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -52,13 +50,22 @@ function dividePrices(row, discount, fields) {
   return out
 }
 
-function scaleLongContext(long, discount) {
-  if (!long || typeof long !== 'object') return long
-  const out = { ...long }
-  for (const field of ['input', 'output', 'cache_read', 'cache_write']) {
-    if (typeof out[field] === 'number') out[field] = round(out[field] / discount)
+const metrics = ['input', 'output', 'cache_read', 'cache_write']
+const isPrice = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 0
+const pick = (row, fields) => Object.fromEntries(fields.filter((field) => row[field] !== undefined).map((field) => [field, row[field]]))
+
+function officialSnapshot(official) {
+  if (!official || typeof official.source !== 'string' || !Number.isFinite(Date.parse(official.checked_at))) return
+  try {
+    const source = new URL(official.source)
+    if (source.protocol !== 'https:' || source.username || source.password) return
+  } catch {
+    return
   }
-  return out
+  return {
+    ...pick(official, [...metrics, 'currency', 'unit', 'source', 'checked_at']),
+    ...(official.long_context ? { long_context: pick(official.long_context, [...metrics, 'threshold', 'op']) } : {})
+  }
 }
 
 function scaleImageTiers(tiers, discount) {
@@ -84,33 +91,44 @@ if (!Array.isArray(data.models) || !data.models.length) {
   process.exit(1)
 }
 
-const discount = typeof data.discount === 'number' && data.discount > 0 ? data.discount : 1
+const discount = Number.isFinite(data.discount) && data.discount > 0 ? data.discount : null
 
-// ---- 对话模型：价格字段除以折扣还原标准价 ----
-const modelFields = ['input', 'output', 'cache_read', 'cache_write', 'original_input', 'original_output']
-const models = data.models.map((row) => {
-  const scaled = dividePrices(row, discount, modelFields)
-  if (row.long_context) scaled.long_context = scaleLongContext(row.long_context, discount)
-  return scaled
+const models = data.models.flatMap((row) => {
+  const price = (field) => {
+    const explicit = row.standard_prices?.[field]
+    if (isPrice(explicit)) return explicit
+    if (row.billing_basis === 'cost' && !isPrice(row[`original_${field}`]) && discount && isPrice(row[field])) {
+      return round(row[field] / discount)
+    }
+  }
+  const prices = Object.fromEntries(metrics.map((field) => [field, price(field)]))
+  if (!metrics.every((field) => isPrice(prices[field]))) return []
+
+  const snapshot = { ...pick(row, ['model', 'display_name', 'owned_by', 'service_tier', 'unit', 'released_at']), ...prices }
+  const official = officialSnapshot(row.official_pricing)
+  if (row.official_pricing === null) snapshot.official_pricing = null
+  else if (official) snapshot.official_pricing = official
+  if (row.long_context && row.billing_basis === 'cost' && !metrics.some((field) => isPrice(row[`original_${field}`])) && discount) {
+    snapshot.long_context = dividePrices(pick(row.long_context, [...metrics, 'threshold', 'op', 'input_multiplier', 'output_multiplier']), discount, metrics)
+  }
+  return [snapshot]
 })
 
-// ---- 图片模型：同样还原标准价，含按张分档 ----
+if (!models.length || !discount || data.currency !== 'USD') {
+  console.error('缺少可验证的美元标准价或有效折扣，保留原有公开快照。')
+  process.exit(1)
+}
+
 const imageFields = ['text_input', 'image_input', 'output']
 const imageModels = (data.image_models || []).map((row) => {
-  const scaled = dividePrices(row, discount, imageFields)
-  if (row.per_image_tiers) scaled.per_image_tiers = scaleImageTiers(row.per_image_tiers, discount)
+  const scaled = dividePrices(pick(row, ['model', 'display_name', 'owned_by', 'service_tier', 'billing', 'unit', ...imageFields]), discount, imageFields)
+  if (row.per_image_tiers) scaled.per_image_tiers = scaleImageTiers(pick(row.per_image_tiers, ['1k', '2k', '4k']), discount)
   return scaled
 })
 
 // ---- model_ids：保持供应商顺序，缺则从 models 推 ----
-const seen = new Set()
-const modelIds = (data.model_ids && data.model_ids.length ? data.model_ids : models.map((m) => m.model)).filter(
-  (id) => {
-    if (!id || seen.has(id)) return false
-    seen.add(id)
-    return true
-  }
-)
+const publishedIds = new Set(models.map((row) => row.model))
+const modelIds = [...new Set([...(data.model_ids || []), ...publishedIds])].filter((id) => publishedIds.has(id))
 
 const today = new Date().toISOString().slice(0, 10)
 const pretty = (value) => JSON.stringify(value, null, 2).replace(/\n/g, '\n')
@@ -120,13 +138,11 @@ const header = `/**
  * ------------------------------------------------------------
  * 生成时间：${today}
  * 数据来源：站点价目接口 \`GET /v1/pricing/models\`（匿名访问 401，故用密钥离线抓取后入库）
- * 换算规则：接口返回的是"当前账号折扣后价"，这里把价格字段除以折扣还原成**标准价**，
- *          所以访客看到的价 >= 登录后实际价，不会出现"标低了却收更多"。
+ * 站内报价存公开标准价。官方价单独保留来源及核实日期，金额原样导出。
  * 本次抓取折扣：discount = ${discount}
  * 用途：未登录访客在价格页也能看到模型与单价，解决"看不到价格就走"的转化漏洞。
  * 刷新：**不要手改**，跑 \`node scripts/sync-public-pricing.mjs\`（工作区文档：
  *      docs/公开价目快照-刷新方法.md）。改完 npm run build，未登录打开 /price 核对一遍。
- * 供应商：${data.vendor?.name || '-'}（${data.vendor?.code || '-'}）· 同步于 ${data.vendor?.last_synced_at || '-'}
  */
 import type { UserModelRate, UserImageModelRate } from '@/request/api'
 
@@ -135,7 +151,7 @@ export const PUBLIC_PRICING_NOTE = '参考价（站内标准倍率），登录�
 
 export const PUBLIC_MODEL_IDS: string[] = ${JSON.stringify(modelIds, null, 0)}
 
-export const PUBLIC_MODELS: (UserModelRate & { original_input?: number | null; original_output?: number | null; billing_basis?: string })[] = ${JSON.stringify(models, null, 2)}
+export const PUBLIC_MODELS: UserModelRate[] = ${JSON.stringify(models, null, 2)}
 
 export const PUBLIC_IMAGE_MODELS: UserImageModelRate[] = ${JSON.stringify(imageModels, null, 2)}
 `

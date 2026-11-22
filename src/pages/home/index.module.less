@@ -505,14 +505,14 @@
 }
 
 .priceCard {
-  display: flex;
-  flex-direction: column;
+  display: block;
   padding: 19px;
   color: var(--text-1);
   text-decoration: none;
   transition: transform 0.18s ease, border-color 0.18s ease;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     transform: translateY(-2px);
     border-color: #9db4f4;
     color: var(--text-1);
@@ -547,26 +547,36 @@
 
 .priceValues {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  margin: 0;
   padding-top: 14px;
   border-top: 1px solid var(--stroke);
+  color: var(--text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 
-  > span {
+  dt {
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  dd {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    color: var(--text-4);
-    font-size: 12px;
+    margin: 0;
+    overflow-wrap: anywhere;
   }
   strong {
     color: var(--brand);
     font-size: 20px;
-    font-variant-numeric: tabular-nums;
   }
-  small {
-    color: var(--text-4);
-    font-size: 10px;
+  small,
+  .standardPrice {
+    font-size: 11px;
+  }
+  .standardPrice {
+    margin-bottom: 5px;
+    color: var(--text-3);
   }
 }
 
@@ -585,53 +595,6 @@
   color: var(--text-4);
   font-size: 12px;
   line-height: 1.65;
-}
-
-/* 官方价对照（2026-11-20）：划线官方价 + 橙色折扣标，紧跟价格行 */
-.officialCompare {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.officialRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-
-  em {
-    color: var(--text-4);
-    font-size: 11px;
-    font-style: normal;
-
-    del {
-      margin-left: 4px;
-      font-variant-numeric: tabular-nums;
-    }
-  }
-}
-
-.discountTag,
-.discountTagPlain {
-  flex: none;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.discountTag {
-  color: var(--ink-amber);
-  background: var(--warning-soft);
-  border: 1px solid color-mix(in srgb, var(--warning) 28%, transparent);
-}
-
-.discountTagPlain {
-  color: var(--text-3);
-  background: var(--surface-muted);
 }
 
 @media (max-width: 900px) {

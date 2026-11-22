@@ -4,135 +4,58 @@ import { Link, useNavigate } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import { PUBLIC_MODELS, PUBLIC_PRICING_UPDATED_AT } from '@/data/publicPricing'
 import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
-import { getUserPricing, type UserModelRate } from '@/request/api'
+import { getStandardPrice, formatTokenPrice, pickHomePriceModels } from '@/data/displayPricing'
+import { PROVIDER_META } from '@/data/modelPricing'
+import { demoEnabled } from '@/demo/runtime'
+import { getPricingCredential, getUserPricing, type UserPricing } from '@/request/api'
 import { userStore } from '@/store'
 import styles from './index.module.less'
 
-type FeaturedModel = {
-  id: string
-  label: string
-  rate?: UserModelRate
-  live: boolean
-}
-
-const FEATURED_MODELS = [
-  { id: 'deepseek-flash-1017', label: 'DeepSeek' },
-  { id: 'gpt-5.4-mini', label: 'GPT' },
-  { id: 'claude-sonnet-5-5', label: 'Claude' }
-]
-
-function formatPrice(value: number) {
-  if (!Number.isFinite(value)) return '暂无报价'
-  if (value === 0) return '$0'
-  if (value < 0.01) return `$${value.toExponential(2)}`
-  return `$${Number(value.toFixed(6))}`
-}
-
-/**
- * 官方价对照 + 橙色折扣标（2026-11-20 站长：价签卡要突出折扣）
- * ------------------------------------------------------------
- * 与价格页 PriceComparison 同一套口径：官方价划线、折扣 = 现价 / 官方价 × 10。
- * 官方价缺失（接口没给 original_*）就整块不渲染，宁可空着也不写「待核实」占位。
- * 输入/输出两行各比各的，只有至少一行有官方价时才显示。
- */
-function OfficialCompare({
-  input,
-  output,
-  officialInput,
-  officialOutput
-}: {
-  input?: number
-  output?: number
-  officialInput?: number | null
-  officialOutput?: number | null
-}) {
-  const rows = [
-    { label: '输入', current: input, official: officialInput },
-    { label: '输出', current: output, official: officialOutput }
-  ].filter(
-    (row): row is { label: string; current: number; official: number } =>
-      typeof row.current === 'number' &&
-      Number.isFinite(row.current) &&
-      typeof row.official === 'number' &&
-      Number.isFinite(row.official) &&
-      row.official > 0 &&
-      // 与官方价持平（≈10 折）不算折扣，整行不显示，避免「10.0 折」的噪音（2026-11-20 截图验收）
-      (row.current / row.official < 0.995 || row.current / row.official > 1.005)
-  )
-  if (!rows.length) return null
-
-  return (
-    <div className={styles.officialCompare}>
-      {rows.map((row) => {
-        const discounted = row.current < row.official
-        return (
-          <span key={row.label} className={styles.officialRow}>
-            <em>
-              {row.label}官方价 <del>{formatPrice(row.official)}</del>
-            </em>
-            <b className={discounted ? styles.discountTag : styles.discountTagPlain}>
-              {discounted ? `${((row.current / row.official) * 10).toFixed(1)} 折` : '高于官方价'}
-            </b>
-          </span>
-        )
-      })}
-    </div>
-  )
-}
+const previewMetrics = [{ key: 'input', label: '输入' }, { key: 'output', label: '输出' }] as const
+const publicPreview = pickHomePriceModels(PUBLIC_MODELS, 'USD')
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { token, llm_api_key } = userStore()
-  const [rates, setRates] = useState<UserModelRate[]>([])
-  const [pricingDate, setPricingDate] = useState('')
+  const { token, llm_api_key, user_info } = userStore()
+  const credential = getPricingCredential(llm_api_key, user_info)
+  const [accountPricing, setAccountPricing] = useState<{
+    token: string
+    credential: string
+    pricing: UserPricing
+  } | null>(null)
   const [pricingLoading, setPricingLoading] = useState(false)
-  const [pricingError, setPricingError] = useState('')
-
-  const hasCredential = Boolean((llm_api_key || '').trim())
-  const featuredModels = useMemo<FeaturedModel[]>(
-    () =>
-      FEATURED_MODELS.map((item) => {
-        const current = rates.find(
-          (rate) => rate.model === item.id && rate.service_tier === 'standard'
-        )
-        const reference = PUBLIC_MODELS.find(
-          (rate) => rate.model === item.id && rate.service_tier === 'standard'
-        )
-        return { ...item, rate: current || reference, live: Boolean(current) }
-      }),
-    [rates]
+  const pricing = token && accountPricing?.token === token && accountPricing.credential === credential
+    ? accountPricing.pricing
+    : null
+  const accountModels = useMemo(
+    () => pricing ? pickHomePriceModels(pricing.models, pricing.currency) : [],
+    [pricing]
   )
+  const live = accountModels.length > 0
+  const featuredModels = live ? accountModels : publicPreview
 
   useEffect(() => {
-    if (!token || !hasCredential) {
-      setRates([])
-      setPricingDate('')
-      setPricingError('')
+    setAccountPricing(null)
+    if (!token || (!credential && !demoEnabled)) {
+      setPricingLoading(false)
       return
     }
 
     const controller = new AbortController()
     setPricingLoading(true)
-    setPricingError('')
     getUserPricing({ signal: controller.signal })
-      .then((pricing) => {
-        if (!Array.isArray(pricing.models)) throw new Error('价目数据不完整')
-        setRates(pricing.models)
-        setPricingDate(pricing.vendor?.last_synced_at || '')
-      })
-      .catch((error: unknown) => {
+      .then((data) => {
         if (controller.signal.aborted) return
-        setRates([])
-        setPricingError(error instanceof Error ? error.message : '获取当前价目失败')
+        if (!Array.isArray(data.models)) throw new Error('价目数据不完整')
+        setAccountPricing({ token, credential, pricing: data })
       })
+      .catch(() => undefined)
       .finally(() => {
         if (!controller.signal.aborted) setPricingLoading(false)
       })
 
     return () => controller.abort()
-  }, [token, hasCredential])
-
-  const currentPrices = Boolean(rates.length)
+  }, [token, credential])
 
   return (
     <Layout homeAppearance>
@@ -236,58 +159,53 @@ export default function HomePage() {
           <div className={styles.sectionHead}>
             <div>
               <span className={styles.sectionEyebrow}>PRICE PREVIEW</span>
-              <h2>三款模型，价格一眼看</h2>
+              <h2>近期模型价格</h2>
             </div>
             <Link to="/price">查看完整价目 →</Link>
           </div>
           <div className={styles.priceGrid}>
-            {featuredModels.map(({ id, label, rate, live }) => (
+            {featuredModels.map(({ model, rate }) => (
               <Link
-                key={id}
+                key={rate.model}
                 className={styles.priceCard}
-                to={`/price?model=${encodeURIComponent(id)}#estimate`}
+                to={`/price?model=${encodeURIComponent(rate.model)}#estimate`}
               >
-                <div className={styles.priceCardHead}>
-                  <span>{label}</span>
-                  <span>{pricingLoading ? '正在更新' : live ? '当前账号价' : '访客参考价'}</span>
-                </div>
-                <h3>{rate?.display_name || rate?.model || id}</h3>
-                <div className={styles.priceValues}>
-                  <span>
-                    输入 <strong>{rate ? formatPrice(rate.input) : '暂无报价'}</strong>
-                    <small>/ 百万 tokens</small>
+                <article>
+                  <header className={styles.priceCardHead}>
+                    <span>{PROVIDER_META[model.provider].label}</span>
+                    <span>美元 / 百万 tokens</span>
+                  </header>
+                  <h3>{model.name}</h3>
+                  <dl className={styles.priceValues}>
+                    {previewMetrics.map(({ key, label }) => {
+                      const standard = live && pricing ? getStandardPrice(rate, key, pricing) : undefined
+                      return (
+                        <div key={key}>
+                          <dt>{label}</dt>
+                          {live && (
+                            <dd className={styles.standardPrice}>
+                              站内标准价 {standard === undefined ? '暂无' : formatTokenPrice(standard)}
+                            </dd>
+                          )}
+                          <dd>
+                            <small>{live ? '当前账号价' : '访客参考标准价'}</small>
+                            <strong>{formatTokenPrice(rate[key])}</strong>
+                          </dd>
+                        </div>
+                      )
+                    })}
+                  </dl>
+                  <span className={styles.cardLink}>
+                    查看计费档位与缓存价格 <span aria-hidden="true">→</span>
                   </span>
-                  <span>
-                    输出 <strong>{rate ? formatPrice(rate.output) : '暂无报价'}</strong>
-                    <small>/ 百万 tokens</small>
-                  </span>
-                </div>
-                <OfficialCompare
-                  input={rate?.input}
-                  output={rate?.output}
-                  officialInput={rate?.original_input}
-                  officialOutput={rate?.original_output}
-                />
-                <span className={styles.cardLink}>
-                  查看计费档位与缓存价格 <span aria-hidden="true">→</span>
-                </span>
+                </article>
               </Link>
             ))}
           </div>
           <p className={styles.priceNote} role="status">
-            {currentPrices
-              ? `价格来自当前账号价目${
-                  pricingDate ? ` · 同步 ${new Date(pricingDate).toLocaleDateString('zh-CN')}` : ''
-                }${
-                  featuredModels.some((model) => !model.live)
-                    ? '；未返回的型号沿用带日期的访客参考价'
-                    : ''
-                }。`
-              : token && !hasCredential
-              ? '当前账号尚无 API Key，暂不展示个人实时价。登录后到接入页创建密钥，再查看当前账号价目。'
-              : pricingError
-              ? `当前价目暂时无法获取。${pricingError} 登录后可在模型价格页重试。`
-              : `访客参考价取自 ${PUBLIC_PRICING_UPDATED_AT} 的公开快照，仅供参考。登录并配置 API Key 后可查看当前账号价目。`}
+            {live
+              ? '所列为标准档报价。站内标准价为应用账号折扣前的价格。'
+              : `${pricingLoading ? '正在获取账号价格。' : token ? '账号价格暂不可用。' : ''}访客参考价来自 ${PUBLIC_PRICING_UPDATED_AT} 的公开价目。`}
           </p>
         </section>
 
