@@ -19,6 +19,7 @@ import {
 import {
   CheckCircleOutlined,
   CloudSyncOutlined,
+  CopyOutlined,
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
@@ -35,11 +36,14 @@ import {
   deleteAdminModelProtocol,
   deleteAdminModelRewrite,
   deleteAdminModelRoute,
+  deleteAdminSoftRoute,
+  clearAdminSoftRouteActive,
   deleteAdminVendorModel,
   getAdminModelAliases,
   getAdminModelProtocols,
   getAdminModelRewrites,
   getAdminModelRoutes,
+  getAdminSoftRoutes,
   getAdminUsers,
   getAdminVendorModels,
   getAdminVendors,
@@ -58,12 +62,15 @@ import {
   upsertAdminModelProtocol,
   upsertAdminModelRewrite,
   upsertAdminModelRoute,
+  upsertAdminSoftRoute,
   upsertVendor,
   type ModelAliasRule,
   type ModelProtocolRule,
   type ModelRewriteRule,
   type ModelRouteRule,
   type ModelRouteUser,
+  type SoftRouteRule,
+  type SoftRouteActive,
   type CatalogPolicy,
   type UpstreamVendor,
   type VendorBalance,
@@ -256,6 +263,30 @@ function AdminVendors() {
   const matchPrefix = Form.useWatch('match_prefix', routeForm)
   const routeMode = Form.useWatch('route_mode', routeForm) as string | undefined
   const routeVendorCode = Form.useWatch('vendor_code', routeForm)
+  const routeModelName = Form.useWatch('model', routeForm)
+  const [softRoutes, setSoftRoutes] = useState<SoftRouteRule[]>([])
+  const [softActive, setSoftActive] = useState<SoftRouteActive[]>([])
+  const [softOpen, setSoftOpen] = useState(false)
+  const [editingSoftRoute, setEditingSoftRoute] = useState<SoftRouteRule | null>(null)
+  const [softSaving, setSoftSaving] = useState(false)
+  const [softTogglingId, setSoftTogglingId] = useState<number | null>(null)
+  const [softClearing, setSoftClearing] = useState(false)
+  const [softForm] = Form.useForm<{
+    route_mode?: 'single' | 'group'
+    model: string
+    match_prefix?: boolean
+    models?: string
+    group_name?: string
+    from_vendor_code?: string
+    to_vendor_code: string
+    fail_threshold: number
+    duration_minutes: number
+    is_active: boolean
+    note?: string
+  }>()
+  const softMatchPrefix = Form.useWatch('match_prefix', softForm)
+  const softRouteMode = Form.useWatch('route_mode', softForm) as string | undefined
+  const softFromVendor = Form.useWatch('from_vendor_code', softForm)
   const [keyDrawer, setKeyDrawer] = useState<{ open: boolean; vendor: UpstreamVendor | null }>({
     open: false,
     vendor: null
@@ -268,6 +299,7 @@ function AdminVendors() {
     name: string
     api_key?: string
     note?: string
+    protocol?: string
     is_active?: boolean
   }>()
   const [rewrites, setRewrites] = useState<ModelRewriteRule[]>([])
@@ -336,6 +368,14 @@ function AdminVendors() {
         setRoutes([])
       }
       try {
+        const soft = await getAdminSoftRoutes()
+        setSoftRoutes(soft.routes || [])
+        setSoftActive(soft.active || [])
+      } catch {
+        setSoftRoutes([])
+        setSoftActive([])
+      }
+      try {
         const rewritten = await getAdminModelRewrites()
         setRewrites(rewritten.rewrites || [])
       } catch {
@@ -364,6 +404,19 @@ function AdminVendors() {
 
   useEffect(() => {
     void load()
+  }, [])
+
+  // 临时切换存在内存里，由后台请求触发；页面停留时定时拉一次，让生效状态和剩余时长跟上
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void getAdminSoftRoutes()
+        .then((data) => {
+          setSoftRoutes(data.routes || [])
+          setSoftActive(data.active || [])
+        })
+        .catch(() => undefined)
+    }, 10000)
+    return () => window.clearInterval(timer)
   }, [])
 
   useEffect(() => {
@@ -520,6 +573,7 @@ function AdminVendors() {
       name: key.name,
       api_key: '',
       note: key.note || '',
+      protocol: key.protocol || '',
       is_active: key.is_active
     })
   }
@@ -540,6 +594,7 @@ function AdminVendors() {
         const data = await updateVendorKey(vendor.code, editingKey.id, {
           name: values.name.trim(),
           note: values.note || '',
+          protocol: values.protocol || '',
           is_active: values.is_active !== false,
           ...(typed ? { api_key: typed } : {})
         })
@@ -549,7 +604,8 @@ function AdminVendors() {
         const data = await createVendorKey(vendor.code, {
           name: values.name.trim(),
           api_key: (values.api_key || '').trim(),
-          note: values.note || ''
+          note: values.note || '',
+          protocol: values.protocol || ''
         })
         await refreshKeys(vendor.code, data.keys)
         message.success('Key 已新增')
@@ -595,7 +651,7 @@ function AdminVendors() {
     const vendor = vendors.find((item) => item.code === code)
     return (vendor?.keys || []).map((key) => ({
       value: key.id,
-      label: `${key.name || '(未命名)'}  ${key.api_key_hint}${key.is_default ? '  [默认]' : ''}${key.is_active ? '' : '  [停用]'}`
+      label: `${key.name || '(未命名)'}  ${key.api_key_hint}${key.protocol ? `  [${key.protocol}]` : ''}${key.is_default ? '  [默认]' : ''}${key.is_active ? '' : '  [停用]'}`
     }))
   }
 
@@ -1274,10 +1330,35 @@ function AdminVendors() {
     try {
       await deleteAdminModelRoute(row.id)
       setRoutes((prev) => prev.filter((item) => item.id !== row.id))
-      message.success('已删除，该模型回到默认供应商')
+      message.success('已删除这条规则')
     } catch (err) {
       message.error(err instanceof Error ? err.message : '删除失败')
     }
+  }
+
+  /** 复制一条规则为「同名新规则」：用于同一个模型给不同用户指向不同供应商。 */
+  const duplicateRoute = (row: ModelRouteRule) => {
+    setEditingRoute(null)
+    setRouteUserOptions([])
+    const prefix = Boolean(wildcardPrefix(row.model))
+    routeForm.setFieldsValue({
+      route_mode: 'single',
+      model: prefix ? wildcardPrefix(row.model) : row.model,
+      models: '',
+      // 分组会按名字合并成员，复制出来的一律当独立规则
+      group_name: '',
+      match_prefix: prefix,
+      vendor_code: row.vendor_code,
+      api_key_id: row.api_key_id ?? undefined,
+      is_active: true,
+      note: row.note || '',
+      api_key: '',
+      clear_api_key: false,
+      // 用户名单留空，由使用者自己指定，避免与原规则重复抢同一批人
+      user_ids: []
+    })
+    setRouteOpen(true)
+    searchRouteUsers('')
   }
 
   const matchedRoutes = useMemo(() => {
@@ -1285,6 +1366,32 @@ function AdminVendors() {
     if (!query) return routes
     return routes.filter((row) => routeQueryHits(row.model, query))
   }, [routeQuery, routes])
+
+  /** 同一模型名可以有多条规则，列表里标出条数，方便识别按用户拆分的情况。 */
+  const sameNameCount = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const row of routes) {
+      const key = row.model.trim().toLowerCase()
+      counts.set(key, (counts.get(key) || 0) + 1)
+    }
+    return counts
+  }, [routes])
+
+  /** 表单里正在填的模型名已存在的同名规则（排除正在编辑的这条）。 */
+  const sameModelRules = useMemo(() => {
+    if (routeMode === 'group') return []
+    let draft = ''
+    try {
+      draft = composeModelPattern(routeModelName || '', Boolean(matchPrefix))
+    } catch {
+      return []
+    }
+    const key = draft.trim().toLowerCase()
+    if (!key) return []
+    return routes.filter(
+      (row) => row.model.trim().toLowerCase() === key && row.id !== editingRoute?.id
+    )
+  }, [routeModelName, matchPrefix, routeMode, routes, editingRoute])
 
   const replaceMatchedKeys = async () => {
     const query = routeQuery.trim()
@@ -1319,6 +1426,154 @@ function AdminVendors() {
       message.error(err instanceof Error ? err.message : '切换代理规则失败')
     } finally {
       setRouteTogglingId(null)
+    }
+  }
+
+  const openCreateSoftRoute = () => {
+    setEditingSoftRoute(null)
+    softForm.setFieldsValue({
+      route_mode: 'single',
+      model: '',
+      models: '',
+      group_name: '',
+      match_prefix: false,
+      from_vendor_code: '',
+      to_vendor_code: vendors.find((item) => item.code !== currentVendor)?.code || vendors[0]?.code,
+      fail_threshold: 2,
+      duration_minutes: 5,
+      is_active: true,
+      note: ''
+    })
+    setSoftOpen(true)
+  }
+
+  const openEditSoftRoute = (row: SoftRouteRule) => {
+    setEditingSoftRoute(row)
+    const prefix = Boolean(wildcardPrefix(row.model))
+    // 分组规则按整组编辑：只回填单个模型会把同组其它成员拆成独立规则
+    const groupModels = row.group_name
+      ? softRoutes.filter((item) => item.group_name === row.group_name).map((item) => item.model)
+      : []
+    softForm.setFieldsValue({
+      route_mode: groupModels.length > 1 ? 'group' : 'single',
+      model: prefix ? wildcardPrefix(row.model) : row.model,
+      models: groupModels.length > 1 ? groupModels.join('\n') : '',
+      group_name: row.group_name || '',
+      match_prefix: prefix,
+      from_vendor_code: row.from_vendor_code || '',
+      to_vendor_code: row.to_vendor_code,
+      fail_threshold: row.fail_threshold || 2,
+      duration_minutes: Math.max(1, Math.round((row.duration_seconds || 300) / 60)),
+      is_active: row.is_active,
+      note: row.note || ''
+    })
+    setSoftOpen(true)
+  }
+
+  const saveSoftRoute = async () => {
+    const values = await softForm.validateFields()
+    const isGroup = values.route_mode === 'group'
+    let model = ''
+    let models: string[] | undefined
+    if (isGroup) {
+      models = parseModelLines(values.models)
+      if (!models.length) {
+        message.error('请至少填一个模型名')
+        return
+      }
+      model = models[0]
+    } else {
+      try {
+        model = composeModelPattern(values.model, Boolean(values.match_prefix))
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : '模型名不正确')
+        return
+      }
+    }
+    if (!values.to_vendor_code) {
+      message.error('请选择备用号商')
+      return
+    }
+    if (values.from_vendor_code && values.from_vendor_code === values.to_vendor_code) {
+      message.error('备用号商不能与来源号商相同')
+      return
+    }
+    setSoftSaving(true)
+    try {
+      const data = await upsertAdminSoftRoute({
+        id: editingSoftRoute?.id,
+        model,
+        models,
+        group_name: (values.group_name || '').trim(),
+        from_vendor_code: values.from_vendor_code || '',
+        to_vendor_code: values.to_vendor_code,
+        fail_threshold: values.fail_threshold,
+        duration_seconds: Math.max(1, Math.round(values.duration_minutes || 5)) * 60,
+        is_active: values.is_active,
+        note: values.note
+      })
+      setSoftRoutes(data.routes || [])
+      setSoftActive(data.active || [])
+      setSoftOpen(false)
+      message.success('软路由规则已保存，重启后规则仍在、临时切换会清空')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '保存软路由失败')
+    } finally {
+      setSoftSaving(false)
+    }
+  }
+
+  const removeSoftRoute = async (row: SoftRouteRule) => {
+    try {
+      await deleteAdminSoftRoute(row.id)
+      setSoftRoutes((prev) => prev.filter((item) => item.id !== row.id))
+      message.success('已删除软路由规则')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '删除失败')
+    }
+  }
+
+  const toggleSoftRoute = async (row: SoftRouteRule, isActive: boolean) => {
+    setSoftTogglingId(row.id)
+    try {
+      // 分组规则要整组一起切换：只提交单个模型会把同组其它成员从分组里踢出去
+      const groupModels =
+        row.group_name && softRoutes.filter((item) => item.group_name === row.group_name).length > 1
+          ? softRoutes.filter((item) => item.group_name === row.group_name).map((item) => item.model)
+          : undefined
+      const data = await upsertAdminSoftRoute({
+        id: row.id,
+        model: row.model,
+        models: groupModels,
+        from_vendor_code: row.from_vendor_code || '',
+        to_vendor_code: row.to_vendor_code,
+        fail_threshold: row.fail_threshold,
+        duration_seconds: row.duration_seconds,
+        is_active: isActive,
+        note: row.note,
+        group_name: row.group_name
+      })
+      setSoftRoutes(data.routes || [])
+      setSoftActive(data.active || [])
+      message.success(isActive ? `已启用 ${row.model} 的软路由` : `已停用 ${row.model} 的软路由`)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '切换软路由失败')
+    } finally {
+      setSoftTogglingId(null)
+    }
+  }
+
+  const clearSoftRouteActive = async () => {
+    setSoftClearing(true)
+    try {
+      const data = await clearAdminSoftRouteActive()
+      setSoftRoutes(data.routes || [])
+      setSoftActive(data.active || [])
+      message.success(`已解除 ${data.cleared} 条临时路由`)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '解除临时路由失败')
+    } finally {
+      setSoftClearing(false)
     }
   }
 
@@ -1657,6 +1912,11 @@ function AdminVendors() {
                   <code>{value}</code>
                   {wildcardPrefix(value) ? <Tag color="purple">前缀</Tag> : null}
                   {row.group_name ? <Tag color="cyan">{row.group_name}</Tag> : null}
+                  {(sameNameCount.get(value.trim().toLowerCase()) || 0) > 1 ? (
+                    <Tag color="orange" title="同名规则按用户区分，指定用户的规则优先">
+                      同名 {sameNameCount.get(value.trim().toLowerCase())} 条
+                    </Tag>
+                  ) : null}
                 </Space>
               )
             },
@@ -1717,13 +1977,152 @@ function AdminVendors() {
             { title: '备注', dataIndex: 'note' },
             {
               title: '操作',
-              width: 160,
+              width: 230,
               render: (_: unknown, row: ModelRouteRule) => (
                 <Space>
                   <Button size="small" icon={<EditOutlined />} onClick={() => openEditRoute(row)}>
                     编辑
                   </Button>
-                  <Popconfirm title={`删除 ${row.model}？`} okText="删除" cancelText="取消" onConfirm={() => void removeRoute(row)}>
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={() => duplicateRoute(row)}
+                    title="以相同模型名和上游新增一条规则，可再改用户名单"
+                  >
+                    复制
+                  </Button>
+                  <Popconfirm
+                    title={`删除这条规则？`}
+                    description={`${row.model} → ${vendors.find((item) => item.code === row.vendor_code)?.name || row.vendor_code}`}
+                    okText="删除"
+                    cancelText="取消"
+                    onConfirm={() => void removeRoute(row)}
+                  >
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                </Space>
+              )
+            }
+          ]}
+        />
+      </section>
+
+      <section className={styles.routeSection}>
+        <div className={styles.sectionHead}>
+          <div>
+            <h2>临时软路由（自动切换号商）</h2>
+            <p>
+              同一模型对同一个号商连续失败达到阈值后，短时间内把该模型的请求全量切到备用号商，过了设定时长自动回到原号商。规则存在库里，重启后仍在；临时切换是内存态，重启后消失，也可以在这里随时解除。失败口径只算 5xx、超时/限流（408、429）和鉴权失效（401、403），400/404/422 这类请求本身的问题不计。号商留空表示任意来源都适用；模型支持完整名、前缀匹配（gemini*）和分组批量。
+            </p>
+          </div>
+          <Space>
+            <Popconfirm
+              title={`解除 ${softActive.length} 条临时切换？`}
+              description="解除后请求立即回到原号商，失败计数一并清零；规则本身保留。"
+              okText="解除"
+              cancelText="取消"
+              disabled={softActive.length === 0}
+              onConfirm={() => void clearSoftRouteActive()}
+            >
+              <Button loading={softClearing} disabled={softActive.length === 0} icon={<ThunderboltOutlined />}>
+                解除全部临时切换
+              </Button>
+            </Popconfirm>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateSoftRoute}>
+              新增规则
+            </Button>
+          </Space>
+        </div>
+        {softActive.length > 0 ? (
+          <div className={styles.replaceBar}>
+            <Tag color="orange">生效中</Tag>
+            <Space size={8} wrap>
+              {softActive.map((item) => {
+                const fromName = vendors.find((vendor) => vendor.code === item.from_vendor_code)?.name
+                const toName = vendors.find((vendor) => vendor.code === item.to_vendor_code)?.name
+                return (
+                  <Tag key={`${item.model}-${item.from_vendor_code}`} color="volcano">
+                    <code>{item.model}</code> {fromName || item.from_vendor_code || '任意号商'} → {toName || item.to_vendor_code}（剩 {item.remaining_seconds}s）
+                  </Tag>
+                )
+              })}
+            </Space>
+          </div>
+        ) : null}
+        <Table
+          rowKey="id"
+          loading={loading}
+          pagination={false}
+          dataSource={softRoutes}
+          locale={{ emptyText: '还没有软路由规则，上游连续报错时不会自动切换' }}
+          columns={[
+            {
+              title: '模型 / 分组',
+              dataIndex: 'model',
+              render: (value: string, row: SoftRouteRule) => (
+                <Space size={6}>
+                  <code>{value}</code>
+                  {wildcardPrefix(value) ? <Tag color="purple">前缀</Tag> : null}
+                  {row.group_name ? <Tag color="cyan">{row.group_name}</Tag> : null}
+                </Space>
+              )
+            },
+            {
+              title: '来源号商',
+              dataIndex: 'from_vendor_code',
+              width: 150,
+              render: (code: string) => {
+                if (!code) return <Tag>任意号商</Tag>
+                const vendor = vendors.find((item) => item.code === code)
+                return <Tag color="blue">{vendor?.name || code}</Tag>
+              }
+            },
+            {
+              title: '切换到',
+              dataIndex: 'to_vendor_code',
+              width: 150,
+              render: (code: string) => {
+                const vendor = vendors.find((item) => item.code === code)
+                return <Tag color="green">{vendor?.name || code}</Tag>
+              }
+            },
+            {
+              title: '连续失败阈值',
+              dataIndex: 'fail_threshold',
+              width: 130,
+              render: (value: number) => `${value} 次`
+            },
+            {
+              title: '切换时长',
+              dataIndex: 'duration_seconds',
+              width: 110,
+              render: (value: number) => `${Math.max(1, Math.round((value || 0) / 60))} 分钟`
+            },
+            {
+              title: '生效',
+              dataIndex: 'is_active',
+              width: 90,
+              render: (active: boolean, row: SoftRouteRule) => (
+                <Switch
+                  size="small"
+                  checked={active}
+                  loading={softTogglingId === row.id}
+                  checkedChildren="开"
+                  unCheckedChildren="关"
+                  onChange={(checked) => void toggleSoftRoute(row, checked)}
+                />
+              )
+            },
+            { title: '备注', dataIndex: 'note' },
+            {
+              title: '操作',
+              width: 160,
+              render: (_: unknown, row: SoftRouteRule) => (
+                <Space>
+                  <Button size="small" icon={<EditOutlined />} onClick={() => openEditSoftRoute(row)}>
+                    编辑
+                  </Button>
+                  <Popconfirm title={`删除 ${row.model} 的软路由？`} okText="删除" cancelText="取消" onConfirm={() => void removeSoftRoute(row)}>
                     <Button size="small" danger icon={<DeleteOutlined />} />
                   </Popconfirm>
                 </Space>
@@ -2015,6 +2414,28 @@ function AdminVendors() {
           >
             <Switch />
           </Form.Item>
+          {sameModelRules.length > 0 ? (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={`已存在同名规则 ${sameModelRules.length} 条，保存后会新增一条`}
+              description={
+                <span>
+                  同一个模型可以有多条规则给不同用户走不同供应商。命中时「指定了该用户」的规则优先于「全部用户」的规则；都是指定用户时，用户名单更短的优先。
+                  {sameModelRules.map((item) => (
+                    <span key={item.id}>
+                      <br />
+                      · {item.user_ids?.length ? item.user_ids.map((id) => routeUserLabel((item.users || []).find((u) => u.user_id === id) || { user_id: id })).join('、') : '全部用户'}
+                      {' → '}
+                      {vendors.find((v) => v.code === item.vendor_code)?.name || item.vendor_code}
+                      {item.is_active ? '' : '（已停用）'}
+                    </span>
+                  ))}
+                </span>
+              }
+            />
+          ) : null}
             </>
           )}
           <Form.Item name="vendor_code" label="改走哪个代理" rules={[{ required: true, message: '请选择供应商' }]}>
@@ -2083,6 +2504,131 @@ function AdminVendors() {
           </Form.Item>
           <Form.Item name="note" label="备注">
             <Input placeholder="例如：teamrouter 上 luna 不稳定" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={editingSoftRoute ? `编辑软路由 · ${editingSoftRoute.model}` : '新增软路由'}
+        open={softOpen}
+        onCancel={() => setSoftOpen(false)}
+        onOk={() => void saveSoftRoute()}
+        confirmLoading={softSaving}
+        destroyOnClose
+      >
+        <Form form={softForm} layout="vertical">
+          <Form.Item
+            name="route_mode"
+            label="规则形态"
+            extra="单模型规则：一个模型（或一个前缀）一条；分组批量：一次填多个模型，共用一个备用号商和同一阈值。"
+            initialValue="single"
+          >
+            <Radio.Group
+              optionType="button"
+              buttonStyle="solid"
+              options={[
+                { value: 'single', label: '单模型规则' },
+                { value: 'group', label: '分组批量（一对多）' }
+              ]}
+            />
+          </Form.Item>
+          <Form.Item
+            name="group_name"
+            label="分组名"
+            extra="同一分组名下的模型会一起维护。留空表示不分组。"
+          >
+            <Input placeholder="例如 gemini 全家桶" />
+          </Form.Item>
+          {softRouteMode === 'group' ? (
+            <Form.Item
+              name="models"
+              label="对外模型名（一行一个）"
+              rules={[{ required: true, message: '请至少填一个模型名' }]}
+              extra="可批量粘贴。以 * 结尾表示前缀匹配，例如 gemini* 会命中所有 gemini 开头的模型。"
+            >
+              <Input.TextArea rows={6} placeholder={'gemini-3.8-flash\ngemini-3.1-pro-preview\ngemini*'} />
+            </Form.Item>
+          ) : (
+            <>
+              <Form.Item
+                name="model"
+                label="模型名或关键字"
+                rules={[{ required: true, message: '请输入模型名' }]}
+                extra={
+                  softMatchPrefix
+                    ? '只填前缀本身，例如 gemini。保存后 gemini-3.8-flash、gemini-3.1-pro-preview 都会命中这条规则。更长的前缀优先。'
+                    : '可写完整名 gpt-5.6-luna，也可写 luna，后者会匹配名字里带这一段的模型。若要「gemini 开头都命中」，打开下面的前缀匹配。'
+                }
+              >
+                <Input placeholder={softMatchPrefix ? 'gemini' : 'luna 或 gpt-5.6-luna'} />
+              </Form.Item>
+              <Form.Item
+                name="match_prefix"
+                label="前缀匹配"
+                valuePropName="checked"
+                extra="打开后，填写 gemini 即表示所有以 gemini 开头的模型。"
+              >
+                <Switch />
+              </Form.Item>
+            </>
+          )}
+          <Form.Item
+            name="from_vendor_code"
+            label="从哪个号商切走"
+            extra="留空表示任意来源号商连续失败都触发。指定后只在这个号商失败时切换。"
+          >
+            <Select
+              allowClear
+              placeholder="留空 = 任意号商"
+              options={vendors.map((item) => ({
+                value: item.code,
+                label: `${item.name || item.code}  ${item.base_url || ''}`
+              }))}
+              onChange={(code?: string) => {
+                // 来源和备用不能是同一个号商
+                if (code && code === softForm.getFieldValue('to_vendor_code')) {
+                  softForm.setFieldValue('to_vendor_code', undefined)
+                }
+              }}
+            />
+          </Form.Item>
+          <Form.Item
+            name="to_vendor_code"
+            label="切换到哪个号商"
+            rules={[{ required: true, message: '请选择备用号商' }]}
+            extra="触发后，该模型的请求全量改走这个号商。"
+          >
+            <Select
+              placeholder="选择备用号商"
+              options={vendors
+                .filter((item) => item.code !== softFromVendor)
+                .map((item) => ({
+                  value: item.code,
+                  label: `${item.name || item.code}  ${item.base_url || ''}`
+                }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="fail_threshold"
+            label="连续失败多少次触发"
+            rules={[{ required: true, message: '请填写阈值' }]}
+            extra="同一模型在同一号商上连续失败达到这个次数就切换。1~20，默认 2。"
+          >
+            <InputNumber min={1} max={20} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
+            name="duration_minutes"
+            label="切换多久（分钟）"
+            rules={[{ required: true, message: '请填写时长' }]}
+            extra="到期后自动回到原号商。10 秒~24 小时，按分钟填。"
+          >
+            <InputNumber min={1} max={1440} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="is_active" label="启用" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+          <Form.Item name="note" label="备注">
+            <Input placeholder="例如：teamrouter 上 luna 经常 502" />
           </Form.Item>
         </Form>
       </Modal>
@@ -2288,6 +2834,12 @@ function AdminVendors() {
               dataIndex: 'api_key_hint',
               render: (value: string) => <code className={styles.code}>{value || '—'}</code>
             },
+            {
+              title: '协议',
+              dataIndex: 'protocol',
+              render: (value?: string) =>
+                value ? <Tag color="blue">{value}</Tag> : <span className={styles.muted}>通用</span>
+            },
             { title: '备注', dataIndex: 'note', render: (value?: string) => value || <span className={styles.muted}>—</span> },
             {
               title: '操作',
@@ -2298,7 +2850,12 @@ function AdminVendors() {
                   <Button size="small" onClick={() => startEditKey(row)}>
                     编辑
                   </Button>
-                  <Button size="small" disabled={row.is_default} onClick={() => void setDefaultKey(row)}>
+                  <Button
+                    size="small"
+                    disabled={row.is_default || Boolean(row.protocol)}
+                    title={row.protocol ? '绑定了协议的 Key 不能设为默认' : undefined}
+                    onClick={() => void setDefaultKey(row)}
+                  >
                     设为默认
                   </Button>
                   <Popconfirm
@@ -2337,6 +2894,20 @@ function AdminVendors() {
             </Form.Item>
             <Form.Item name="note" label="备注">
               <Input placeholder="可选" maxLength={200} />
+            </Form.Item>
+            <Form.Item
+              name="protocol"
+              label="绑定协议"
+              extra="留空=通用 Key。绑定后只有该协议的请求会用它，且不能设为默认。"
+            >
+              <Select
+                options={[
+                  { value: '', label: '通用（所有协议）' },
+                  { value: 'openai', label: 'openai' },
+                  { value: 'anthropic', label: 'anthropic' },
+                  { value: 'responses', label: 'responses' }
+                ]}
+              />
             </Form.Item>
             {editingKey ? (
               <Form.Item

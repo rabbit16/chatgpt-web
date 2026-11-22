@@ -698,6 +698,8 @@ export type VendorKeyInfo = {
   id: number
   name: string
   api_key_hint: string
+  /** 绑定的调用协议：openai | anthropic | responses；空=通用 Key */
+  protocol?: string
   is_default: boolean
   is_active: boolean
   note?: string
@@ -848,7 +850,7 @@ export async function getVendorKeys(code: string): Promise<{ keys: VendorKeyInfo
 
 export async function createVendorKey(
   code: string,
-  payload: { name: string; api_key: string; note?: string }
+  payload: { name: string; api_key: string; note?: string; protocol?: string }
 ): Promise<{ key: VendorKeyInfo; keys: VendorKeyInfo[] }> {
   const response = await llmFetch(
     vendorKeyPath(code),
@@ -870,6 +872,8 @@ export async function updateVendorKey(
     /** 不传表示保持原密钥 */
     api_key?: string
     note?: string
+    /** 绑定调用协议：openai | anthropic | responses；空串=通用 Key */
+    protocol?: string
     is_active?: boolean
     is_default?: boolean
   }
@@ -1155,9 +1159,82 @@ export async function deleteAdminModelRoute(id: number): Promise<void> {
   await llmFetch(`/admin/model-routes/${id}`, { method: 'DELETE' }, '删除模型路由')
 }
 
+export type SoftRouteRule = {
+  id: number
+  model: string
+  /** 空表示任意来源号商 */
+  from_vendor_code?: string
+  to_vendor_code: string
+  fail_threshold: number
+  duration_seconds: number
+  is_active: boolean
+  note?: string
+  group_name?: string
+}
+
+export type SoftRouteActive = {
+  model: string
+  from_vendor_code: string
+  to_vendor_code: string
+  remaining_seconds: number
+  rule_id: number
+}
+
+export async function getAdminSoftRoutes(signal?: AbortSignal): Promise<{
+  routes: SoftRouteRule[]
+  active: SoftRouteActive[]
+  vendors: UpstreamVendor[]
+}> {
+  const response = await llmFetch('/admin/soft-routes', { method: 'GET', signal }, '读取软路由')
+  return response.json()
+}
+
+export async function upsertAdminSoftRoute(payload: {
+  id?: number
+  model: string
+  to_vendor_code: string
+  from_vendor_code?: string
+  fail_threshold?: number
+  duration_seconds?: number
+  is_active?: boolean
+  note?: string
+  group_name?: string
+  models?: string[]
+}): Promise<{ ok: boolean; route: SoftRouteRule; routes: SoftRouteRule[]; active: SoftRouteActive[] }> {
+  const response = await llmFetch(
+    '/admin/soft-routes',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    },
+    '保存软路由'
+  )
+  return response.json()
+}
+
+export async function deleteAdminSoftRoute(id: number): Promise<void> {
+  await llmFetch(`/admin/soft-routes/${id}`, { method: 'DELETE' }, '删除软路由')
+}
+
+export async function clearAdminSoftRouteActive(): Promise<{
+  ok: boolean
+  cleared: number
+  routes: SoftRouteRule[]
+  active: SoftRouteActive[]
+}> {
+  const response = await llmFetch('/admin/soft-routes/clear-active', { method: 'POST' }, '解除临时路由')
+  return response.json()
+}
+
+export type UserPriceUser = { user_id: number; name?: string; telephone?: string; email?: string }
+
 export type UserModelPriceRule = {
   id: number
+  /** 首个用户主键，兼容旧接口；匹配以 user_ids 为准 */
   user_id: number
+  /** 这条价覆盖的全部用户 */
+  user_ids: number[]
   model: string
   service_tier: string
   /** 以下均为 USD / 1M tokens，命中后即用户最终应付价（计时只再乘汇率） */
@@ -1170,7 +1247,9 @@ export type UserModelPriceRule = {
   per_image_tiers?: Record<string, number> | null
   is_active: boolean
   note?: string
-  user?: { user_id: number; name?: string; telephone?: string; email?: string }
+  /** 组内用户快照，顺序同 user_ids */
+  users?: UserPriceUser[]
+  user?: UserPriceUser
   created_at?: string
   updated_at?: string
 }
@@ -1182,11 +1261,13 @@ export async function getAdminUserModelPrices(signal?: AbortSignal): Promise<{ p
 
 export async function upsertAdminUserModelPrice(payload: {
   id?: number
-  user_id: number
-  model: string
+  /** 一条价覆盖多个用户；新建时必填，修改时可改 */
+  user_ids?: number[]
+  user_id?: number
+  model?: string
   service_tier?: string
-  input_price: number
-  output_price: number
+  input_price?: number
+  output_price?: number
   cache_read_price?: number
   cache_write_price?: number
   text_input_price?: number
@@ -1209,6 +1290,65 @@ export async function upsertAdminUserModelPrice(payload: {
 
 export async function deleteAdminUserModelPrice(id: number): Promise<void> {
   await llmFetch(`/admin/user-model-prices/${id}`, { method: 'DELETE' }, '删除用户专属价')
+}
+
+/** 基准价：现行对客价，折扣试算以它为 100% */
+export type UserPriceBaseline = {
+  model: string
+  service_tier: string
+  kind: string
+  vendor: string
+  vendor_name: string
+  /** official=官网标准价（默认取价口径）；vendor=官方目录没有，回落供应商成本价 */
+  source?: 'official' | 'vendor'
+  billing_basis: string
+  input: number
+  output: number
+  cache_read: number
+  cache_write: number
+  text_input: number
+  image_input: number
+  per_image_tiers?: Record<string, number> | null
+  price_factor: number
+}
+
+/** 管理端：专属价表单的模型候选 */
+export async function getAdminUserPriceModels(vendor?: string): Promise<{
+  vendor: string
+  count: number
+  official_count?: number
+  models: {
+    model: string
+    service_tier: string
+    kind: string
+    owned_by?: string
+    /** official=官方标准价目录，vendor=供应商独有 */
+    source?: 'official' | 'vendor'
+  }[]
+}> {
+  const q = vendor ? `?vendor=${encodeURIComponent(vendor)}` : ''
+  const response = await llmFetch(
+    `/admin/user-model-prices/models${q}`,
+    { method: 'GET' },
+    '读取可定价模型'
+  )
+  return response.json()
+}
+
+/** 管理端：取模型当前对客基准价，用于按折扣试算 */
+export async function getAdminUserPriceBaseline(
+  model: string,
+  serviceTier = 'standard',
+  vendor?: string
+): Promise<{ currency: string; price_unit: string; baseline: UserPriceBaseline }> {
+  const params = new URLSearchParams({ model, service_tier: serviceTier })
+  if (vendor) params.set('vendor', vendor)
+  const response = await llmFetch(
+    `/admin/user-model-prices/baseline?${params.toString()}`,
+    { method: 'GET' },
+    '读取基准价'
+  )
+  return response.json()
 }
 
 export type ModelRewriteRule = {
