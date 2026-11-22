@@ -108,6 +108,27 @@
   line-height: 1.7;
 }
 
+/* 合规信息：版权 + 备案号，弱化展示但要可点 */
+.footerLegal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.7;
+
+  a {
+    color: var(--text-3);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--brand);
+    text-decoration: underline;
+  }
+}
+
 @media (max-width: 900px) {
   .footer {
     grid-template-columns: 1fr;

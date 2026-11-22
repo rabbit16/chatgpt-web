@@ -2,6 +2,16 @@ import { Link } from 'react-router-dom'
 import rabbitLogo from '@/assets/brand/rabbitj-a2.svg'
 import styles from './index.module.less'
 
+/** ICP 备案号：与域名 www.rabbitj.top 的备案主体一致 */
+const ICP_RECORD = '沪ICP备2021037462号-1'
+const ICP_LINK = 'https://beian.miit.gov.cn/'
+/**
+ * 公安联网备案号：拿到后填这里（形如 沪公网安备3101xxxxxxxx号），
+ * 留空则整块不渲染。填了记得同时补 POLICE_LINK。
+ */
+const POLICE_RECORD = ''
+const POLICE_LINK = ''
+
 export default function SiteFooter() {
   return (
     <footer className={styles.container} aria-label="rabbitJ 站点导航">
@@ -35,6 +45,17 @@ export default function SiteFooter() {
           <p className={styles.footerNote}>
             网页体验、模型绘图与工具接入 · 选择适合你的入口，按页面提示继续。
           </p>
+          <div className={styles.footerLegal}>
+            <span>© {new Date().getFullYear()} rabbitJ</span>
+            <a href={ICP_LINK} target="_blank" rel="noopener noreferrer">
+              {ICP_RECORD}
+            </a>
+            {POLICE_RECORD ? (
+              <a href={POLICE_LINK} target="_blank" rel="noopener noreferrer">
+                {POLICE_RECORD}
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
     </footer>
