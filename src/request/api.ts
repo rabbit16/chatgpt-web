@@ -599,16 +599,28 @@ function isModelRequestPath(path: string) {
     || path.includes('/v1beta/')
 }
 
-function getLlmApiKey(action = '请求 LLM 接口', forModel = false) {
+/** 管理端接口：网关 _require_admin 只认手机号（按手机号查 tb_user 再校验 is_staff） */
+function isAdminPath(path: string) {
+  return /^\/admin(\/|$)/.test(path)
+}
+
+function getLlmApiKey(action = '请求 LLM 接口', forModel = false, forAdmin = false) {
   if (demoEnabled) return 'sk-local-preview'
   const state = userStore.getState()
   const stored = (state.llm_api_key || '').trim()
-  if (stored.startsWith('sk-')) return stored
   const info = state.user_info as
     | { data?: { bodyMessage?: { telephone?: string; allow_phone_key?: boolean } }; telephone?: string }
     | undefined
   const phone = info?.data?.bodyMessage?.telephone || info?.telephone || ''
   const allow = state.allow_phone_key ?? info?.data?.bodyMessage?.allow_phone_key
+  // 管理端鉴权只认手机号：网关 _require_admin 用手机号查 tb_user 并校验 is_staff，
+  // sk- 会解析成普通用户而被 403。这里必须排在 sk- 分支之前。
+  if (forAdmin) {
+    if (phone) return phone
+    if (/^1[3-9]\d{9}$/.test(stored)) return stored
+    throw new Error(`后台管理接口需要登录手机号，无法${action}`)
+  }
+  if (stored.startsWith('sk-')) return stored
   // 生成过 sk- 后，手机号只能用于价目、用量、列表等，不能再请求模型。
   if (forModel && allow === false) {
     throw new Error(`请先到「接入」页创建并选择 sk- 密钥后再${action}`)
@@ -648,7 +660,7 @@ export function deleteUserApiKey(id: number) {
 }
 
 async function llmFetch(path: string, init: RequestInit = {}, action = '请求 LLM 接口') {
-  const phone = getLlmApiKey(action, isModelRequestPath(path))
+  const phone = getLlmApiKey(action, isModelRequestPath(path), isAdminPath(path))
   const headers = new Headers(init.headers)
   headers.set('Authorization', `Bearer ${phone}`)
   const response = await fetch(`${llmBaseUrl}${path}`, {
